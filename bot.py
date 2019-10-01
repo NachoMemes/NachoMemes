@@ -25,7 +25,7 @@ async def on_ready():
 
 
 @bot.command(description="Make a new meme.")
-async def generate_meme(ctx, memename: str, upper: str, lower: str):
+async def meme(ctx, memename: str, upper: str, lower: str):
     # make the meme
     key = f"{uuid.uuid4().hex}.png"
     memeobj = memegenerator.make_meme(upper, lower, f"{memename}.jpg")
