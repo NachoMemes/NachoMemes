@@ -8,7 +8,7 @@ import json
 import tinys3
 import memegenerator  
 
-with open("creds.json", "w+") as f:
+with open("creds.json", "rb") as f:
     creds = json.load(f)
 
 description = "A bot to generate custom memes using pre-loaded templates."
