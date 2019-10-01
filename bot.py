@@ -36,7 +36,10 @@ def _write_stats():
 def _s3_cleanup():
     """ Every hour dump the PNGs from the S3 bucket.
 		"""
-    s3.delete("*.png", "discord-memes")
+    to_del = s3.list()
+    for meme in to_del:
+        if ".png" in meme["key"]:
+            s3.delete(meme["key"], "discord-memes")
     print("Deleted images from s3 @", datetime.now())
 
 
