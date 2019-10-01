@@ -1,4 +1,5 @@
 # Nacho Memes
+
 <p align="center">
     <a href="https://www.python.org/downloads/">
     <img src="https://img.shields.io/badge/Made%20With-Python%203.7-blue.svg?style=for-the-badge" alt="Made with Python 3.7">
@@ -24,9 +25,10 @@ Need help getting started? Try `/helpmeme`:
 
 ```md
 This is a bot to make memes from meme templates. To get more information try:
+
 - /templates for a list of all supported templates.
 - /templates <specific-template> for more information about each one.
-- /meme <template-name> "UPPER TEXT" "LOWER TEXT" to make a meme from that *perfect* template.
+- /meme <template-name> "UPPER TEXT" "LOWER TEXT" to make a meme from that _perfect_ template.
 ```
 
 ## Run This Yourself
@@ -43,3 +45,7 @@ Make sure you have the Impact font installed. On Ubuntu you can get it through t
 ```
 
 Now you're off to meme like a lord.
+
+## Dependencies
+
+Memes are generated using a forked version of the [Python Meme Generator](https://github.com/danieldiekmeier/memegenerator). Find the source [here](/memegenerator.py).
