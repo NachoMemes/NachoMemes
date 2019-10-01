@@ -58,9 +58,11 @@ def make_meme(topString, bottomString, filename):
     draw.text(topTextPosition, topString, (255, 255, 255), font=font)
     draw.text(bottomTextPosition, bottomString, (255, 255, 255), font=font)
 
-    with io.BytesIO() as output:
-        img.save(output, format="PNG")
-        return output.getvalue()
+    output = io.BytesIO()
+    img.save(output, format="PNG")
+    output.flush()
+    output.seek(0)
+    return output
 
 
 def get_upper(somedata):

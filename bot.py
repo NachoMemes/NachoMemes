@@ -30,8 +30,8 @@ async def generate_meme(ctx, memename: str, upper: str, lower: str):
     key = f"{uuid.uuid4().hex}.png"
     memeobj = memegenerator.make_meme(upper, lower, f"{memename}.jpg")
     # upload the meme to s3
-    meme = open(memeobj, "rb")
-    s3.upload(key, meme)
+    s3.upload(key, memeobj)
+    memeobj.close()
     # generate the embed
     embed = discord.Embed(image=f"http://s3.amazonaws.com/discord-memes/{key}")
     # return the embed
