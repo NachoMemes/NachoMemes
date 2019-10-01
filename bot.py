@@ -1,5 +1,6 @@
 import io
 import json
+import random
 import os
 import uuid
 from datetime import datetime, timedelta
@@ -21,8 +22,17 @@ s3 = tinys3.Connection(
     creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
 
+# Load template data.
 with open("templates.json", "rb") as t:
     template_list = json.load(t)
+
+credit_text = [
+    "This meme brought to you by M. Zucc and the lizard people.",
+    "Paid for by Trump for President 2020.",
+    "Brought to you by MIS.",
+    "China numba one!",
+    "Why the fuck are you reading this?",
+]
 
 
 def _write_stats():
@@ -39,7 +49,7 @@ def _s3_cleanup():
     to_del = [meme for meme in s3.list() if ".png" in meme["key"]]
     count = 0
     for meme in to_del:
-        if (meme["last_modified"] - datetime.utcnow()) >= timedelta(hours=1):
+        if (meme["last_modified"] - datetime.utcnow()) >= timedelta(weeks=1):
             count += 1
             s3.delete(meme["key"], "discord-memes")
     print(f"Deleted {count} images from s3 @ {datetime.now()}")
@@ -49,18 +59,14 @@ def _s3_cleanup():
 sched.add_job(_write_stats, "interval", minutes=10)
 sched.add_job(_s3_cleanup, "interval", hours=1)
 
+# Bot configuration.
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
 
 
 @bot.event
 async def on_ready():
-    print(
-        """
-	Only memes can melt steel beams.
-						--Shia LaBeouf
-	"""
-    )
+    print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
 
 
 @bot.command(description="Help a user get setup.")
@@ -103,9 +109,7 @@ async def meme(ctx, memename: str, upper: str, lower: str, *rest):
         await ctx.send(
             embed=discord.Embed()
             .set_image(url=f"http://discord-memes.s3.amazonaws.com/{key}")
-            .set_footer(
-                text="This meme brought to you by M. Zucc and the lizard people"
-            )
+            .set_footer(text=random.choice(credit_text))
         )
     else:
         await ctx.send("Invalid template.")
