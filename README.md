@@ -19,7 +19,7 @@ Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&s
 
 ## Overview
 
-This is a Discord bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends, or respond quickly without ever leaving the chat.
+This is a [Discord](https://discordapp.com) bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends and meme quickly without ever leaving the chat.
 
 Need help getting started? Try `/helpmeme`:
 
@@ -33,7 +33,7 @@ This is a bot to make memes from meme templates. To get more information try:
 
 ## Run This Yourself
 
-Make sure you have the Impact font installed. On Ubuntu you can get it through this package: `ttf-mscorefonts-installer`. Then clone this repository and `pip install -r requirements.txt`. Generate some keys (AWS and Discord), and put them in a `creds.json` file like so:
+Make sure you have the `Impact` font installed. On Ubuntu you can get it through this package: `ttf-mscorefonts-installer`. Then, clone this repository and `pip install -r requirements.txt`. Generate some keys (AWS and Discord), and put them in a `creds.json` file like so:
 
 ```json
 {
@@ -44,7 +44,7 @@ Make sure you have the Impact font installed. On Ubuntu you can get it through t
 }
 ```
 
-Now you're off to meme like a lord.
+Run `python bot.py` and you're off to meme like a lord.
 
 ## Dependencies
 
