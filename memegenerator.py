@@ -9,19 +9,23 @@ import sys
 import io
 
 
-def make_meme(topString, bottomString, filename):
+def make_meme(output, topString, bottomString, filename):
 
-    img = Image.open(f'templates/{filename}')
+    img = Image.open(f"templates/{filename}")
     imageSize = img.size
 
     # find biggest font size that works
     fontSize = int(imageSize[1] / 5)
-    font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Impact.ttf", fontSize)
+    font = ImageFont.truetype(
+        "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf", fontSize
+    )
     topTextSize = font.getsize(topString)
     bottomTextSize = font.getsize(bottomString)
     while topTextSize[0] > imageSize[0] - 20 or bottomTextSize[0] > imageSize[0] - 20:
         fontSize = fontSize - 1
-        font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Impact.ttf", fontSize)
+        font = ImageFont.truetype(
+            "/usr/share/fonts/truetype/msttcorefonts/Impact.ttf", fontSize
+        )
         topTextSize = font.getsize(topString)
         bottomTextSize = font.getsize(bottomString)
 
@@ -58,34 +62,5 @@ def make_meme(topString, bottomString, filename):
     draw.text(topTextPosition, topString, (255, 255, 255), font=font)
     draw.text(bottomTextPosition, bottomString, (255, 255, 255), font=font)
 
-    output = io.BytesIO()
     img.save(output, format="PNG")
-    output.flush()
-    output.seek(0)
-    return output
-
-
-def get_upper(somedata):
-    """
-	Handle Python 2/3 differences in argv encoding
-	"""
-    result = ""
-    try:
-        result = somedata.decode("utf-8").upper()
-    except:
-        result = somedata.upper()
-    return result
-
-
-def get_lower(somedata):
-    """
-	Handle Python 2/3 differences in argv encoding
-	"""
-    result = ""
-    try:
-        result = somedata.decode("utf-8").lower()
-    except:
-        result = somedata.lower()
-
-    return result
 

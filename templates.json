@@ -1,0 +1,19 @@
+{
+    "aliens": {
+        "description": "Woah dude.",
+        "docs": "https://knowyourmeme.com/memes/ancient-aliens",
+        "source": "file:templates/aliens.jpg",
+        "layout": "standard",
+        "usage": 0
+    },
+    "sam": {
+        "description": "stay hungry.",
+        "docs": "http://www.wiltonps.org/wilton-high-school",
+        "source": "file:templates/sam.jpg",
+        "usage": 0,
+        "layout": {
+            "upper": { "x": 123, "y": 321, "font": "ariel", "size": 12 },
+            "lower": { "x": 123, "y": 321, "font": "ariel", "size": 12 }
+        }
+    }
+}

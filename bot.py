@@ -1,44 +1,101 @@
+import io
+import json
 import os
 import uuid
 
 import discord
+import tinys3
+from apscheduler.schedulers.background import BackgroundScheduler
 from discord.ext import commands
 
-import json
-import tinys3
 import memegenerator
 
 with open("creds.json", "rb") as f:
-    creds = json.load(f)
+	creds = json.load(f)
+
+sched = BackgroundScheduler()
+sched.start()
 
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
 
 s3 = tinys3.Connection(
-    creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
+	creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
+
+with open("templates.json", "rb") as t:
+	template_list = json.load(t) 
+
+# Every hour dump the PNGs from the S3 bucket.
+def s3_cleanup():
+	s3.delete("*.png", "discord-memes")
+
+
+sched.add_job(s3_cleanup, "interval", hours=1)
 
 
 @bot.event
 async def on_ready():
-    print("Logged in.")
+	print(
+		"""
+	Only memes can melt steel beams.
+						--Shia LaBeouf
+	"""
+	)
+
+
+@bot.command(description="Help a user get setup.")
+async def helpmeme(ctx):
+	await ctx.send(
+		"""This is a bot to make memes from meme templates. To get more information try:  
+- `/templates` for a list of all supported templates.
+- `/templates <specific-template>` for more information about each one.
+- `/meme <template-name> "UPPER TEXT" "LOWER TEXT"` to make a meme from that *perfect* template.
+"""
+	)
+
+
+@bot.command(description="List templates.")
+async def templates(ctx, template=None):
+	l = {template: template_list[template]} if template else template_list
+	if len(l) <= 1:
+		body = (
+			f"Name: {name}\nDescription: *{data['description']}*\nTimes used: {data['usage']}\nRead more: {data['docs']}"
+			for name, data in l.items()
+		)
+	else:
+		body = (f"{name}: *{data['description']}*" for name, data in l.items())
+	await ctx.send("\n" + "\n".join(body))
 
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx, memename: str, upper: str, lower: str):
-    # make the meme
-    key = f"{uuid.uuid4().hex}.png"
-    memeobj = memegenerator.make_meme(upper, lower, f"{memename}.jpg")
-    # upload the meme to s3
-    s3.upload(key, memeobj)
-    memeobj.close()
-    await ctx.send(
-        embed=discord.Embed().set_image(
-            url=f"http://discord-memes.s3.amazonaws.com/{key}"
-        )
-    )
+async def meme(ctx, memename: str, upper: str, lower: str, *rest):
+	if rest:
+		upper, lower = reflow_text(upper, lower, rest)
+	if memename in template_list:
+		template_list[memename]["usage"]+=1
+		# make the meme
+		key = f"{uuid.uuid4().hex}.png"
+		with io.BytesIO() as memeobj:
+			memegenerator.make_meme(memeobj, upper, lower, f"{memename}.jpg")
+			memeobj.flush()
+			memeobj.seek(0)
+			s3.upload(key, memeobj)
+		await ctx.send(
+			embed=discord.Embed()
+			.set_image(url=f"http://discord-memes.s3.amazonaws.com/{key}")
+			.set_footer(text="This meme brought to you by M. Zucc and the lizard people")
+		)
+	else:
+		await ctx.send("Invalid template.")
 
 
-# DISCORDTOKEN ENV VAR MUST BE SET OR SERVER WILL NOT RUN
-# EXPORT DISCORDTOKEN=XXXXXXXXXXXXXXX
+def reflow_text(s1, s2, sl):
+	if "/" in sl:
+		return (
+			f"{s1} {s2} {' '.join(sl[:sl.index('/')])}",
+			" ".join(sl[sl.index("/") + 1 :]),
+		)
+
+
 bot.run(creds["discord_token"])
