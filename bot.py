@@ -25,17 +25,19 @@ async def on_ready():
 
 
 @bot.command(description="Make a new meme.")
-async def generate_meme(ctx, memename: str, upper: str, lower: str):
+async def meme(ctx, memename: str, upper: str, lower: str):
     # make the meme
     key = f"{uuid.uuid4().hex}.png"
     memeobj = memegenerator.make_meme(upper, lower, f"{memename}.jpg")
     # upload the meme to s3
     s3.upload(key, memeobj)
     memeobj.close()
-    # generate the embed
-    embed = discord.Embed().set_image(url=f"http://discord-memes.s3.amazonaws.com/{key}")
     # return the embed
-    await ctx.send(embed=embed)
+    await ctx.send(
+        embed=discord.Embed.from_dict(
+            {"url": f"http://discord-memes.s3.amazonaws.com/{key}"}
+        )
+    )
 
 
 # DISCORDTOKEN ENV VAR MUST BE SET OR SERVER WILL NOT RUN
