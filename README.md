@@ -17,9 +17,11 @@
 
 Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=59392) to your server!
 
+![](/watchme.gif)
+
 ## Overview
 
-This is a [Discord](https://discordapp.com) bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends and meme quickly without ever leaving the chat.
+[This](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=59392) is a [Discord](https://discordapp.com) bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends and meme quickly without ever leaving the chat.
 
 Need help getting started? Try `/helpmeme`:
 
