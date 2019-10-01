@@ -16,9 +16,6 @@ with open("creds.json", "rb") as f:
 sched = BackgroundScheduler()
 sched.start()
 
-description = "A bot to generate custom memes using pre-loaded templates."
-bot = commands.Bot(command_prefix="/", description=description)
-
 s3 = tinys3.Connection(
 	creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
@@ -26,13 +23,23 @@ s3 = tinys3.Connection(
 with open("templates.json", "rb") as t:
 	template_list = json.load(t) 
 
-# Every hour dump the PNGs from the S3 bucket.
+def write_stats():
+		""" Periodically write template statistics to disk.
+		"""
+		with open("templates.json", 'w') as t:
+			json.dump(template_list, t)
+
 def s3_cleanup():
-	s3.delete("*.png", "discord-memes")
+		""" Every hour dump the PNGs from the S3 bucket.
+		"""
+		s3.delete("*.png", "discord-memes")
 
-
+# Setup scheduled operations.
+sched.add_job(write_stats, "interval", minutes=10)
 sched.add_job(s3_cleanup, "interval", hours=1)
 
+description = "A bot to generate custom memes using pre-loaded templates."
+bot = commands.Bot(command_prefix="/", description=description)
 
 @bot.event
 async def on_ready():

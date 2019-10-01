@@ -15,5 +15,11 @@
             "upper": { "x": 123, "y": 321, "font": "ariel", "size": 12 },
             "lower": { "x": 123, "y": 321, "font": "ariel", "size": 12 }
         }
+    },
+    "successkid": {
+        "description": "Success.",
+        "docs": "https://knowyourmeme.com/memes/success-kid-i-hate-sandcastles",
+        "source": "file:templates/successkid.jpg",
+        "usage": 0
     }
 }
