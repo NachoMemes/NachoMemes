@@ -6,7 +6,7 @@ from discord.ext import commands
 
 import json
 import tinys3
-from memegenerator import make_meme
+import memegenerator  
 
 with open("creds.json", "w+") as f:
     creds = json.load(f)
@@ -24,7 +24,7 @@ async def on_ready():
 async def generate_meme(ctx, memename:str, upper:str, lower:str):
     # make the meme
     key = f'{uuid.uuid4().hex}.png'
-    memeobj = make_meme(upper, lower, f'{memename}.jpg')
+    memeobj = memegenerator.make_meme(upper, lower, f'{memename}.jpg')
     # upload the meme to s3
     meme = open(memeobj, "rb")
     s3.upload(key, meme)
