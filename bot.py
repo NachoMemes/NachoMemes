@@ -35,7 +35,7 @@ async def generate_meme(ctx, memename: str, upper: str, lower: str):
     # generate the embed
     embed = discord.Embed(image=f"http://s3.amazonaws.com/discord-memes/{key}")
     # return the embed
-    await ctx.send(embded=embed)
+    await ctx.send(embed=embed)
 
 
 # DISCORDTOKEN ENV VAR MUST BE SET OR SERVER WILL NOT RUN
