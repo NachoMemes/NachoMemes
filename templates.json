@@ -12,8 +12,18 @@
         "source": "file:templates/sam.jpg",
         "usage": 0,
         "layout": {
-            "upper": { "x": 123, "y": 321, "font": "ariel", "size": 12 },
-            "lower": { "x": 123, "y": 321, "font": "ariel", "size": 12 }
+            "upper": {
+                "x": 123,
+                "y": 321,
+                "font": "ariel",
+                "size": 12
+            },
+            "lower": {
+                "x": 123,
+                "y": 321,
+                "font": "ariel",
+                "size": 12
+            }
         }
     },
     "successkid": {

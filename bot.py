@@ -2,7 +2,7 @@ import io
 import json
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import discord
 import tinys3
@@ -34,13 +34,15 @@ def _write_stats():
 
 
 def _s3_cleanup():
-    """ Every hour dump the PNGs from the S3 bucket.
+    """ Dump PNGs older than 1 hr from S3 (on the hour).
 		"""
-    to_del = s3.list()
+    to_del = [meme for meme in s3.list() if ".png" in meme["key"]]
+    count = 0
     for meme in to_del:
-        if ".png" in meme["key"]:
+        if (meme["last_modified"] - datetime.utcnow()) >= timedelta(hours=1):
+            count += 1
             s3.delete(meme["key"], "discord-memes")
-    print("Deleted images from s3 @", datetime.now())
+    print(f"Deleted {count} images from s3 @ {datetime.now()}")
 
 
 # Setup scheduled operations.
