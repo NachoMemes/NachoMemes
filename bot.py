@@ -2,6 +2,7 @@ import io
 import json
 import os
 import uuid
+from datetime import datetime
 
 import discord
 import tinys3
@@ -28,11 +29,13 @@ def write_stats():
 		"""
 		with open("templates.json", 'w') as t:
 			json.dump(template_list, t)
+		print("Wrote statistics to disk.")
 
 def s3_cleanup():
 		""" Every hour dump the PNGs from the S3 bucket.
 		"""
 		s3.delete("*.png", "discord-memes")
+		print("Deleted images from s3 @", datetime.now())
 
 # Setup scheduled operations.
 sched.add_job(write_stats, "interval", minutes=10)
