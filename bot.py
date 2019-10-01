@@ -24,22 +24,22 @@ s3 = tinys3.Connection(
 with open("templates.json", "rb") as t:
 	template_list = json.load(t) 
 
-def write_stats():
+def _write_stats():
 		""" Periodically write template statistics to disk.
 		"""
 		with open("templates.json", 'w') as t:
 			json.dump(template_list, t)
 		print("Wrote statistics to disk.")
 
-def s3_cleanup():
+def _s3_cleanup():
 		""" Every hour dump the PNGs from the S3 bucket.
 		"""
 		s3.delete("*.png", "discord-memes")
 		print("Deleted images from s3 @", datetime.now())
 
 # Setup scheduled operations.
-sched.add_job(write_stats, "interval", minutes=10)
-sched.add_job(s3_cleanup, "interval", hours=1)
+sched.add_job(_write_stats, "interval", minutes=10)
+sched.add_job(_s3_cleanup, "interval", hours=1)
 
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
@@ -81,7 +81,7 @@ async def templates(ctx, template=None):
 @bot.command(description="Make a new meme.")
 async def meme(ctx, memename: str, upper: str, lower: str, *rest):
 	if rest:
-		upper, lower = reflow_text(upper, lower, rest)
+		upper, lower = _reflow_text(upper, lower, rest)
 	if memename in template_list:
 		template_list[memename]["usage"]+=1
 		# make the meme
@@ -100,7 +100,7 @@ async def meme(ctx, memename: str, upper: str, lower: str, *rest):
 		await ctx.send("Invalid template.")
 
 
-def reflow_text(s1, s2, sl):
+def _reflow_text(s1, s2, sl):
 	if "/" in sl:
 		return (
 			f"{s1} {s2} {' '.join(sl[:sl.index('/')])}",
