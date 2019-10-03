@@ -38,13 +38,10 @@ with open("config/templates.json", "rb") as t:
         else d,
     )
 
-credit_text = [
-    "This meme brought to you by M. Zucc and the lizard people.",
-    "Paid for by Trump for President 2020.",
-    "Brought to you by MIS.",
-    "China numba one!",
-    "Why the fuck are you reading this?",
-]
+# Load credit messages to put in the footer.
+with open("config/messages.json", "rb") as c:
+    credit_text = json.load(c)["credits"]
+
 
 def partition_on(pred, seq):
     i = iter(seq)
@@ -52,11 +49,20 @@ def partition_on(pred, seq):
         n = next(i)
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
+
 def _write_stats():
     """ Periodically write template statistics to disk.
 		"""
     with open("config/templates.json", "w") as t:
-        json.dump(memes, t, default=lambda o: o.serialize())
+        json.dump(memes, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
+    print("Wrote statistics to disk.")
+
+
+def _write_layouts():
+    """ Periodically write layouts to disk.
+		"""
+    with open("config/templates.json", "w") as t:
+        json.dump(layouts, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
     print("Wrote statistics to disk.")
 
 
@@ -73,7 +79,7 @@ def _s3_cleanup():
 
 
 # Setup scheduled operations.
-sched.add_job(_write_stats, "interval", minutes=10)
+sched.add_job(_write_stats, "interval", hours=1)
 sched.add_job(_s3_cleanup, "interval", hours=1)
 
 # Bot configuration.
@@ -140,13 +146,16 @@ def _reflow_text(text, count):
     if len(text) == count:
         return text
     elif count == 1:
-        return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == '/', text))]
+        return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", text))]
     elif "//" in text:
-        result = ["/n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
+        result = [
+            "/n".join(" ".join(l) for l in partition_on(lambda s: s == "/", b))
+            for b in partition_on(lambda s: s == "//", text)
+        ]
         assert len(result) == count
         return result
     elif "/" in text:
-        result = [" ".join(l) for l in partition_on(lambda s: s == '/', text)]
+        result = [" ".join(l) for l in partition_on(lambda s: s == "/", text)]
         assert len(result) == count
         return result
 
