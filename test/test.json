@@ -1,0 +1,162 @@
+{
+  "standard_layout": [
+    {
+      "left": 0.02,
+      "right": 0.98,
+      "top": 0.02,
+      "bottom": 0.2,
+      "face": "IMPACT",
+      "justify": "CENTER",
+      "color": "WHITE",
+      "outline": "BLACK",
+      "rotation": null
+    },
+    {
+      "left": 0.02,
+      "right": 0.98,
+      "top": 0.78,
+      "bottom": 0.96,
+      "face": "IMPACT",
+      "justify": "CENTER",
+      "color": "WHITE",
+      "outline": "BLACK",
+      "rotation": null
+    }
+  ],
+  "sam_layout": [
+    {
+      "left": 0.5,
+      "right": 0.98,
+      "top": 0.2,
+      "bottom": 0.44,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "WHITE",
+      "outline": "BLACK",
+      "rotation": null
+    }
+  ],
+  "pikachu_layout": [
+    {
+      "left": 0.02,
+      "right": 0.98,
+      "top": 0.02,
+      "bottom": 0.4,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": null
+    }
+  ],
+  "change_mind_layout": [
+    {
+      "left": 0.37,
+      "right": 0.82,
+      "top": 0.58,
+      "bottom": 0.8,
+      "face": "XKCD",
+      "justify": "LEFT",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": 4
+    }
+  ],
+  "boardroom_layout": [
+    {
+      "left": 0.37,
+      "right": 0.82,
+      "top": 0.01,
+      "bottom": 0.1,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": 4
+    }
+  ],
+  "drake_layout": [
+    {
+      "left": 0.52,
+      "right": 0.98,
+      "top": 0.02,
+      "bottom": 0.43,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.52,
+      "right": 0.98,
+      "top": 0.47,
+      "bottom": 0.98,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": null
+    }
+  ],
+  "millionaire_layout": [
+    {
+      "left": 0.2,
+      "right": 0.8,
+      "top": 0.66,
+      "bottom": 0.74,
+      "face": "IMPACT",
+      "justify": "CENTER",
+      "color": "WHITE",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.19,
+      "right": 0.4,
+      "top": 0.755,
+      "bottom": 0.825,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "WHITE",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.58,
+      "right": 0.84,
+      "top": 0.755,
+      "bottom": 0.825,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "WHITE",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.19,
+      "right": 0.4,
+      "top": 0.83,
+      "bottom": 0.895,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "WHITE",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.58,
+      "right": 0.84,
+      "top": 0.83,
+      "bottom": 0.895,
+      "face": "IMPACT",
+      "justify": "LEFT",
+      "color": "WHITE",
+      "outline": null,
+      "rotation": null
+    }
+  ],
+  "galaxy_layout_3": [],
+  "galaxy_layout_4": [],
+  "galaxy_layout_6": []
+}
