@@ -9,6 +9,7 @@ import discord
 import tinys3
 from apscheduler.schedulers.background import BackgroundScheduler
 from discord.ext import commands
+from itertools import takewhile, chain
 
 from memegenerator import MemeTemplate, TextBox
 
@@ -38,6 +39,11 @@ credit_text = [
     "Why the fuck are you reading this?",
 ]
 
+def partition_on(pred, seq):
+    i = iter(seq)
+    while True:
+        n = next(i)
+        yield takewhile(lambda v: not pred(v), chain([n], i))
 
 def _write_stats():
     """ Periodically write template statistics to disk.
@@ -98,17 +104,16 @@ async def templates(ctx, template=None):
 
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx, memename: str, upper: str, lower: str, *rest):
-    if rest:
-        upper, lower = _reflow_text(upper, lower, rest)
+async def meme(ctx, memename: str, *text):
     # Validate the meme.
     if memename in memes:
         meme = memes[memename]
+        strings = _reflow_text(text, meme.box_count)
         meme.usage += 1
         key = f"{uuid.uuid4().hex}.png"
         with io.BytesIO() as memeobj:
             # Render the meme.
-            meme.render((upper, lower), memeobj)
+            meme.render(strings, memeobj)
             memeobj.flush()
             memeobj.seek(0)
             # Upload meme to S3.
@@ -123,12 +128,17 @@ async def meme(ctx, memename: str, upper: str, lower: str, *rest):
         await ctx.send("Invalid template.")
 
 
-def _reflow_text(s1, s2, sl):
-    if "/" in sl:
-        return (
-            f"{s1} {s2} {' '.join(sl[:sl.index('/')])}",
-            " ".join(sl[sl.index("/") + 1 :]),
-        )
+def _reflow_text(text, count):
+    if len(text) == count:
+        return text
+    if "//" in text:
+        result = ["/n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
+        assert len(result) == count
+        return result
+    elif "/" in text:
+        result = [" ".join(l) for l in partition_on(lambda s: s == '/', text)]
+        assert len(result) == count
+        return result
 
 
 bot.run(creds["discord_token"])

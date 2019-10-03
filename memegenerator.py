@@ -186,6 +186,7 @@ class MemeTemplate:
         self.description = description
         self.docs = docs
         self.usage = usage
+        self.box_count = len(textboxes)
         with io.BytesIO() as buffer:
             img = self.read(buffer)
             self.width, self.height = img.size

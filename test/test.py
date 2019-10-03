@@ -26,8 +26,10 @@ def _test_meme():
     #     memes["big-brain"].render(("I'm writing a bot","It's big-brain time"), f)
     # with open("text6.png", 'wb') as f:
     #     memes["change-my-mind"].render(("This is the greatest bot\nin the history of mankind",), f)
-    with open("text7.png", 'wb') as f:
-        memes["successkid"].render(("Can you feel the BDE","radiating off my body?"), f)
+    # with open("text7.png", 'wb') as f:
+    #     memes["successkid"].render(("Can you feel the BDE","radiating off my body?"), f)
+    with open("test/text1.png", 'wb') as f:
+        memes["sam"].render(("Stay Hungry, Stay Foolish\n-Some Dude",), f)
 
 
 def _test_dump_memes():
@@ -44,5 +46,22 @@ def main():
     # _test_dump_layouts()
     print("All tests run.")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+
+
+
+from itertools import takewhile, chain
+
+def partition_on(pred, seq):
+    i = iter(seq)
+    while True:
+        n = next(i)
+        yield takewhile(lambda v: not pred(v), chain([n], i))
+
+text = "this is a / multi-line test // it has two / boxes with / multiple lines / in each"
+print(
+["/n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text.split())]
+)
+
