@@ -20,7 +20,6 @@
             "outline": "BLACK"
         }
     ],
-<<<<<<< HEAD
     "sam_layout": [
         {
             "left": 0.50,
@@ -56,34 +55,6 @@
     ],
     "drake_layout": [
         {
-=======
-    "sam_layout": [{
-        "left": 0.50,
-        "right": 0.98,
-        "top": 0.20,
-        "bottom": 0.44,
-        "face": "IMPACT",
-        "justify": "LEFT"
-    }],
-    "pikachu_layout": [{
-        "left": 0.02,
-        "right": 0.98,
-        "top": 0.02,
-        "bottom": 0.4,
-        "face": "IMPACT",
-        "justify": "LEFT"
-    }],
-    "change_mind_layout": [{
-        "left": 0.37,
-        "right": 0.82,
-        "top": 0.60,
-        "bottom": 0.8,
-        "face": "IMPACT",
-        "justify": "LEFT",
-        "rotation": 4
-    }],
-    "drake_layout": [{
->>>>>>> 6c474a9ec613ebec4684016b7db9f289ff7f70ad
             "left": 0.52,
             "right": 0.98,
             "top": 0.02,

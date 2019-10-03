@@ -242,7 +242,7 @@ class MemeTemplate:
             img.save(output, format="PNG")
 
 
-# Load layout data.
-with open("config/layouts.json", "rb") as t:
-    layouts = json.load(t)
+# # Load layout data.
+# with open("config/layouts.json", "rb") as t:
+#     layouts = json.load(t)
 
