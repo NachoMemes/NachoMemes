@@ -28,7 +28,9 @@
             "top": 0.20,
             "bottom": 0.44,
             "face": "IMPACT",
-            "justify": "LEFT"
+            "justify": "LEFT",
+            "color": "WHITE",
+            "outline": "BLACK"
         }
     ],
     "pikachu_layout": [

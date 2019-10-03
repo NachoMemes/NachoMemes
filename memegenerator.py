@@ -90,7 +90,7 @@ class TextBox:
             src_dict.get("max-font-size", sys.maxsize),
             Justify[src_dict["justify"]],
             Color[src_dict.get("color", "BLACK")],
-            Color[src_dict["outline"]] if src_dict.get("outline", None) in src_dict else None,
+            Color[src_dict["outline"]] if src_dict.get("outline", None) else None,
         )
 
     def serialize(self):
@@ -154,7 +154,6 @@ class TextBox:
     def offset(
         self, x: int, y: int, image_width: int, image_height: int
     ) -> Tuple[int, int]:
-        dprint("bottom:", image_height * self.bottom)
         return int(self.left * image_width) + x, int(self.top * image_height) + y
 
     def render(self, draw: ImageDraw, image_width, image_height, string, font_size):
@@ -166,12 +165,9 @@ class TextBox:
         # find the start coordinates of the text within the bounding box based
         # on the text alignment
         tx, ty = self.justify.calculate(bw, bh, font_width, font_size * lines)
-        dprint(tx, ty)
         # translate the text position relative to the position of the text box
         # in the image
         x, y = self.offset(tx, ty, image_width, image_height)
-        dprint(x, y)
-        dprint("text bottom", y + font_size)
         # render at that position
         if self.outline:
             self.face.render_outlined(

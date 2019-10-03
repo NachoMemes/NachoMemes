@@ -46,8 +46,32 @@ def main():
     _test_dump_layouts()
     print("All tests run.")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+def partition_on(pred, seq):
+    i = iter(seq)
+    while True:
+        n = next(i)
+        yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
+from itertools import takewhile, chain
 
+def _reflow_text(text, count):
+
+    if len(text) == count:
+        return text
+    elif count == 1:
+        return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == '/', text))]
+    elif "//" in text:
+        result = ["/n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
+        assert len(result) == count
+        return result
+    elif "/" in text:
+        result = [" ".join(l) for l in partition_on(lambda s: s == '/', text)]
+        assert len(result) == count
+        return result
+
+
+print(_reflow_text("why does this bot suck dick?".split(), 1))

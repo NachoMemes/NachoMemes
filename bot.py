@@ -142,7 +142,7 @@ def _reflow_text(text, count):
     elif count == 1:
         return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == '/', text))]
     elif "//" in text:
-        result = ["/n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
+        result = ["\n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
         assert len(result) == count
         return result
     elif "/" in text:
