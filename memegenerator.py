@@ -90,7 +90,7 @@ class TextBox:
             src_dict.get("max-font-size", sys.maxsize),
             Justify[src_dict["justify"]],
             Color[src_dict.get("color", "BLACK")],
-            Color[src_dict["outline"]] if "outline" in src_dict else None,
+            Color[src_dict["outline"]] if src_dict.get("outline", None) in src_dict else None,
         )
 
     def serialize(self):
