@@ -15,6 +15,9 @@
   <a href="http://makeapullrequest.com">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
   </a>
+  <a href="https://github.com/cooperpellaton/NachoMemes/tree/v1.0">
+    <img src="https://img.shields.io/badge/version-1.0-bright%20green" alt="Version 1.0">
+  </a>
 </p>
 
 Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=59392) to your server!
@@ -37,7 +40,7 @@ This is a bot to make memes from meme templates. To get more information try:
 
 ## Run This Yourself
 
-Make sure you have the `Impact` font installed. On Ubuntu you can get it through this package: `ttf-mscorefonts-installer`. Then, clone this repository and `pip install -r requirements.txt`. Generate some keys (AWS and Discord), and put them in a `creds.json` file like so:
+Make sure you have the `Impact` font installed. On Ubuntu you can get it through this package: `ttf-mscorefonts-installer`. Then, clone this repository and `pip install -r requirements.txt`. Generate some keys (AWS and Discord), and put them in a `config/creds.json` file like so:
 
 ```json
 {
@@ -48,8 +51,14 @@ Make sure you have the `Impact` font installed. On Ubuntu you can get it through
 }
 ```
 
+Additionally, randomized footer messages are stored in [`config/messages.json`](config/messages.json). For more personality try editing the contents.
+
+To add custom templates and layouts (i.e. photos and the textboxes that go over them) look into [`config/templates.json`](config/templates.json) and [`config/layouts.json`](config/layouts.json) respectively. *In the future the bot will support dynamic addition without editing these files.*
+
 Run `python bot.py` and you're off to meme like a lord.
 
 ## Dependencies
 
-Memes are generated using a forked version of the [Python Meme Generator](https://github.com/danieldiekmeier/memegenerator). Find the source [here](/memegenerator.py).
+Memes were originally generated using a forked version of the [Python Meme Generator](https://github.com/danieldiekmeier/memegenerator). Find the source [here](/memegenerator.py).
+
+Now, however, memes are created using a custom [implementation](memegenerator.py).
