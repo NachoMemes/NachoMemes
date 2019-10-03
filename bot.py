@@ -47,7 +47,10 @@ def partition_on(pred, seq):
     i = iter(seq)
     while True:
         n = next(i)
-        yield takewhile(lambda v: not pred(v), chain([n], i))
+        try:
+            yield takewhile(lambda v: not pred(v), chain([n], i))
+        except StopIteration:
+            return
 
 
 def _write_stats():
@@ -132,7 +135,9 @@ async def meme(ctx, memename: str, *text):
             # Upload meme to S3.
             s3.upload(key, memeobj)
         # Send the meme as a message.
-        e = discord.Embed().set_image(url=f"http://discord-memes.s3.amazonaws.com/{key}")
+        e = discord.Embed().set_image(
+            url=f"http://discord-memes.s3.amazonaws.com/{key}"
+        )
         if random.randrange(8) == 0:
             e.set_footer(text=random.choice(credit_text))
         await ctx.send(embed=e)
@@ -147,7 +152,10 @@ def _reflow_text(text, count):
     elif count == 1:
         return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", text))]
     elif "//" in text:
-        result = ["\n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
+        result = [
+            "\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", b))
+            for b in partition_on(lambda s: s == "//", text)
+        ]
         assert len(result) == count
         return result
     elif "/" in text:
