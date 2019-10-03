@@ -133,7 +133,7 @@ async def meme(ctx, memename: str, *text):
             s3.upload(key, memeobj)
         # Send the meme as a message.
         e = discord.Embed().set_image(url=f"http://discord-memes.s3.amazonaws.com/{key}")
-        if random.randrange(20) == 0:
+        if random.randrange(8) == 0:
             e.set_footer(text=random.choice(credit_text))
         await ctx.send(embed=e)
     else:
