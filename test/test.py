@@ -34,7 +34,7 @@ def _test_meme():
 
 def _test_dump_memes():
     with open("test.json", "w") as t:
-        json.dump(memes, t, default=lambda o: o.serialize())
+        json.dump(memes, t, indent=2, default=lambda o: o.serialize())
 
 def _test_dump_layouts():
     with open("test/test.json", "w") as t:
