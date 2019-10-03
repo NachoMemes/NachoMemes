@@ -6,6 +6,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
 from  memegenerator import MemeTemplate,  TextBox
+from bot import _reflow_text
 
 # load layouts
 with open("config/layouts.json", "rb") as t:
@@ -29,7 +30,7 @@ def _test_meme():
     # with open("text7.png", 'wb') as f:
     #     memes["successkid"].render(("Can you feel the BDE","radiating off my body?"), f)
     with open("test/text1.png", 'wb') as f:
-        memes["change-my-mind"].render(("Stay Hungry, Stay Foolish\n-Some Dude",), f)
+        memes["boardroom"].render(_reflow_text("boardroom How should we write a bot? / Python / Node / Scala!".split(), 4), f)
 
 
 def _test_dump_memes():
@@ -46,10 +47,10 @@ def main():
     _test_dump_layouts()
     print("All tests run.")
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
 
 
-with open("test/text1.png", 'wb') as f:
-    memes['boardroom'].debug(f)
+# with open("test/text1.png", 'wb') as f:
+#     memes['boardroom'].debug(f)
 

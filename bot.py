@@ -46,11 +46,11 @@ with open("config/messages.json", "rb") as c:
 def partition_on(pred, seq):
     i = iter(seq)
     while True:
-        n = next(i)
         try:
-            yield takewhile(lambda v: not pred(v), chain([n], i))
+            n = next(i)
         except StopIteration:
             return
+        yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
 def _write_stats():
@@ -164,4 +164,5 @@ def _reflow_text(text, count):
         return result
 
 
-bot.run(creds["discord_token"])
+if __name__ == "__main__":
+    bot.run(creds["discord_token"])

@@ -55,7 +55,7 @@
       "right": 0.82,
       "top": 0.58,
       "bottom": 0.8,
-      "face": "XKCD",
+      "face": "COMIC_SANS",
       "justify": "LEFT",
       "color": "BLACK",
       "outline": null,
@@ -64,15 +64,48 @@
   ],
   "boardroom_layout": [
     {
-      "left": 0.37,
-      "right": 0.82,
-      "top": 0.01,
-      "bottom": 0.1,
-      "face": "IMPACT",
-      "justify": "LEFT",
+      "left": 0.31,
+      "right": 0.9,
+      "top": 0.005,
+      "bottom": 0.085,
+      "face": "COMIC_SANS",
+      "justify": "CENTER",
       "color": "BLACK",
       "outline": null,
-      "rotation": 4
+      "rotation": null
+    },
+    {
+      "left": 0.04,
+      "right": 0.235,
+      "top": 0.38,
+      "bottom": 0.425,
+      "face": "COMIC_SANS",
+      "justify": "CENTER",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.32,
+      "right": 0.47,
+      "top": 0.39,
+      "bottom": 0.435,
+      "face": "COMIC_SANS",
+      "justify": "CENTER",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": null
+    },
+    {
+      "left": 0.65,
+      "right": 0.86,
+      "top": 0.41,
+      "bottom": 0.465,
+      "face": "COMIC_SANS",
+      "justify": "CENTER",
+      "color": "BLACK",
+      "outline": null,
+      "rotation": null
     }
   ],
   "drake_layout": [
