@@ -57,21 +57,21 @@
     },
     "pikachu": {
         "description": "Pika!?",
-        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "docs": "https://knowyourmeme.com/memes/surprised-pikachu",
         "source": "file:templates/surprised-pikachu.jpg",
         "layout": "pikachu_layout",
         "usage": 0
     },
     "big-brain": {
         "description": "It's big brain time",
-        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "docs": "https://knowyourmeme.com/memes/yeah-this-is-big-brain-time",
         "source": "file:templates/bigbrain.png",
         "layout": "standard_layout",
         "usage": 0
     },
     "change-my-mind": {
         "description": "Change my mind",
-        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "docs": "https://knowyourmeme.com/memes/steven-crowders-change-my-mind-campus-sign",
         "source": "file:templates/change-my-mind.png",
         "layout": "change_mind_layout",
         "usage": 0
