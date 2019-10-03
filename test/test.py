@@ -29,7 +29,7 @@ def _test_meme():
     # with open("text7.png", 'wb') as f:
     #     memes["successkid"].render(("Can you feel the BDE","radiating off my body?"), f)
     with open("test/text1.png", 'wb') as f:
-        memes["sam"].render(("Stay Hungry, Stay Foolish\n-Some Dude",), f)
+        memes["change-my-mind"].render(("Stay Hungry, Stay Foolish\n-Some Dude",), f)
 
 
 def _test_dump_memes():
@@ -46,32 +46,5 @@ def main():
     _test_dump_layouts()
     print("All tests run.")
 
-# if __name__ == "__main__":
-#     main()
-
-def partition_on(pred, seq):
-    i = iter(seq)
-    while True:
-        n = next(i)
-        yield takewhile(lambda v: not pred(v), chain([n], i))
-
-
-from itertools import takewhile, chain
-
-def _reflow_text(text, count):
-
-    if len(text) == count:
-        return text
-    elif count == 1:
-        return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == '/', text))]
-    elif "//" in text:
-        result = ["/n".join(" ".join(l) for l in partition_on(lambda s: s=='/', b)) for b in partition_on(lambda s: s == '//', text)]
-        assert len(result) == count
-        return result
-    elif "/" in text:
-        result = [" ".join(l) for l in partition_on(lambda s: s == '/', text)]
-        assert len(result) == count
-        return result
-
-
-print(_reflow_text("why does this bot suck dick?".split(), 1))
+if __name__ == "__main__":
+    main()

@@ -48,6 +48,17 @@
             "right": 0.82,
             "top": 0.58,
             "bottom": 0.8,
+            "face": "COMIC_SANS",
+            "justify": "LEFT",
+            "rotation": 4
+        }
+    ],
+    "boardroom_layout": [
+        {
+            "left": 0.37,
+            "right": 0.82,
+            "top": 0.01,
+            "bottom": 0.1,
             "face": "IMPACT",
             "justify": "LEFT",
             "rotation": 4
