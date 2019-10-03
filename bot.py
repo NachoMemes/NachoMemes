@@ -10,9 +10,9 @@ import tinys3
 from apscheduler.schedulers.background import BackgroundScheduler
 from discord.ext import commands
 
-import memegenerator
+from memegenerator import MemeTemplate, TextBox
 
-with open("creds.json", "rb") as f:
+with open("config/creds.json", "rb") as f:
     creds = json.load(f)
 
 sched = BackgroundScheduler()
@@ -22,9 +22,13 @@ s3 = tinys3.Connection(
     creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
 
-# Load template data.
-with open("templates.json", "rb") as t:
-    template_list = json.load(t)
+# load meme layouts
+with open("config/layouts.json", "rb") as t:
+    layouts = json.load(t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d)
+
+# load memes
+with open("config/templates.json", "rb") as t:
+    memes = json.load(t, object_hook=lambda d: MemeTemplate.deserialize(d, layouts) if "source" in d else d)
 
 credit_text = [
     "This meme brought to you by M. Zucc and the lizard people.",
@@ -38,13 +42,13 @@ credit_text = [
 def _write_stats():
     """ Periodically write template statistics to disk.
 		"""
-    with open("templates.json", "w") as t:
-        json.dump(template_list, t)
+    with open("config/templates.json", "w") as t:
+        json.dump(memes, t)
     print("Wrote statistics to disk.")
 
 
 def _s3_cleanup():
-    """ Dump PNGs older than 1 hr from S3 (on the hour).
+    """ Dump PNGs older than 1 week from S3 (on the hour).
 		"""
     to_del = [meme for meme in s3.list() if ".png" in meme["key"]]
     count = 0
@@ -82,7 +86,7 @@ async def helpmeme(ctx):
 
 @bot.command(description="List templates.")
 async def templates(ctx, template=None):
-    l = {template: template_list[template]} if template else template_list
+    l = {template: memes[template]} if template else memes
     if len(l) <= 1:
         body = (
             f"Name: {name}\nDescription: *{data['description']}*\nTimes used: {data['usage']}\nRead more: {data['docs']}"
@@ -97,15 +101,19 @@ async def templates(ctx, template=None):
 async def meme(ctx, memename: str, upper: str, lower: str, *rest):
     if rest:
         upper, lower = _reflow_text(upper, lower, rest)
-    if memename in template_list:
-        template_list[memename]["usage"] += 1
-        # make the meme
+    # Validate the meme.
+    if memename in memes:
+        meme = memes[memename]
+        meme.usage += 1
         key = f"{uuid.uuid4().hex}.png"
         with io.BytesIO() as memeobj:
-            memegenerator.make_meme(memeobj, upper, lower, f"{memename}.jpg")
+            # Render the meme.
+            meme.render((upper, lower), memeobj)
             memeobj.flush()
             memeobj.seek(0)
+            # Upload meme to S3.
             s3.upload(key, memeobj)
+        # Send the meme as a message.
         await ctx.send(
             embed=discord.Embed()
             .set_image(url=f"http://discord-memes.s3.amazonaws.com/{key}")

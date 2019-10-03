@@ -1,0 +1,54 @@
+{
+    "standard_layout": [
+        {
+            "left": 0.02,
+            "right": 0.98,
+            "top": 0.02,
+            "bottom": 0.20,
+            "face": "IMPACT",
+            "justify": "CENTER",
+            "color": "WHITE",
+            "outline": "BLACK"
+        },
+        {
+            "left": 0.02,
+            "right": 0.98,
+            "top": 0.78,
+            "bottom": 0.96,
+            "face": "IMPACT",
+            "justify": "CENTER",
+            "color": "WHITE",
+            "outline": "BLACK"
+        }
+    ],
+    "sam_layout": [
+        {
+            "left": 0.50,
+            "right": 0.98,
+            "top": 0.20,
+            "bottom": 0.44,
+            "face": "IMPACT",
+            "justify": "LEFT"
+        }
+    ],
+    "drake_layout": [
+        {
+            "left": 0.52,
+            "right": 0.98,
+            "top": 0.02,
+            "bottom": 0.43,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "color": "BLACK"
+        },
+        {
+            "left": 0.52,
+            "right": 0.98,
+            "top": 0.47,
+            "bottom": 0.98,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "color": "BLACK"
+        }
+    ]
+}

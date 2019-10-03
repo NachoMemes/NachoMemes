@@ -1,0 +1,45 @@
+{
+    "aliens": {
+        "description": "Woah dude.",
+        "docs": "https://knowyourmeme.com/memes/ancient-aliens",
+        "source": "file:templates/aliens.jpg",
+        "layout": "standard_layout",
+        "usage": 0
+    },
+    "sam": {
+        "description": "stay hungry.",
+        "docs": "http://www.wiltonps.org/wilton-high-school",
+        "source": "file:templates/sam.png",
+        "usage": 0,
+        "layout": "sam_layout"
+    },
+    "successkid": {
+        "description": "Success.",
+        "docs": "https://knowyourmeme.com/memes/success-kid-i-hate-sandcastles",
+        "source": "file:templates/successkid.jpg",
+        "usage":0,
+        "layout": "standard_layout"
+    },
+    "drake": {
+        "description": "Hotline Bling.",
+        "docs": "https://knowyourmeme.com/memes/drakeposting",
+        "source": "file:templates/drake.jpg",
+        "usage":0,
+        "layout": "drake_layout"
+    },
+    "galaxy-brain-3" :{
+        "description": "Galaxy Brain.",
+        "docs": "https://knowyourmeme.com/memes/galaxy-brain",
+        "source": "file:templates/galaxy-brain-3.jpg",
+        "usage": 0,
+        "layout": "galaxy_layout_3"
+    },
+    "galaxy-brain-4" :{
+        "description": "Galaxy Brain.",
+        "docs": "https://knowyourmeme.com/memes/galaxy-brain",
+        "source": "file:templates/galaxy-brain-4.jpg",
+        "layout": "galaxy_layout_4",
+        "usage":0
+    }
+
+}
