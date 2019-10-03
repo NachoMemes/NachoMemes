@@ -76,6 +76,17 @@ class TextBox:
             Color[src_dict["outline"]] if "outline" in src_dict else None
         )
 
+    def serialize(self):
+        return {
+            "left": self.left,
+            "right": self.right,
+            "top": self.top,
+            "bottom": self.bottom,
+            "face": self.face.name,
+            "justify": self.justify.name,
+            "color": self.color.name,
+            "outline": self.outline.name if self.outline else None
+        }
 
 
     def __init__(self, left: float, right: float, top: float, bottom: float, face: Font, max_font_size: int, justify: Justify, color:Color, outline: Color):
@@ -138,16 +149,26 @@ class MemeTemplate:
     def deserialize(src_dict, layouts):
         return MemeTemplate(
             Request(src_dict["source"]),
+            src_dict["layout"],
             layouts[src_dict["layout"]],
             src_dict["description"],
             src_dict["docs"],
             src_dict.get("usage", 0)
         )
 
+    def serialize(self):
+        return {
+            "description": self.description,
+            "docs": self.docs,
+            "source": self.source.full_url,
+            "layout" : self.layout,
+            "usage": self.usage
+        }
 
-    def __init__(self, source: Request, textboxes: Iterable[TextBox], description: str, docs: str, usage: int):
+    def __init__(self, source: Request, layout: str, textboxes: Iterable[TextBox], description: str, docs: str, usage: int):
         self.source= source
         self.textboxes = textboxes
+        self.layout = layout
         self.description = description
         self.docs = docs
         self.usage = usage

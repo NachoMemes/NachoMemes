@@ -43,7 +43,7 @@ def _write_stats():
     """ Periodically write template statistics to disk.
 		"""
     with open("config/templates.json", "w") as t:
-        json.dump(memes, t)
+        json.dump(memes, t, default=lambda o: o.serialize())
     print("Wrote statistics to disk.")
 
 
