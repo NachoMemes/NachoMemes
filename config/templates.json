@@ -40,5 +40,41 @@
         "source": "file:templates/galaxy-brain-4.jpg",
         "layout": "galaxy_layout_4",
         "usage": 0
+    },
+    "millionaire1": {
+        "description": "Call a friend?",
+        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "source": "file:templates/millionaire1.jpg",
+        "layout": "millionaire_layout",
+        "usage": 0
+    },
+    "millionaire2": {
+        "description": "Call a friend?",
+        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "source": "file:templates/millionaire2.jpg",
+        "layout": "millionaire_layout",
+        "usage": 0
+    },
+    "pikachu": {
+        "description": "Pika!?",
+        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "source": "file:templates/surprised-pikachu.jpg",
+        "layout": "pikachu_layout",
+        "usage": 0
+    },
+    "big-brain": {
+        "description": "It's big brain time",
+        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "source": "file:templates/bigbrain.png",
+        "layout": "standard_layout",
+        "usage": 0
+    },
+    "change-my-mind": {
+        "description": "Change my mind",
+        "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
+        "source": "file:templates/change-my-mind.png",
+        "layout": "change_mind_layout",
+        "usage": 0
     }
+
 }

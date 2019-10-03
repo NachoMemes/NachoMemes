@@ -15,9 +15,20 @@ with open("config/layouts.json", "rb") as t:
 with open("config/templates.json", "rb") as t:
     memes = json.load(t, object_hook=lambda d: MemeTemplate.deserialize(d, layouts) if "source" in d else d)
 
-def _test_drake_meme():
-    with open("text2.png", 'wb') as f:
-        memes["drake"].render(("Doing something\nuseful with\nyour time","Writing a\nmeme bot\nin Python"), f)
+def _test_meme():
+    # with open("text3.png", 'wb') as f:
+    #     memes["millionaire1"].render(("What is the best language to write a bot?","Python", "Scala", "Russian", "Fuck you I'm Joe"), f)
+    # with open("text4.png", 'wb') as f:
+    #     memes["millionaire1"].render(("Did sam use his first paycheck to get on the tesla wait-list??","Of course", "No doubt", "Elon is God", "TESLA I LUV U"), f)
+    # with open("text5.png", 'wb') as f:
+    #     memes["pikachu"].render(("Me: Do you have any memebot requests\n\nJoe: I want suprised pikachu\n\nMe:",), f)
+    # with open("text6.png", 'wb') as f:
+    #     memes["big-brain"].render(("I'm writing a bot","It's big-brain time"), f)
+    # with open("text6.png", 'wb') as f:
+    #     memes["change-my-mind"].render(("This is the greatest bot\nin the history of mankind",), f)
+    with open("text7.png", 'wb') as f:
+        memes["successkid"].render(("Can you feel the BDE","radiating off my body?"), f)
+
 
 def _test_dump_memes():
     with open("test.json", "w") as t:
@@ -28,9 +39,9 @@ def _test_dump_layouts():
         json.dump(layouts, t, indent=2, default=lambda o: o.serialize())
 
 def main():
-    _test_drake_meme()
-    _test_dump_memes()
-    _test_dump_layouts()
+    _test_meme()
+    # _test_dump_memes()
+    # _test_dump_layouts()
     print("All tests run.")
 
 if __name__ == "__main__":

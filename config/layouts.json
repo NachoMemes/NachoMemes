@@ -31,6 +31,27 @@
             "justify": "LEFT"
         }
     ],
+    "pikachu_layout": [
+        {
+            "left": 0.02,
+            "right": 0.98,
+            "top": 0.02,
+            "bottom": 0.4,
+            "face": "IMPACT",
+            "justify": "LEFT"
+        }
+    ],
+    "change_mind_layout": [
+        {
+            "left": 0.37,
+            "right": 0.82,
+            "top": 0.60,
+            "bottom": 0.8,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "rotation": 4
+        }
+    ],
     "drake_layout": [
         {
             "left": 0.52,
@@ -51,6 +72,60 @@
             "color": "BLACK"
         }
     ],
+    "millionaire_layout": [
+        {
+          "left": 0.2,
+          "right": 0.8,
+          "top": 0.66,
+          "bottom": 0.74,
+          "face": "IMPACT",
+          "justify": "CENTER",
+          "color": "WHITE",
+          "outline": null
+        },
+        {
+            "left": 0.19,
+            "right": 0.4,
+            "top": 0.76,
+            "bottom": 0.82,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "color": "WHITE",
+            "outline": null
+          },
+        {
+          "left": 0.58,
+          "right": 0.80,
+          "top": 0.76,
+          "bottom": 0.82,
+        "face": "IMPACT",
+          "justify": "LEFT",
+          "color": "WHITE",
+          "outline": null
+        },
+        {
+            "left": 0.19,
+            "right": 0.4,
+            "top": 0.835,
+            "bottom": 0.89,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "color": "WHITE",
+            "outline": null
+          },
+          {
+            "left": 0.58,
+            "right": 0.80,
+            "top": 0.835,
+            "bottom": 0.89,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "color": "WHITE",
+            "outline": null
+          }
+  
+  
+      ],
     "galaxy_layout_3": [],
     "galaxy_layout_4": [],
     "galaxy_layout_6": []

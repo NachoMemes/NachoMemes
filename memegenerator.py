@@ -55,6 +55,15 @@ class Font(Enum):
         font = self.load(font_size)
         draw.text((x, y), string, color.value, font)
 
+    def render_rotated(self, img: Image, font_size,  color: Color,  x, y, angle, string):
+        font = self.load(font_size)
+        txt=Image.new('RGBA', (800,400), (255,255,255,0))
+        d = ImageDraw.Draw(txt)
+        d.text( (0, 0), string, (0,0,0,255), font)
+        w=txt.rotate(angle,  expand=1)
+        img.paste(w, (x,y), w)
+
+
 
 class TextBox:
     """ Definition for text that will be placed in a template.
@@ -73,7 +82,8 @@ class TextBox:
             src_dict.get("max-font-size", sys.maxsize),
             Justify[src_dict["justify"]],
             Color[src_dict.get("color", "BLACK")],
-            Color[src_dict["outline"]] if "outline" in src_dict else None
+            Color[src_dict["outline"]] if src_dict.get("outline", None)  else None,
+            src_dict.get("rotation", None)
         )
 
     def serialize(self):
@@ -85,11 +95,12 @@ class TextBox:
             "face": self.face.name,
             "justify": self.justify.name,
             "color": self.color.name,
-            "outline": self.outline.name if self.outline else None
+            "outline": self.outline.name if self.outline else None,
+            "rotation": self.rotation
         }
 
 
-    def __init__(self, left: float, right: float, top: float, bottom: float, face: Font, max_font_size: int, justify: Justify, color:Color, outline: Color):
+    def __init__(self, left: float, right: float, top: float, bottom: float, face: Font, max_font_size: int, justify: Justify, color:Color, outline: Color, rotation):
         assert all(0 < v < 1 for v in (left, right, top, bottom))
         assert left < right and top < bottom
 
@@ -102,6 +113,7 @@ class TextBox:
         self.justify = justify
         self.color = color
         self.outline = outline
+        self.rotation = rotation
 
 
     def font_size(self, image_width: int, image_height: int, string: str) -> int:
@@ -110,7 +122,7 @@ class TextBox:
             return min(self.font_size(image_width, image_height//len(strings), s) for s in strings)
         width, height = self.box_size(image_width, image_height)
         start = min(height, self.max_font_size)
-        return next(font_size for font_size in range(start, 10, -1) if self.face.width(font_size, string) < width)
+        return next(font_size for font_size in range(start, 5, -1) if self.face.width(font_size, string) < width)
 
     def box_size(self, image_width: int, image_height: int) -> int:
         return int((self.right - self.left) * image_width), int((self.bottom - self.top) * image_height)
@@ -119,7 +131,7 @@ class TextBox:
         print ("bottom:", image_height* self.bottom)
         return int(self.left * image_width) + x, int(self.top * image_height) + y
 
-    def render(self, draw: ImageDraw, image_width, image_height, string, font_size):
+    def render(self, img: Image, image_width, image_height, string, font_size):
         lines = string.count('\n') + 1
         # calculate the width of the text in pixels.
         font_width = self.face.width(font_size, string)
@@ -135,10 +147,12 @@ class TextBox:
         print(x, y)
         print("text bottom", y+font_size)
         # render at that position
-        if (self.outline):
-            self.face.render_outlined(draw, font_size, self.color, self.outline, x, y, string)
+        if self.rotation: 
+            self.face.render_rotated(img, font_size, self.color, x, y, self.rotation, string)
+        elif (self.outline):
+            self.face.render_outlined(ImageDraw.Draw(img), font_size, self.color, self.outline, x, y, string)
         else:
-            self.face.render(draw, font_size, self.color, x, y, string)
+            self.face.render(ImageDraw.Draw(img), font_size, self.color, x, y, string)
 
 
 class MemeTemplate:
@@ -192,9 +206,9 @@ class MemeTemplate:
 
         with io.BytesIO() as buffer:
             img = self.read(buffer)
-            draw = ImageDraw.Draw(img)
+            # draw = ImageDraw.Draw(img)
             for tb, s in texts:
-                tb.render(draw, self.width, self.height, s, font_size)
+                tb.render(img, self.width, self.height, s, font_size)
 
             img.save(output, format="PNG")
 
