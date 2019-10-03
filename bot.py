@@ -24,11 +24,18 @@ s3 = tinys3.Connection(
 
 # load meme layouts
 with open("config/layouts.json", "rb") as t:
-    layouts = json.load(t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d)
+    layouts = json.load(
+        t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
+    )
 
 # load memes
 with open("config/templates.json", "rb") as t:
-    memes = json.load(t, object_hook=lambda d: MemeTemplate.deserialize(d, layouts) if "source" in d else d)
+    memes = json.load(
+        t,
+        object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
+        if "source" in d
+        else d,
+    )
 
 credit_text = [
     "This meme brought to you by M. Zucc and the lizard people.",
@@ -89,11 +96,11 @@ async def templates(ctx, template=None):
     l = {template: memes[template]} if template else memes
     if len(l) <= 1:
         body = (
-            f"Name: {name}\nDescription: *{data['description']}*\nTimes used: {data['usage']}\nRead more: {data['docs']}"
+            f"Name: {name}\nDescription: *{data.description}*\nTimes used: {data.usage}\nRead more: {data.docs}"
             for name, data in l.items()
         )
     else:
-        body = (f"{name}: *{data['description']}*" for name, data in l.items())
+        body = (f"{name}: *{data.description}*" for name, data in l.items())
     await ctx.send("\n" + "\n".join(body))
 
 

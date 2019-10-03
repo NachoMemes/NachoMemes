@@ -1,11 +1,13 @@
 # Nacho Memes
 
 <p align="center">
-    <a href="https://www.python.org/downloads/">
+  <a href="https://www.python.org/downloads/">
     <img src="https://img.shields.io/badge/Made%20With-Python%203.7-blue.svg?style=for-the-badge" alt="Made with Python 3.7">
   </a>
+</p>
+<p align="center">
   <a href="https://github.com/Rapptz/discord.py/">
-      <img src="https://img.shields.io/badge/discord-py-blue.svg" alt="discord.py">
+    <img src="https://img.shields.io/badge/discord-py-blue.svg" alt="discord.py">
   </a>
   <a href="https://github.com/ambv/black">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
@@ -17,7 +19,7 @@
 
 Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=59392) to your server!
 
-![](/watchme.gif)
+![A demo of the bot being used.](/watchme.gif)
 
 ## Overview
 
