@@ -152,6 +152,10 @@ class TextBox:
         else:
             self.face.render(ImageDraw.Draw(img), font_size, self.color, x, y, string)
 
+    def debug_box(self, img: Image, image_width, image_height):
+        draw = ImageDraw.Draw(img)
+        draw.rectangle(((image_width*self.left, image_height*self.top),(image_width*self.right, image_height*self.bottom)), outline=(0,0,0))
+
 
 class MemeTemplate:
     """definition for a template
@@ -212,7 +216,15 @@ class MemeTemplate:
             img.save(output, format="PNG")
 
 
-# Load layout data.
-with open("config/layouts.json", "rb") as t:
-    layouts = json.load(t)
+    def debug(self, output: IO):
+        with io.BytesIO() as buffer:
+            img = self.read(buffer)
+            for tb in self.textboxes:
+                tb.debug_box(img, self.width, self.height)
+            img.save(output, format="PNG")
+
+
+# # Load layout data.
+# with open("config/layouts.json", "rb") as t:
+#     layouts = json.load(t)
 

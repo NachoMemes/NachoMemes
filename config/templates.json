@@ -86,7 +86,7 @@
     "boardroom": {
         "description": "and out the window he goes",
         "docs": "https://knowyourmeme.com/memes/boardroom-suggestion",
-        "source": "file:templates/boardroom.png",
+        "source": "file:templates/boardroom.jpg",
         "layout": "boardroom_layout",
         "usage": 0
     }

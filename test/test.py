@@ -46,5 +46,10 @@ def main():
     _test_dump_layouts()
     print("All tests run.")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+
+with open("test/text1.png", 'wb') as f:
+    memes['boardroom'].debug(f)
+
