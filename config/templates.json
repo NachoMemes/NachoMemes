@@ -75,6 +75,13 @@
         "source": "file:templates/change-my-mind.png",
         "layout": "change_mind_layout",
         "usage": 0
+    },
+    "bruh": {
+        "description": "bruh",
+        "docs": "https://knowyourmeme.com/memes/bruh",
+        "source": "file:templates/bruh.jpg",
+        "layout": "standard_layout",
+        "usage": 0
     }
 
 }
