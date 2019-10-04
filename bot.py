@@ -78,7 +78,8 @@ def _s3_cleanup():
         if (meme["last_modified"] - datetime.utcnow()) >= timedelta(weeks=1):
             count += 1
             s3.delete(meme["key"], "discord-memes")
-    print(f"Deleted {count} images from s3 @ {datetime.now()}")
+    if count > 0:
+        print(f"Deleted {count} images from s3 @ {datetime.now()}")
 
 
 # Setup scheduled operations.
