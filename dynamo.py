@@ -1,4 +1,5 @@
 from typing import Callable, Iterable
+from decimal import Decimal
 
 import boto3
 from botocore.exceptions import ClientError
@@ -56,10 +57,37 @@ class TemplateStore:
         table.meta.client.get_waiter('table_exists').wait(TableName=table_name)     
         return table
 
+    def _increment_usage(self, table: 'boto3.resources.factory.dynamodb.Table', key: dict):
+        return table.update_item(
+            Key=key,
+            UpdateExpression="set #attr = #attr + :val",
+            ExpressionAttributeNames = {
+                "#attr" : "usage"
+            },
+            ExpressionAttributeValues={
+                ':val': Decimal(1)
+            },
+            ReturnValues="ALL_NEW"
+        )
 
-    def read_meme(self, guild: str, id: str) -> MemeTemplate:
+
+    def list_memes(self, guild: str) -> Iterable[dict]:
         table = self._template_table(guild)
-        return MemeTemplate.deserialize(table.get_item(Key={'name':id})['Item'])
+        return table.scan(
+            ProjectionExpression="#attr1, #attr2",
+            ExpressionAttributeNames={
+                "#attr1": "name",
+                "#attr2": "description"
+            }
+        )['Items']
+
+
+    def read_meme(self, guild: str, id: str, increment_use: bool=False) -> MemeTemplate:
+        table, key = self._template_table(guild), {'name':id}
+        item = self._increment_usage(table, key)['Attributes'] if increment_use else table.get_item(Key=key)['Item']
+        return MemeTemplate.deserialize(item)
+
+
 
     def _write_meme(self, guild: str, template: MemeTemplate):
         table = self._template_table(guild)

@@ -197,7 +197,7 @@ class MemeTemplate:
 
     @staticmethod
     def deserialize(src_dict, layouts=None):
-        return MemeTemplate(
+        result = MemeTemplate(
             Request(src_dict["source"]),
             src_dict["layout"],
             [TextBox.deserialize(t) for t in src_dict["textboxes"]] if src_dict.get("textboxes", None) else layouts[src_dict["layout"]],
@@ -205,10 +205,13 @@ class MemeTemplate:
             src_dict["docs"],
             src_dict.get("usage", 0),
         )
+        if src_dict.get("name", None):
+            result.name = src_dict["name"]
+        return result
 
     def serialize(self, deep=False):
         result =  {
-
+            "name": self.name,
             "description": self.description,
             "docs": self.docs,
             "source": self.source.full_url,
@@ -216,7 +219,6 @@ class MemeTemplate:
             "usage": self.usage,
         }
         if deep: 
-            result["name"] = self.name
             result['textboxes'] = [t.serialize() for t in self.textboxes]
         return result
 

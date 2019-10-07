@@ -135,22 +135,26 @@ async def helpmeme(ctx):
 
 @bot.command(description="List templates.")
 async def templates(ctx, template=None):
-    l = {template: memes[template]} if template else memes
-    if len(l) <= 1:
-        body = (
-            f"Name: {name}\nDescription: *{data.description}*\nTimes used: {data.usage}\nRead more: {data.docs}"
-            for name, data in l.items()
-        )
-    else:
-        body = (f"{name}: *{data.description}*" for name, data in l.items())
-    await ctx.send("\n" + "\n".join(body))
+    try:
+        guild = str(ctx.message.guild.id)
+        if template:
+            meme = store.read_meme(guild, template)
+            await ctx.send(f"\nName: {meme.name}\nDescription: *{meme.description}*\nTimes used: {meme.usage}\nExpects {len(meme.textboxes)} strings\nRead more: {meme.docs}")
+        else:
+            await ctx.send(''.join(f"\n{meme['name']}: *{meme['description']}*" for meme in store.list_memes(guild)))
+    except:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        print(err, file=sys.stderr)        
+    
 
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, memename: str, *text):
     try:
         guild = str(ctx.message.guild.id)
-        meme = store.read_meme(guild, memename)
+        meme = store.read_meme(guild, memename, True)
         strings = _reflow_text(text, meme.box_count)
         meme.usage += 1
         key = f"{uuid.uuid4().hex}.png"
