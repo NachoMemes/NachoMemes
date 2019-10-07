@@ -89,6 +89,13 @@
         "source": "file:templates/boardroom.jpg",
         "layout": "boardroom_layout",
         "usage": 0
+    },
+    "hannibal": {
+        "description": "why would he do this?",
+        "docs": "https://knowyourmeme.com/memes/who-killed-hannibal",
+        "source": "file:templates/hannibal.jpg",
+        "layout": "hannibal_layout",
+        "usage": 0
     }
 
 }

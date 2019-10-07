@@ -158,5 +158,33 @@
     ],
     "galaxy_layout_3": [],
     "galaxy_layout_4": [],
-    "galaxy_layout_6": []
+    "galaxy_layout_6": [],
+    "hannibal_layout": [{
+        "left": 0.1,
+        "right": 0.4,
+        "top": 0.36,
+        "bottom": 0.46,
+        "face": "IMPACT",
+        "justify": "CENTER",
+        "color": "BLACK",
+        "outline": "WHITE"
+    },{
+        "left": 0.6,
+        "right": 0.94,
+        "top": 0.32,
+        "bottom": 0.42,
+        "face": "IMPACT",
+        "justify": "CENTER",
+        "color": "BLACK",
+        "outline": "WHITE"
+    },{
+        "left": 0.06,
+        "right": 0.94,
+        "top": 0.86,
+        "bottom": 0.96,
+        "face": "IMPACT",
+        "justify": "CENTER",
+        "color": "BLACK",
+        "outline": "WHITE"
+    }]
 }
