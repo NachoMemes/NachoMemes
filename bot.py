@@ -29,6 +29,7 @@ s3 = tinys3.Connection(
     creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
 
+
 def default_templates(guild: str) -> Iterable[MemeTemplate]:
     # load meme layouts
     with open("config/layouts.json", "rb") as t:
@@ -44,13 +45,16 @@ def default_templates(guild: str) -> Iterable[MemeTemplate]:
             if "source" in d
             else d,
         )
-    
+
     for name, meme in memes.items():
         meme.name = name
 
     return memes.values()
 
-store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+
+store = TemplateStore(
+    creds["access_key"], creds["secret"], creds["region"], default_templates
+)
 
 
 # load meme layouts
@@ -81,22 +85,6 @@ def partition_on(pred, seq):
         except StopIteration:
             return
         yield takewhile(lambda v: not pred(v), chain([n], i))
-
-
-# def _write_stats():
-#     """ Periodically write template statistics to disk.
-# 		"""
-#     with open("config/templates.json", "w") as t:
-#         json.dump(memes, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
-#     print("Wrote statistics to disk.")
-
-
-# def _write_layouts():
-#     """ Periodically write layouts to disk.
-# 		"""
-#     with open("config/templates.json", "w") as t:
-#         json.dump(layouts, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
-#     print("Wrote statistics to disk.")
 
 
 def _s3_cleanup():
@@ -139,15 +127,21 @@ async def templates(ctx, template=None):
         guild = str(ctx.message.guild.id)
         if template:
             meme = store.read_meme(guild, template)
-            await ctx.send(f"\nName: {meme.name}\nDescription: *{meme.description}*\nTimes used: {meme.usage}\nExpects {len(meme.textboxes)} strings\nRead more: {meme.docs}")
+            await ctx.send(
+                f"\nName: {meme.name}\nDescription: *{meme.description}*\nTimes used: {meme.usage}\nExpects {len(meme.textboxes)} strings\nRead more: {meme.docs}"
+            )
         else:
-            await ctx.send(''.join(f"\n{meme['name']}: *{meme['description']}*" for meme in store.list_memes(guild)))
+            await ctx.send(
+                "".join(
+                    f"\n{meme['name']}: *{meme['description']}*"
+                    for meme in store.list_memes(guild)
+                )
+            )
     except:
         err = traceback.format_exc()
         if testing:
             await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)        
-    
+        print(err, file=sys.stderr)
 
 
 @bot.command(description="Make a new meme.")
@@ -176,9 +170,7 @@ async def meme(ctx: Context, memename: str, *text):
         err = traceback.format_exc()
         if testing:
             await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)        
-
-
+        print(err, file=sys.stderr)
 
 
 def _reflow_text(text, count):
