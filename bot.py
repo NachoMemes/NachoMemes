@@ -1,27 +1,54 @@
 import io
 import json
-import random
 import os
+import random
 import uuid
 from datetime import datetime, timedelta
+from itertools import chain, takewhile
+import traceback
 
 import discord
 import tinys3
-from apscheduler.schedulers.background import BackgroundScheduler
 from discord.ext import commands
-from itertools import takewhile, chain
-
 from memegenerator import MemeTemplate, TextBox
+from dynamo import TemplateStore
 
-with open("config/creds.json", "rb") as f:
-    creds = json.load(f)
+testing = True
 
-sched = BackgroundScheduler()
-sched.start()
+if testing:
+    with open("config/testing-creds.json", "rb") as f:
+        creds = json.load(f)
+else:
+    with open("config/creds.json", "rb") as f:
+        creds = json.load(f)
 
 s3 = tinys3.Connection(
     creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
+
+# Dynamo Table = guild_id
+# fetch_guild() -> returns Guild ID
+
+
+def default_templates():
+    # load meme layouts
+    with open("config/layouts.json", "rb") as t:
+        layouts = json.load(
+            t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
+        )
+
+    # load memes
+    with open("config/templates.json", "rb") as t:
+        memes = json.load(
+            t,
+            object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
+            if "source" in d
+            else d,
+        )
+    return memes.values
+
+store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+
 
 # load meme layouts
 with open("config/layouts.json", "rb") as t:
@@ -53,20 +80,20 @@ def partition_on(pred, seq):
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
-def _write_stats():
-    """ Periodically write template statistics to disk.
-		"""
-    with open("config/templates.json", "w") as t:
-        json.dump(memes, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
-    print("Wrote statistics to disk.")
+# def _write_stats():
+#     """ Periodically write template statistics to disk.
+# 		"""
+#     with open("config/templates.json", "w") as t:
+#         json.dump(memes, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
+#     print("Wrote statistics to disk.")
 
 
-def _write_layouts():
-    """ Periodically write layouts to disk.
-		"""
-    with open("config/templates.json", "w") as t:
-        json.dump(layouts, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
-    print("Wrote statistics to disk.")
+# def _write_layouts():
+#     """ Periodically write layouts to disk.
+# 		"""
+#     with open("config/templates.json", "w") as t:
+#         json.dump(layouts, t, default=lambda o: o.serialize(), indent=4, sort_keys=True)
+#     print("Wrote statistics to disk.")
 
 
 def _s3_cleanup():
@@ -81,10 +108,6 @@ def _s3_cleanup():
     if count > 0:
         print(f"Deleted {count} images from s3 @ {datetime.now()}")
 
-
-# Setup scheduled operations.
-sched.add_job(_write_stats, "interval", hours=1)
-sched.add_job(_s3_cleanup, "interval", hours=1)
 
 # Bot configuration.
 description = "A bot to generate custom memes using pre-loaded templates."
@@ -122,28 +145,35 @@ async def templates(ctx, template=None):
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx, memename: str, *text):
-    # Validate the meme.
-    if memename in memes:
-        meme = memes[memename]
-        strings = _reflow_text(text, meme.box_count)
-        meme.usage += 1
-        key = f"{uuid.uuid4().hex}.png"
-        with io.BytesIO() as memeobj:
-            # Render the meme.
-            meme.render(strings, memeobj)
-            memeobj.flush()
-            memeobj.seek(0)
-            # Upload meme to S3.
-            s3.upload(key, memeobj)
-        # Send the meme as a message.
-        e = discord.Embed().set_image(
-            url=f"http://discord-memes.s3.amazonaws.com/{key}"
-        )
-        if random.randrange(8) == 0:
-            e.set_footer(text=random.choice(credit_text))
-        await ctx.send(embed=e)
-    else:
-        await ctx.send("Invalid template.")
+    try:
+        # Validate the meme.
+        if memename in memes:
+            meme = memes[memename]
+            strings = _reflow_text(text, meme.box_count)
+            meme.usage += 1
+            key = f"{uuid.uuid4().hex}.png"
+            with io.BytesIO() as memeobj:
+                # Render the meme.
+                meme.render(strings, memeobj)
+                memeobj.flush()
+                memeobj.seek(0)
+                # Upload meme to S3.
+                s3.upload(key, memeobj)
+            # Send the meme as a message.
+            e = discord.Embed().set_image(
+                url=f"http://discord-memes.s3.amazonaws.com/{key}"
+            )
+            if random.randrange(8) == 0:
+                e.set_footer(text=random.choice(credit_text))
+            await ctx.send(embed=e)
+        else:
+            await ctx.send("Invalid template.")
+    except:
+        if testing:
+            err = traceback.format_exc()
+            ctx.send(err)
+
+
 
 
 def _reflow_text(text, count):

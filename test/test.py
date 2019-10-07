@@ -1,12 +1,14 @@
+import json
+import os
 import sys
-import json, os
+
+from bot import _reflow_text
+from memegenerator import MemeTemplate, TextBox
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from  memegenerator import MemeTemplate,  TextBox
-from bot import _reflow_text
 
 # load layouts
 with open("config/layouts.json", "rb") as t:
@@ -53,4 +55,3 @@ if __name__ == "__main__":
 
 # with open("test/text1.png", 'wb') as f:
 #     memes['boardroom'].debug(f)
-

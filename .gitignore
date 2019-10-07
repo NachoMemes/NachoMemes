@@ -1,6 +1,9 @@
-creds.json
 .vscode
 .DS_Store
+
+# Credentials
+testing-creds.json
+creds.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

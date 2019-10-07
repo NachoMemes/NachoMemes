@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import PIL
-from PIL import ImageFont
-from PIL import Image
-from PIL import ImageDraw
-
-import sys
-import json
 import io
-
-from pathlib import Path
-from os import PathLike
-from math import sin, cos, pi
+import json
+import sys
 from enum import Enum, auto
-from typing import Tuple, Callable, Iterable, IO
+from math import cos, pi, sin
+from os import PathLike
+from pathlib import Path
+from typing import IO, Callable, Iterable, Tuple
 from urllib.request import Request, urlopen
+
+import PIL
+from PIL import Image, ImageDraw, ImageFont
 
 
 class Color(Enum):
@@ -198,24 +195,27 @@ class MemeTemplate:
     """
 
     @staticmethod
-    def deserialize(src_dict, layouts):
+    def deserialize(src_dict, layouts=None):
         return MemeTemplate(
             Request(src_dict["source"]),
             src_dict["layout"],
-            layouts[src_dict["layout"]],
+            [TextBox.deserialize(t) for t in src_dict["textboxes"]] if src_dict.get("textboxes", None) else layouts[src_dict["layout"]],
             src_dict["description"],
             src_dict["docs"],
             src_dict.get("usage", 0),
         )
 
-    def serialize(self):
-        return {
+    def serialize(self, deep=False):
+        result =  {
             "description": self.description,
             "docs": self.docs,
             "source": self.source.full_url,
             "layout": self.layout,
             "usage": self.usage,
         }
+        if deep: 
+            result.textboxes = [t.serialize() for t in self.textboxes]
+        return result
 
     def __init__(
         self,
@@ -268,4 +268,3 @@ class MemeTemplate:
 # # Load layout data.
 # with open("config/layouts.json", "rb") as t:
 #     layouts = json.load(t)
-
