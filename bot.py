@@ -14,7 +14,7 @@ import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
 from memegenerator import MemeTemplate, TextBox
-from dynamo import TemplateStore
+from dynamo import TemplateStore, TemplateError
 
 testing = True
 
@@ -137,6 +137,8 @@ async def templates(ctx, template=None):
                     for meme in store.list_memes(guild)
                 )
             )
+    except TemplateError:
+        await ctx.send(f"```Could not load '{template}'```")
     except:
         err = traceback.format_exc()
         if testing:
@@ -166,6 +168,8 @@ async def meme(ctx: Context, memename: str, *text):
         if random.randrange(8) == 0:
             e.set_footer(text=random.choice(credit_text))
         await ctx.send(embed=e)
+    except TemplateError:
+        await ctx.send(f"```Could not load '{memename}'```")
     except:
         err = traceback.format_exc()
         if testing:

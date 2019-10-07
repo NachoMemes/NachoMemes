@@ -6,6 +6,8 @@ from botocore.exceptions import ClientError
 
 from memegenerator import MemeTemplate, TextBox
 
+class TemplateError(Exception):
+    pass
 
 class TemplateStore:
     def __init__(
@@ -38,7 +40,7 @@ class TemplateStore:
 
     def refresh(self, guild: str):
         table = self._template_table(guild)
-        for t in default_templates(guild):
+        for t in self.default_templates(guild):
             table.put_item(Item=t.serialize(True))
 
     def _init_table(self, table_name: str) -> "boto3.resources.factory.dynamodb.Table":
@@ -53,16 +55,26 @@ class TemplateStore:
         table.meta.client.get_waiter("table_exists").wait(TableName=table_name)
         return table
 
-    def _increment_usage(
+    def _fetch(self, table: "boto3.resources.factory.dynamodb.Table", key: dict):
+        try:
+            return table.get_item(Key=key)["Item"]
+        except KeyError:
+            raise TemplateError
+
+
+    def _increment_usage_and_fetch(
         self, table: "boto3.resources.factory.dynamodb.Table", key: dict
     ):
-        return table.update_item(
-            Key=key,
-            UpdateExpression="set #attr = #attr + :val",
-            ExpressionAttributeNames={"#attr": "usage"},
-            ExpressionAttributeValues={":val": Decimal(1)},
-            ReturnValues="ALL_NEW",
-        )
+        try:
+            return table.update_item(
+                Key=key,
+                UpdateExpression="set #attr = #attr + :val",
+                ExpressionAttributeNames={"#attr": "usage"},
+                ExpressionAttributeValues={":val": Decimal(1)},
+                ReturnValues="ALL_NEW",
+            )["Attributes"]
+        except ClientError:
+            raise TemplateError
 
     def list_memes(self, guild: str) -> Iterable[dict]:
         table = self._template_table(guild)
@@ -75,11 +87,7 @@ class TemplateStore:
         self, guild: str, id: str, increment_use: bool = False
     ) -> MemeTemplate:
         table, key = self._template_table(guild), {"name": id}
-        item = (
-            self._increment_usage(table, key)["Attributes"]
-            if increment_use
-            else table.get_item(Key=key)["Item"]
-        )
+        item =  (self._increment_usage_and_fetch if increment_use else self._fetch)(table, key)
         return MemeTemplate.deserialize(item)
 
     def _write_meme(self, guild: str, template: MemeTemplate):
