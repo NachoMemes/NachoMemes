@@ -90,6 +90,13 @@
         "layout": "boardroom_layout",
         "usage": 0
     },
+    "penguin": {
+        "description": "awkward...",
+        "docs": "https://knowyourmeme.com/memes/socially-awkward-penguin",
+        "source": "file:templates/sap.jpg",
+        "layout": "standard_layout",
+        "usage": 0
+    },
     "hannibal": {
         "description": "why would he do this?",
         "docs": "https://knowyourmeme.com/memes/who-killed-hannibal",
