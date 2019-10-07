@@ -3,13 +3,16 @@ import json
 import os
 import random
 import uuid
+import sys
 from datetime import datetime, timedelta
 from itertools import chain, takewhile
 import traceback
+from typing import Iterable
 
 import discord
 import tinys3
 from discord.ext import commands
+from discord.ext.commands import Context
 from memegenerator import MemeTemplate, TextBox
 from dynamo import TemplateStore
 
@@ -26,11 +29,7 @@ s3 = tinys3.Connection(
     creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
 )
 
-# Dynamo Table = guild_id
-# fetch_guild() -> returns Guild ID
-
-
-def default_templates():
+def default_templates(guild: str) -> Iterable[MemeTemplate]:
     # load meme layouts
     with open("config/layouts.json", "rb") as t:
         layouts = json.load(
@@ -45,7 +44,11 @@ def default_templates():
             if "source" in d
             else d,
         )
-    return memes.values
+    
+    for name, meme in memes.items():
+        meme.name = name
+
+    return memes.values()
 
 store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
 
@@ -98,7 +101,7 @@ def partition_on(pred, seq):
 
 def _s3_cleanup():
     """ Dump PNGs older than 1 week from S3 (on the hour).
-		"""
+        """
     to_del = [meme for meme in s3.list() if ".png" in meme["key"]]
     count = 0
     for meme in to_del:
@@ -144,34 +147,32 @@ async def templates(ctx, template=None):
 
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx, memename: str, *text):
+async def meme(ctx: Context, memename: str, *text):
     try:
-        # Validate the meme.
-        if memename in memes:
-            meme = memes[memename]
-            strings = _reflow_text(text, meme.box_count)
-            meme.usage += 1
-            key = f"{uuid.uuid4().hex}.png"
-            with io.BytesIO() as memeobj:
-                # Render the meme.
-                meme.render(strings, memeobj)
-                memeobj.flush()
-                memeobj.seek(0)
-                # Upload meme to S3.
-                s3.upload(key, memeobj)
-            # Send the meme as a message.
-            e = discord.Embed().set_image(
-                url=f"http://discord-memes.s3.amazonaws.com/{key}"
-            )
-            if random.randrange(8) == 0:
-                e.set_footer(text=random.choice(credit_text))
-            await ctx.send(embed=e)
-        else:
-            await ctx.send("Invalid template.")
+        guild = str(ctx.message.guild.id)
+        meme = store.read_meme(guild, memename)
+        strings = _reflow_text(text, meme.box_count)
+        meme.usage += 1
+        key = f"{uuid.uuid4().hex}.png"
+        with io.BytesIO() as memeobj:
+            # Render the meme.
+            meme.render(strings, memeobj)
+            memeobj.flush()
+            memeobj.seek(0)
+            # Upload meme to S3.
+            s3.upload(key, memeobj)
+        # Send the meme as a message.
+        e = discord.Embed().set_image(
+            url=f"http://discord-memes.s3.amazonaws.com/{key}"
+        )
+        if random.randrange(8) == 0:
+            e.set_footer(text=random.choice(credit_text))
+        await ctx.send(embed=e)
     except:
+        err = traceback.format_exc()
         if testing:
-            err = traceback.format_exc()
-            ctx.send(err)
+            await ctx.send("```" + err[:1990] + "```")
+        print(err, file=sys.stderr)        
 
 
 

@@ -9,6 +9,7 @@ from os import PathLike
 from pathlib import Path
 from typing import IO, Callable, Iterable, Tuple
 from urllib.request import Request, urlopen
+from decimal import Decimal
 
 import PIL
 from PIL import Image, ImageDraw, ImageFont
@@ -20,9 +21,9 @@ class Color(Enum):
 
 
 class Justify(Enum):
-    LEFT = (lambda self, w1, w2: 0,)
-    CENTER = (lambda self, w1, w2: (w1 - w2) // 2,)
-    RIGHT = (lambda self, w1, w2: w1 - w2,)
+    LEFT = (lambda w1, w2: 0,)
+    CENTER = (lambda w1, w2: (w1 - w2) // 2,)
+    RIGHT = (lambda w1, w2: w1 - w2,)
 
     def __init__(self, formula: Callable[[int, int], int]):
         self.formula = formula
@@ -77,10 +78,10 @@ class TextBox:
     @staticmethod
     def deserialize(src_dict):
         return TextBox(
-            src_dict["left"],
-            src_dict["right"],
-            src_dict["top"],
-            src_dict["bottom"],
+            float(src_dict["left"]),
+            float(src_dict["right"]),
+            float(src_dict["top"]),
+            float(src_dict["bottom"]),
             Font[src_dict["face"]],
             src_dict.get("max-font-size", sys.maxsize),
             Justify[src_dict["justify"]],
@@ -91,10 +92,10 @@ class TextBox:
 
     def serialize(self):
         return {
-            "left": self.left,
-            "right": self.right,
-            "top": self.top,
-            "bottom": self.bottom,
+            "left": Decimal(str(self.left)),
+            "right": Decimal(str(self.right)),
+            "top": Decimal(str(self.top)),
+            "bottom": Decimal(str(self.bottom)),
             "face": self.face.name,
             "justify": self.justify.name,
             "color": self.color.name,
@@ -207,6 +208,7 @@ class MemeTemplate:
 
     def serialize(self, deep=False):
         result =  {
+
             "description": self.description,
             "docs": self.docs,
             "source": self.source.full_url,
@@ -214,7 +216,8 @@ class MemeTemplate:
             "usage": self.usage,
         }
         if deep: 
-            result.textboxes = [t.serialize() for t in self.textboxes]
+            result["name"] = self.name
+            result['textboxes'] = [t.serialize() for t in self.textboxes]
         return result
 
     def __init__(
