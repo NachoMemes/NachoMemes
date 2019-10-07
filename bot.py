@@ -145,6 +145,12 @@ async def templates(ctx, template=None):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
+@bot.command(description="refresh templates.")
+async def refresh_templates(ctx: Context, arg: str=None):
+    guild = str(ctx.message.guild.id)
+    message = store.refresh_memes(guild, arg == "--hard")
+    await ctx.send(f"```{message}```")
+
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, memename: str, *text):
