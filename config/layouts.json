@@ -230,5 +230,15 @@
         "bottom": 0.19,
         "face": "IMPACT",
         "justify": "CENTER"
+    }],
+    "xzibit_yo_dawg_layout": [{
+        "left": 0.02,
+        "right": 0.98,
+        "top": 0.76,
+        "bottom": 0.96,
+        "face": "IMPACT",
+        "justify": "CENTER",
+        "color": "WHITE",
+        "outline": "BLACK"
     }]
 }
