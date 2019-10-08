@@ -117,6 +117,13 @@
         "source": "file:templates/woman-yelling-at-a-cat.jpg",
         "layout": "woman_yelling_at_a_cat_layout",
         "usage": 0
+    },
+    "xzibit-yo-dawg": {
+        "description": "you pu**y!",
+        "docs": "https://knowyourmeme.com/memes/xzibit-yo-dawg",
+        "source": "file:templates/xzibit-yo-dawg.jpg",
+        "layout": "xzibit_yo_dawg_layout",
+        "usage": 0
     }
 
 }
