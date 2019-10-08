@@ -34,17 +34,6 @@ async def on_ready():
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
 
 
-@bot.command(description="Help a user get setup.")
-async def helpmeme(ctx):
-    await ctx.send(
-        """This is a bot to make memes from meme templates. To get more information try:  
-- `/templates` for a list of all supported templates.
-- `/templates <specific-template>` for more information about each one.
-- `/meme <template-name> "UPPER TEXT" "LOWER TEXT"` to make a meme from that *perfect* template.
-"""
-    )
-
-
 @bot.command(description="List templates.")
 async def templates(ctx, template=None):
     try:
@@ -96,16 +85,19 @@ async def meme(ctx: Context, template: str, *text):
             meme.render(text, buffer)
             buffer.flush()
             buffer.seek(0)
-            msg = await ctx.send(file = discord.File(buffer, key))
+            msg = await ctx.send(file=discord.File(buffer, key))
         if random.randrange(8) >= 0:
-            tmpmsg = msg        
-            e = discord.Embed().set_image(
-                url=tmpmsg.attachments[0].url
-            )
+            tmpmsg = msg
+            e = discord.Embed().set_image(url=tmpmsg.attachments[0].url)
             e.set_footer(text=random.choice(credit_text))
             msg = await ctx.send(embed=e)
             await tmpmsg.delete()
-        await asyncio.gather(*(msg.add_reaction(r) for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")))
+        await asyncio.gather(
+            *(
+                msg.add_reaction(r)
+                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")
+            )
+        )
 
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
@@ -133,7 +125,9 @@ if __name__ == "__main__":
     testing = args.debug
 
     try:
-        creds_file_name = "config/creds.json" if not testing else "config/testing-creds.json"
+        creds_file_name = (
+            "config/creds.json" if not testing else "config/testing-creds.json"
+        )
         with open(creds_file_name, "rb") as f:
             creds = json.load(f)
     except:
