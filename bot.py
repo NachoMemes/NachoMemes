@@ -15,18 +15,8 @@ from discord.ext.commands import Context
 from render import MemeTemplate, TextBox
 from dynamo import TemplateStore, TemplateError
 
-testing = True
 
-if testing:
-    with open("config/testing-creds.json", "rb") as f:
-        creds = json.load(f)
-else:
-    with open("config/creds.json", "rb") as f:
-        creds = json.load(f)
 
-s3 = tinys3.Connection(
-    creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
-)
 
 
 def default_templates(guild: str) -> Iterable[MemeTemplate]:
@@ -176,7 +166,22 @@ async def meme(ctx: Context, template: str, *text):
 
 
 if __name__ == "__main__":
+    testing = True
+    
     global store
     store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+
+    global s3
+    if testing:
+        with open("config/testing-creds.json", "rb") as f:
+            creds = json.load(f)
+    else:
+        with open("config/creds.json", "rb") as f:
+            creds = json.load(f)
+
+    s3 = tinys3.Connection(
+        creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
+    )
+
 
     bot.run(creds["discord_token"])
