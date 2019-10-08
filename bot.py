@@ -12,57 +12,17 @@ import discord
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
-from render import MemeTemplate, TextBox
+from render import MemeTemplate, TextBox, default_templates
 from dynamo import TemplateStore, TemplateError
 
 
+description = "A bot to generate custom memes using pre-loaded templates."
+bot = commands.Bot(command_prefix="/", description=description)
 
-
-
-def default_templates(guild: str) -> Iterable[MemeTemplate]:
-    # load meme layouts
-    with open("config/layouts.json", "rb") as t:
-        layouts = json.load(
-            t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
-        )
-
-    # load memes
-    with open("config/templates.json", "rb") as t:
-        memes = json.load(
-            t,
-            object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
-            if "source" in d
-            else d,
-        )
-
-    for name, meme in memes.items():
-        meme.name = name
-
-    return memes
-
-
-
-
-# load meme layouts
-with open("config/layouts.json", "rb") as t:
-    layouts = json.load(
-        t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
-    )
-
-# load memes
-with open("config/templates.json", "rb") as t:
-    memes = json.load(
-        t,
-        object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
-        if "source" in d
-        else d,
-    )
 
 # Load credit messages to put in the footer.
 with open("config/messages.json", "rb") as c:
     credit_text = json.load(c)["credits"]
-
-
 
 
 def _s3_cleanup():
@@ -76,11 +36,6 @@ def _s3_cleanup():
             s3.delete(meme["key"], "discord-memes")
     if count > 0:
         print(f"Deleted {count} images from s3 @ {datetime.now()}")
-
-
-# Bot configuration.
-description = "A bot to generate custom memes using pre-loaded templates."
-bot = commands.Bot(command_prefix="/", description=description)
 
 
 @bot.event
@@ -166,12 +121,9 @@ async def meme(ctx: Context, template: str, *text):
 
 
 if __name__ == "__main__":
+    global testing
     testing = True
-    
-    global store
-    store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
 
-    global s3
     if testing:
         with open("config/testing-creds.json", "rb") as f:
             creds = json.load(f)
@@ -179,9 +131,12 @@ if __name__ == "__main__":
         with open("config/creds.json", "rb") as f:
             creds = json.load(f)
 
+    global store
+    store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+
+    global s3
     s3 = tinys3.Connection(
         creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
     )
-
 
     bot.run(creds["discord_token"])
