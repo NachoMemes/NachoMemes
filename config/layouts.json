@@ -184,7 +184,7 @@
         "bottom": 0.96,
         "face": "IMPACT",
         "justify": "CENTER",
-        "color": "BLACK",
-        "outline": "WHITE"
+        "color": "WHITE",
+        "outline": "BLACK"
     }]
 }

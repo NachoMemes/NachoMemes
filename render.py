@@ -115,7 +115,7 @@ class TextBox:
             Justify[src_dict["justify"]],
             Color[src_dict.get("color", "BLACK")],
             Color[src_dict["outline"]] if src_dict.get("outline", None) else None,
-            src_dict.get("rotation", None),
+            float(src_dict.get("rotation", 0)),
         )
 
     def serialize(self):
@@ -128,7 +128,7 @@ class TextBox:
             "justify": self.justify.name,
             "color": self.color.name,
             "outline": self.outline.name if self.outline else None,
-            "rotation": self.rotation,
+            "rotation": Decimal(str(self.rotation)),
         }
 
     def __init__(
@@ -279,7 +279,7 @@ class MemeTemplate:
             buffer.seek(0)
             return Image.open(buffer)
 
-    def render(self, message: Iterable[str], output: IO):
+    def render(self, message: Iterable[str], output: IO, show_boxes: bool=False):
         strings = _reflow_text(message, len(self.textboxes))
         texts = list(zip(self.textboxes, strings))
         font_size = min(tb.font_size(self.width, self.height, s) for tb, s in texts)
@@ -288,6 +288,9 @@ class MemeTemplate:
             img = self.read(buffer)
             for tb, s in texts:
                 tb.render(img, self.width, self.height, s, font_size)
+                if show_boxes:
+                    tb.debug_box(img, self.width, self.height)
+
             img.save(output, format="PNG")
 
     def debug(self, output: IO):
@@ -320,9 +323,14 @@ def default_templates(guild: str) -> Iterable[MemeTemplate]:
     return memes
 
 if __name__ == "__main__":
-    (filename, template_name, *text) = sys.argv[1:]
+    args = sys.argv[1:]
+    show_boxes = False
+    if '--show' in args: 
+        show_boxes = True
+        args.remove('--show')
+    (filename, template_name, *text) = args
     template = default_templates(None)[template_name]
     with open(filename, 'wb') as f:
-        template.render(text, f)
+        template.render(text, f, show_boxes)
 
 
