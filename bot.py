@@ -96,7 +96,6 @@ async def meme(ctx: Context, template: str, *text):
             meme.render(text, buffer)
             buffer.flush()
             buffer.seek(0)
-<<<<<<< HEAD
             msg = await ctx.send(file = discord.File(buffer, key))
         if random.randrange(8) >= 0:
             tmpmsg = msg        
@@ -106,17 +105,7 @@ async def meme(ctx: Context, template: str, *text):
             e.set_footer(text=random.choice(credit_text))
             msg = await ctx.send(embed=e)
             await tmpmsg.delete()
-=======
-            msg = await ctx.send(file=discord.File(buffer, key))
->>>>>>> 516d73d6b433cb72a9ad5a769894f47255afc89a
-            # if random.randrange(8) == 0:
-            #     e.set_footer(text=random.choice(credit_text))
-        await asyncio.gather(
-            *(
-                msg.add_reaction(r)
-                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")
-            )
-        )
+        await asyncio.gather(*(msg.add_reaction(r) for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")))
 
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
@@ -144,9 +133,7 @@ if __name__ == "__main__":
     testing = args.debug
 
     try:
-        creds_file_name = (
-            "config/creds.json" if not testing else "config/testing-creds.json"
-        )
+        creds_file_name = "config/creds.json" if not testing else "config/testing-creds.json"
         with open(creds_file_name, "rb") as f:
             creds = json.load(f)
     except:
