@@ -1,21 +1,20 @@
-from typing import Callable, Iterable
+from typing import Callable, Iterable, List
 from decimal import Decimal
 
 import boto3
 from botocore.exceptions import ClientError
 
 from render import MemeTemplate, TextBox
+from store import Store, TemplateError
 
-class TemplateError(Exception):
-    pass
 
-class TemplateStore:
+class DynamoTemplateStore(Store):
     def __init__(
         self,
         access_key,
         secret,
         region,
-        default_templates: Callable[[str], Iterable[MemeTemplate]],
+        default_templates: Store,
     ):
         self.dynamodb = boto3.resource(
             "dynamodb",
@@ -54,8 +53,7 @@ class TemplateStore:
         updated = 0
         added = 0
         unchanged = 0
-        for t in self.default_templates(guild).values():
-            item = t.serialize(True)
+        for item in self.default_templates.list_memes(guild):
             if 'usage' in item: 
                 del item['usage']
             name = item.pop('name')
@@ -109,12 +107,15 @@ class TemplateStore:
         except ClientError:
             raise TemplateError
 
-    def list_memes(self, guild: str) -> Iterable[dict]:
+    def list_memes(self, guild: str, fields: List[str]=None) -> Iterable[dict]:
         table = self._template_table(guild)
-        return table.scan(
-            ProjectionExpression="#attr1, #attr2",
-            ExpressionAttributeNames={"#attr1": "name", "#attr2": "description"},
-        )["Items"]
+        if not fields:
+            return table.scan()["Items"]
+        else: 
+            return table.scan(
+                ProjectionExpression=','.join(f'#{k}' for k in fields),
+                ExpressionAttributeNames={f'#{k}': k for k in fields}
+            )["Items"]
 
     def read_meme(
         self, guild: str, id: str, increment_use: bool = False

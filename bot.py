@@ -7,14 +7,17 @@ import sys
 from datetime import datetime, timedelta
 import traceback
 from typing import Iterable
+import argparse
+import asyncio
 
 import discord
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
 from render import MemeTemplate, TextBox, default_templates
-from dynamo import TemplateStore, TemplateError
+from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
+from store import Store, TemplateError
 
 
 description = "A bot to generate custom memes using pre-loaded templates."
@@ -25,18 +28,6 @@ bot = commands.Bot(command_prefix="/", description=description)
 with open("config/messages.json", "rb") as c:
     credit_text = json.load(c)["credits"]
 
-
-def _s3_cleanup():
-    """ Dump PNGs older than 1 week from S3 (on the hour).
-        """
-    to_del = [meme for meme in s3.list() if ".png" in meme["key"]]
-    count = 0
-    for meme in to_del:
-        if (meme["last_modified"] - datetime.utcnow()) >= timedelta(weeks=1):
-            count += 1
-            s3.delete(meme["key"], "discord-memes")
-    if count > 0:
-        print(f"Deleted {count} images from s3 @ {datetime.now()}")
 
 
 @bot.event
@@ -69,10 +60,10 @@ async def templates(ctx, template=None):
                 Read more: {meme.docs}"""
             )
         else:
-            await ctx.send(
+            await ctx.send("== Templates ==" + 
                 "".join(
                     f"\n{meme['name']}: *{meme['description']}*"
-                    for meme in store.list_memes(guild)
+                    for meme in store.list_memes(guild, ("name", "description"))
                 )
             )
     except TemplateError:
@@ -85,6 +76,7 @@ async def templates(ctx, template=None):
 
 @bot.command(description="refresh templates.")
 async def refresh_templates(ctx: Context, arg: str=None):
+    await ctx.trigger_typing()
     guild = str(ctx.message.guild.id)
     message = store.refresh_memes(guild, arg == "--hard")
     await ctx.send(f"```{message}```")
@@ -92,36 +84,21 @@ async def refresh_templates(ctx: Context, arg: str=None):
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str, *text):
+    await ctx.trigger_typing()
     try:
         guild = str(ctx.message.guild.id)
         meme = store.read_meme(guild, template, True)
         key = f"{uuid.uuid4().hex}.png"
 
-        if testing:
-            with io.BytesIO() as buffer:
-                meme.render(text, buffer)
-                buffer.flush()
-                buffer.seek(0)
+        with io.BytesIO() as buffer:
+            meme.render(text, buffer)
+            buffer.flush()
+            buffer.seek(0)
+            msg = await ctx.send(file = discord.File(buffer, key))
+            # if random.randrange(8) == 0:
+            #     e.set_footer(text=random.choice(credit_text))
+        await asyncio.gather(*(msg.add_reaction(r) for r in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}')))
 
-                msg = await ctx.send(file = discord.File(buffer, "meme.png"))
-        else:
-            with io.BytesIO() as buffer:
-                # Render the meme.
-                meme.render(text, buffer)
-                buffer.flush()
-                buffer.seek(0)
-                # Upload meme to S3.
-                s3.upload(key, buffer)
-            # Send the meme as a message.
-            e = discord.Embed().set_image(
-                url=f"http://discord-memes.s3.amazonaws.com/{key}"
-            )
-            if random.randrange(8) == 0:
-                e.set_footer(text=random.choice(credit_text))
-            msg = await ctx.send(embed=e)
-
-        for r in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'):
-            await msg.add_reaction(r)
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
     except:
@@ -130,30 +107,39 @@ async def meme(ctx: Context, template: str, *text):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Runs the bot passed on input parameters.")
+    parser.add_argument(
+        "debug", metavar="d", type=str, help="Whether or not to run the bot in debug mode."
+    )
+    parser.add_argument(
+        "local", type=str, help="Force running without Dynamo."
+    )
+    args = parser.parse_args()
     global testing
-    testing = True
+    testing = args.debug
 
-    if not testing:
-        with open("config/creds.json", "rb") as f:
+    try:
+        creds_file_name = "config/creds.json" if not testing else "config/testing-creds.json"
+        with open(creds_file_name, "rb") as f:
             creds = json.load(f)
+    except:
+        creds = {}
+    for k in ("DISCORD_TOKEN", "ACCESS_KEY", "SECRET", "REGION"):
+        if k in os.environ:
+            creds[k.lower()] = os.environ[k]
+
 
     global store
-    store = LocalTemplateStore(default_templates) if testing else TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+    store = LocalTemplateStore(default_templates)
+    if not args.local and "access_key" in creds:
+        store =  DynamoTemplateStore(creds["access_key"], creds["secret"], creds["region"], store)
 
-    global s3
-    if not testing:
-        s3 = tinys3.Connection(
-            creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
-        )
 
     try:
         token = creds["discord_token"]
     except NameError:
-        token = os.environ.get("DISCORD_TOKEN")
-        if token == None:
-            print("Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!")
-            sys.exit(1)
+        print("Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!")
+        sys.exit(1)
 
     bot.run(token)
