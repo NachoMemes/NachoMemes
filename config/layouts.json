@@ -156,7 +156,28 @@
             "outline": null
         }
     ],
-    "galaxy_layout_3": [],
+    "galaxy_layout_3": [{
+        "left": 0.01,
+        "right": 0.49,
+        "top": 0.05,
+        "bottom": 0.25,
+        "face": "IMPACT",
+        "justify": "CENTER"
+    },{
+        "left": 0.01,
+        "right": 0.49,
+        "top": 0.35,
+        "bottom": 0.6,
+        "face": "IMPACT",
+        "justify": "CENTER"
+    },{
+        "left": 0.01,
+        "right": 0.49,
+        "top": 0.65,
+        "bottom": 0.99,
+        "face": "IMPACT",
+        "justify": "CENTER"
+    }],
     "galaxy_layout_4": [],
     "galaxy_layout_6": [],
     "hannibal_layout": [{
@@ -194,5 +215,20 @@
         "bottom": 0.19,
         "face": "IMPACT",
         "justify": "LEFT"
+    }],
+    "woman_yelling_at_a_cat_layout": [{
+        "left": 0.02,
+        "right": 0.48,
+        "top": 0.01,
+        "bottom": 0.19,
+        "face": "IMPACT",
+        "justify": "CENTER"
+    },{
+        "left": 0.52,
+        "right": 0.98,
+        "top": 0.01,
+        "bottom": 0.19,
+        "face": "IMPACT",
+        "justify": "CENTER"
     }]
 }
