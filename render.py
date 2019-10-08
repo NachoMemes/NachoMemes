@@ -115,7 +115,7 @@ class TextBox:
             Justify[src_dict["justify"]],
             Color[src_dict.get("color", "BLACK")],
             Color[src_dict["outline"]] if src_dict.get("outline", None) else None,
-            src_dict.get("rotation", None),
+            float(src_dict.get("rotation", 0)),
         )
 
     def serialize(self):
@@ -128,7 +128,7 @@ class TextBox:
             "justify": self.justify.name,
             "color": self.color.name,
             "outline": self.outline.name if self.outline else None,
-            "rotation": self.rotation,
+            "rotation": Decimal(str(self.rotation)),
         }
 
     def __init__(
