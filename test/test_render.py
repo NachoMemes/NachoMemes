@@ -1,10 +1,16 @@
+import io
+import os
+import sys
 import unittest
 import zlib
-import io
-import sys
 from tempfile import NamedTemporaryFile
 
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
 from render import default_templates
+
 
 class TestRender(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -13,7 +19,7 @@ class TestRender(unittest.TestCase):
         self.has_errors = False
 
     def test_simple(self):
-        template = self.templates['bruh']
+        template = self.templates["bruh"]
         with io.BytesIO() as buffer:
             template.render(("", "bruh"), buffer)
             buffer.flush()
@@ -30,7 +36,5 @@ class TestRender(unittest.TestCase):
                 raise
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
