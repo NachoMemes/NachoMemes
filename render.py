@@ -3,18 +3,18 @@
 import io
 import json
 import sys
+from decimal import Decimal
 from enum import Enum, auto
+from itertools import chain, takewhile
 from math import cos, pi, sin
 from os import PathLike
 from pathlib import Path
 from typing import IO, Callable, Iterable, Tuple
 from urllib.request import Request, urlopen
-from decimal import Decimal
-from itertools import chain, takewhile
-
 
 import PIL
 from PIL import Image, ImageDraw, ImageFont
+
 
 def partition_on(pred, seq):
     i = iter(seq)
@@ -24,6 +24,7 @@ def partition_on(pred, seq):
         except StopIteration:
             return
         yield takewhile(lambda v: not pred(v), chain([n], i))
+
 
 def _reflow_text(text, count):
     if len(text) == count:
@@ -279,7 +280,7 @@ class MemeTemplate:
             buffer.seek(0)
             return Image.open(buffer)
 
-    def render(self, message: Iterable[str], output: IO, show_boxes: bool=False):
+    def render(self, message: Iterable[str], output: IO, show_boxes: bool = False):
         strings = _reflow_text(message, len(self.textboxes))
         texts = list(zip(self.textboxes, strings))
         font_size = min(tb.font_size(self.width, self.height, s) for tb, s in texts)
@@ -322,15 +323,14 @@ def default_templates(guild: str) -> Iterable[MemeTemplate]:
 
     return memes
 
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     show_boxes = False
-    if '--show' in args: 
+    if "--show" in args:
         show_boxes = True
-        args.remove('--show')
+        args.remove("--show")
     (filename, template_name, *text) = args
     template = default_templates(None)[template_name]
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         template.render(text, f, show_boxes)
-
-

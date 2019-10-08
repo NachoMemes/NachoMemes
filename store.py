@@ -3,8 +3,10 @@ from typing import Callable, Iterable, List
 
 from render import MemeTemplate, TextBox
 
+
 class TemplateError(Exception):
     pass
+
 
 class Store(ABC):
     @abstractmethod
@@ -12,11 +14,13 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def read_meme(self, guild: str, id: str, increment_use: bool = False) -> MemeTemplate:
+    def read_meme(
+        self, guild: str, id: str, increment_use: bool = False
+    ) -> MemeTemplate:
         pass
 
     @abstractmethod
-    def list_memes(self, guild: str, fields: List[str]=None) -> Iterable[dict]:
+    def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
         pass
 
     @abstractmethod

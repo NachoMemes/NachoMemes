@@ -9,8 +9,8 @@ Refresh means it will HARD pull the branch you've chosen and run from there.
 
 import argparse
 import os
-import sys
 import subprocess
+import sys
 
 
 def main(branch, debug=False, refresh=False, local=False):
@@ -61,4 +61,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.branch, args.debug, args.refresh, args.local)
-
