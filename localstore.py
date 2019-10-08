@@ -19,7 +19,7 @@ class LocalTemplateStore(Store):
         return self._load()[id]
 
     def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
-        result = (t.serialize() for t in self._load().values())
+        result = (t.serialize(True) for t in self._load().values())
         if fields:
             result = ({k: d[k] for k in fields} for d in result)
         return result
