@@ -17,7 +17,7 @@ class LocalTemplateStore:
     def list_memes(self, guild: str) -> Iterable[dict]:
         templates = self.default_templates[None]
         dicts = map(lambda t: t.serialize, templates)
-        dicts = map(lambda: d: {"name": t.name, "description":}, dicts)
+        dicts = map(lambda d: {"name": d["name"], "description": d["description"]}, dicts)
         return dicts
 
     def guild_config(self, guild: str) -> dict:
