@@ -12,13 +12,10 @@ class LocalTemplateStore:
         return "Memes were not refreshed since dev mode is enabled."
 
     def read_meme(self, guild: str, id: str, increment_use: bool = False) -> MemeTemplate:
-        return self.default_templates[None](id)
+        return self.default_templates(guild)[id]
 
     def list_memes(self, guild: str) -> Iterable[dict]:
-        templates = self.default_templates[None]
-        dicts = map(lambda t: t.serialize, templates)
-        dicts = map(lambda d: {"name": d["name"], "description": d["description"]}, dicts)
-        return dicts
+        return ({"name": t.name, "description": t.description} for t in self.default_templates(guild))
 
     def guild_config(self, guild: str) -> dict:
         pass
