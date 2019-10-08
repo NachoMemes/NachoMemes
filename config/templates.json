@@ -103,6 +103,13 @@
         "source": "file:templates/hannibal.jpg",
         "layout": "hannibal_layout",
         "usage": 0
+    },
+    "stonks": {
+        "description": "stonks go up and up",
+        "docs": "https://knowyourmeme.com/memes/stonks",
+        "source": "file:templates/stonks.jpg",
+        "layout": "stonks_layout",
+        "usage": 0
     }
 
 }
