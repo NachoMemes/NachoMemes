@@ -7,6 +7,7 @@ import sys
 from datetime import datetime, timedelta
 import traceback
 from typing import Iterable
+import argparse
 
 import discord
 import tinys3
@@ -121,8 +122,13 @@ async def meme(ctx: Context, template: str, *text):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Runs the bot passed on input parameters.")
+    parser.add_argument(
+        "debug", metavar="d", type=str, help="Whether or not to run the bot in debug mode."
+    )
+    args = parser.parse_args()
     global testing
-    testing = True
+    testing = args.debug
 
     if testing:
         with open("config/testing-creds.json", "rb") as f:
