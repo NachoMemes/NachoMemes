@@ -9,7 +9,7 @@ class LocalTemplateStore:
         self.default_templates = default_templates
 
     def refresh_memes(self, guild: str, hard: bool = False):
-        pass
+        return "Memes were not refreshed since dev mode is enabled."
 
     def read_meme(self, guild: str, id: str, increment_use: bool = False) -> MemeTemplate:
         return self.default_templates[None](id)
