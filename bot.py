@@ -110,10 +110,10 @@ async def meme(ctx: Context, template: str, *text):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Runs the bot passed on input parameters.")
     parser.add_argument(
-        "debug", metavar="d", type=str, help="Whether or not to run the bot in debug mode."
+        "--debug", action='store_true', help="Whether or not to run the bot in debug mode."
     )
     parser.add_argument(
-        "local", type=str, help="Force running without Dynamo."
+        "--local", action='store_true',  help="Force running without Dynamo."
     )
     args = parser.parse_args()
     global testing
