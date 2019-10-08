@@ -39,7 +39,10 @@ class TemplateStore:
             self.refresh_memes(guild)
         return table
 
-    def refresh_memes(self, guild: str, hard: bool=False):
+    def guild_config(self, guild: str)-> dict:
+        pass
+
+    def refresh_memes(self, guild: str, hard: bool=False)-> str:
         if hard:
             table_name = guild + ".templates"
             table = self.dynamodb.Table(table_name)
