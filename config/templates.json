@@ -124,6 +124,13 @@
         "source": "file:templates/xzibit-yo-dawg.jpg",
         "layout": "xzibit_yo_dawg_layout",
         "usage": 0
+    },
+    "american-chopper": {
+        "description": "LISTEN YOU F***",
+        "docs": "https://knowyourmeme.com/memes/american-copper",
+        "source": "file:templates/american-chopper.jpg",
+        "layout": "american_chopper_layout",
+        "usage": 0
     }
 
 }
