@@ -95,6 +95,14 @@ async def meme(ctx: Context, template: str, *text):
             buffer.flush()
             buffer.seek(0)
             msg = await ctx.send(file = discord.File(buffer, key))
+        if random.randrange(8) >= 0:
+            tmpmsg = msg        
+            e = discord.Embed().set_image(
+                url=tmpmsg.attachments[0].url
+            )
+            e.set_footer(text=random.choice(credit_text))
+            msg = await ctx.send(embed=e)
+            await tmpmsg.delete()
             # if random.randrange(8) == 0:
             #     e.set_footer(text=random.choice(credit_text))
         await asyncio.gather(*(msg.add_reaction(r) for r in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}')))
