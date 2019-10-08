@@ -110,6 +110,13 @@
         "source": "file:templates/stonks.jpg",
         "layout": "stonks_layout",
         "usage": 0
+    },
+    "woman-yelling-at-a-cat": {
+        "description": "you pu**y!",
+        "docs": "https://knowyourmeme.com/memes/woman-yelling-at-a-cat",
+        "source": "file:templates/woman-yelling-at-a-cat.jpg",
+        "layout": "woman_yelling_at_a_cat_layout",
+        "usage": 0
     }
 
 }
