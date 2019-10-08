@@ -1,24 +1,24 @@
+import argparse
+import asyncio
 import io
 import json
 import os
 import random
-import uuid
 import sys
-from datetime import datetime, timedelta
 import traceback
+import uuid
+from datetime import datetime, timedelta
 from typing import Iterable
-import argparse
-import asyncio
 
 import discord
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
-from render import MemeTemplate, TextBox
+
 from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
+from render import MemeTemplate, TextBox
 from store import Store, TemplateError
-
 
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
@@ -27,7 +27,6 @@ bot = commands.Bot(command_prefix="/", description=description)
 # Load credit messages to put in the footer.
 with open("config/messages.json", "rb") as c:
     credit_text = json.load(c)["credits"]
-
 
 
 @bot.event
@@ -52,7 +51,8 @@ async def templates(ctx, template=None):
         guild = str(ctx.message.guild.id)
         if template:
             meme = store.read_meme(guild, template)
-            await ctx.send(f"""
+            await ctx.send(
+                f"""
                 Name: {meme.name}
                 Description: *{meme.description}*
                 Times used: {meme.usage}
@@ -60,8 +60,9 @@ async def templates(ctx, template=None):
                 Read more: {meme.docs}"""
             )
         else:
-            await ctx.send("== Templates ==" + 
-                "".join(
+            await ctx.send(
+                "== Templates =="
+                + "".join(
                     f"\n{meme['name']}: *{meme['description']}*"
                     for meme in store.list_memes(guild, ("name", "description"))
                 )
@@ -74,8 +75,9 @@ async def templates(ctx, template=None):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
+
 @bot.command(description="refresh templates.")
-async def refresh_templates(ctx: Context, arg: str=None):
+async def refresh_templates(ctx: Context, arg: str = None):
     await ctx.trigger_typing()
     guild = str(ctx.message.guild.id)
     message = store.refresh_memes(guild, arg == "--hard")
@@ -94,6 +96,7 @@ async def meme(ctx: Context, template: str, *text):
             meme.render(text, buffer)
             buffer.flush()
             buffer.seek(0)
+<<<<<<< HEAD
             msg = await ctx.send(file = discord.File(buffer, key))
         if random.randrange(8) >= 0:
             tmpmsg = msg        
@@ -103,9 +106,17 @@ async def meme(ctx: Context, template: str, *text):
             e.set_footer(text=random.choice(credit_text))
             msg = await ctx.send(embed=e)
             await tmpmsg.delete()
+=======
+            msg = await ctx.send(file=discord.File(buffer, key))
+>>>>>>> 516d73d6b433cb72a9ad5a769894f47255afc89a
             # if random.randrange(8) == 0:
             #     e.set_footer(text=random.choice(credit_text))
-        await asyncio.gather(*(msg.add_reaction(r) for r in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}')))
+        await asyncio.gather(
+            *(
+                msg.add_reaction(r)
+                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")
+            )
+        )
 
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
@@ -115,20 +126,27 @@ async def meme(ctx: Context, template: str, *text):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Runs the bot passed on input parameters.")
-    parser.add_argument(
-        "--debug", action='store_true', help="Whether or not to run the bot in debug mode."
+    parser = argparse.ArgumentParser(
+        description="Runs the bot passed on input parameters."
     )
     parser.add_argument(
-        "--local", action='store_true',  help="Force running without Dynamo."
+        "--debug",
+        action="store_true",
+        help="Whether or not to run the bot in debug mode.",
+    )
+    parser.add_argument(
+        "--local", action="store_true", help="Force running without Dynamo."
     )
     args = parser.parse_args()
     global testing
     testing = args.debug
 
     try:
-        creds_file_name = "config/creds.json" if not testing else "config/testing-creds.json"
+        creds_file_name = (
+            "config/creds.json" if not testing else "config/testing-creds.json"
+        )
         with open(creds_file_name, "rb") as f:
             creds = json.load(f)
     except:
@@ -137,17 +155,19 @@ if __name__ == "__main__":
         if k in os.environ:
             creds[k.lower()] = os.environ[k]
 
-
     global store
     store = LocalTemplateStore()
     if not args.local and "access_key" in creds:
-        store =  DynamoTemplateStore(creds["access_key"], creds["secret"], creds["region"], store)
-
+        store = DynamoTemplateStore(
+            creds["access_key"], creds["secret"], creds["region"], store
+        )
 
     try:
         token = creds["discord_token"]
     except NameError:
-        print("Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!")
+        print(
+            "Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!"
+        )
         sys.exit(1)
 
     bot.run(token)

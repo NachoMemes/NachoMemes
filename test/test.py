@@ -2,14 +2,12 @@ import json
 import os
 import sys
 
-from bot import _reflow_text
-from memegenerator import MemeTemplate, TextBox
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-
+from render import MemeTemplate, TextBox, _reflow_text
 
 
 # load layouts

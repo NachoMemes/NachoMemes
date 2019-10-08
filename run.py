@@ -9,11 +9,11 @@ Refresh means it will HARD pull the branch you've chosen and run from there.
 
 import argparse
 import os
-import sys
 import subprocess
+import sys
 
 
-def main(branch, debug=False, refresh=False):
+def main(branch, debug=False, refresh=False, local=False):
     """ Builds and runs a list of processes.
     """
     commands = [
@@ -21,8 +21,12 @@ def main(branch, debug=False, refresh=False):
         "git fetch",
         f"git checkout {branch}",
         "git pull",
-        f"python bot.py {debug}",
+        "python bot.py",
     ]
+    if debug:
+        commands[-1] = commands[-1] + " --debug"
+    if local:
+        commands[-1] = commands[-1] + " --local"
     if not refresh:
         commands.pop(0)
     for proc in commands:
@@ -40,20 +44,20 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--debug",
-        metavar="d",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Run state::debug. True or false. Runs different credentials and logging level.",
     )
 
     parser.add_argument(
         "--refresh",
-        metavar="r",
-        type=bool,
+        action="store_true",
         help="Whether or not to pull fresh from the branch",
+    )
+
+    parser.add_argument(
+        "--local", action="store_true", help="Run locally without DynamoDB."
     )
 
     args = parser.parse_args()
 
-    main(args.branch, args.debug, args.refresh)
-
+    main(args.branch, args.debug, args.refresh, args.local)

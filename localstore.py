@@ -1,9 +1,10 @@
 import json
-from typing import Callable, Iterable, List
 from functools import lru_cache
+from typing import Callable, Iterable, List
 
 from render import MemeTemplate, TextBox
 from store import Store
+
 
 class LocalTemplateStore(Store):
     def __init__(self):
@@ -12,13 +13,15 @@ class LocalTemplateStore(Store):
     def refresh_memes(self, guild: str, hard: bool = False):
         return "Memes were not refreshed since a local store is enabled."
 
-    def read_meme(self, guild: str, id: str, increment_use: bool = False) -> MemeTemplate:
+    def read_meme(
+        self, guild: str, id: str, increment_use: bool = False
+    ) -> MemeTemplate:
         return self._load()[id]
 
-    def list_memes(self, guild: str, fields: List[str]=None) -> Iterable[dict]:
+    def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
         result = (t.serialize() for t in self._load().values())
         if fields:
-            result = ({k:d[k] for k in fields} for d in result)
+            result = ({k: d[k] for k in fields} for d in result)
         return result
 
     def guild_config(self, guild: str) -> dict:
