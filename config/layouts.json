@@ -186,5 +186,15 @@
         "justify": "CENTER",
         "color": "WHITE",
         "outline": "BLACK"
+    }],
+    "stonks_layout": [{
+        "left": 0.06,
+        "right": 0.94,
+        "top": 0.01,
+        "bottom": 0.19,
+        "face": "IMPACT",
+        "justify": "CENTER",
+        "color": "WHITE",
+        "outline": "BLACK"
     }]
 }
