@@ -2,12 +2,13 @@ import json
 import os
 import sys
 
-from bot import _reflow_text
-from memegenerator import MemeTemplate, TextBox
-
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
+
+from bot import _reflow_text
+from memegenerator import MemeTemplate, TextBox
+
 
 
 # load layouts
@@ -32,7 +33,7 @@ def _test_meme():
     # with open("text7.png", 'wb') as f:
     #     memes["successkid"].render(("Can you feel the BDE","radiating off my body?"), f)
     with open("test/text1.png", 'wb') as f:
-        memes["boardroom"].render(_reflow_text("boardroom How should we write a bot? / Python / Node / Scala!".split(), 4), f)
+        memes["hannibal"].render(_reflow_text("Republicans / Republicans / Who would do this to us?".split(), 3), f)
 
 
 def _test_dump_memes():
@@ -45,8 +46,8 @@ def _test_dump_layouts():
 
 def main():
     _test_meme()
-    _test_dump_memes()
-    _test_dump_layouts()
+    # _test_dump_memes()
+    # _test_dump_layouts()
     print("All tests run.")
 
 if __name__ == "__main__":
@@ -54,4 +55,4 @@ if __name__ == "__main__":
 
 
 # with open("test/text1.png", 'wb') as f:
-#     memes['boardroom'].debug(f)
+#      memes['hannibal'].debug(f)

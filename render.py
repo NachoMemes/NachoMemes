@@ -297,7 +297,11 @@ class MemeTemplate:
                 tb.debug_box(img, self.width, self.height)
             img.save(output, format="PNG")
 
+if __name__ == "__main__":
+    from bot import default_templates
+    (filename, template_name, *text) = sys.argv[1:]
+    template = default_templates(None)[template_name]
+    with open(filename, 'wb') as f:
+        template.render(text, f)
 
-# # Load layout data.
-# with open("config/layouts.json", "rb") as t:
-#     layouts = json.load(t)
+

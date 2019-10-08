@@ -5,7 +5,6 @@ import random
 import uuid
 import sys
 from datetime import datetime, timedelta
-from itertools import chain, takewhile
 import traceback
 from typing import Iterable
 
@@ -13,7 +12,7 @@ import discord
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
-from memegenerator import MemeTemplate, TextBox
+from render import MemeTemplate, TextBox
 from dynamo import TemplateStore, TemplateError
 
 testing = True
@@ -49,12 +48,9 @@ def default_templates(guild: str) -> Iterable[MemeTemplate]:
     for name, meme in memes.items():
         meme.name = name
 
-    return memes.values()
+    return memes
 
 
-store = TemplateStore(
-    creds["access_key"], creds["secret"], creds["region"], default_templates
-)
 
 
 # load meme layouts
@@ -77,14 +73,6 @@ with open("config/messages.json", "rb") as c:
     credit_text = json.load(c)["credits"]
 
 
-def partition_on(pred, seq):
-    i = iter(seq)
-    while True:
-        try:
-            n = next(i)
-        except StopIteration:
-            return
-        yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
 def _s3_cleanup():
@@ -127,8 +115,12 @@ async def templates(ctx, template=None):
         guild = str(ctx.message.guild.id)
         if template:
             meme = store.read_meme(guild, template)
-            await ctx.send(
-                f"\nName: {meme.name}\nDescription: *{meme.description}*\nTimes used: {meme.usage}\nExpects {len(meme.textboxes)} strings\nRead more: {meme.docs}"
+            await ctx.send(f"""
+                Name: {meme.name}
+                Description: *{meme.description}*
+                Times used: {meme.usage}
+                Expects {len(meme.textboxes)} strings
+                Read more: {meme.docs}"""
             )
         else:
             await ctx.send(
@@ -153,29 +145,29 @@ async def refresh_templates(ctx: Context, arg: str=None):
 
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx: Context, memename: str, *text):
+async def meme(ctx: Context, template: str, *text):
     try:
         guild = str(ctx.message.guild.id)
-        meme = store.read_meme(guild, memename, True)
-        strings = _reflow_text(text, meme.box_count)
-        meme.usage += 1
+        meme = store.read_meme(guild, template, True)
         key = f"{uuid.uuid4().hex}.png"
-        with io.BytesIO() as memeobj:
+        with io.BytesIO() as buffer:
             # Render the meme.
-            meme.render(strings, memeobj)
-            memeobj.flush()
-            memeobj.seek(0)
+            meme.render(text, buffer)
+            buffer.flush()
+            buffer.seek(0)
             # Upload meme to S3.
-            s3.upload(key, memeobj)
+            s3.upload(key, buffer)
         # Send the meme as a message.
         e = discord.Embed().set_image(
             url=f"http://discord-memes.s3.amazonaws.com/{key}"
         )
         if random.randrange(8) == 0:
             e.set_footer(text=random.choice(credit_text))
-        await ctx.send(embed=e)
+        msg = await ctx.send(embed=e)
+        for r in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'):
+            await msg.add_reaction(r)
     except TemplateError:
-        await ctx.send(f"```Could not load '{memename}'```")
+        await ctx.send(f"```Could not load '{template}'```")
     except:
         err = traceback.format_exc()
         if testing:
@@ -183,24 +175,8 @@ async def meme(ctx: Context, memename: str, *text):
         print(err, file=sys.stderr)
 
 
-def _reflow_text(text, count):
-
-    if len(text) == count:
-        return text
-    elif count == 1:
-        return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", text))]
-    elif "//" in text:
-        result = [
-            "\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", b))
-            for b in partition_on(lambda s: s == "//", text)
-        ]
-        assert len(result) == count
-        return result
-    elif "/" in text:
-        result = [" ".join(l) for l in partition_on(lambda s: s == "/", text)]
-        assert len(result) == count
-        return result
-
-
 if __name__ == "__main__":
+    global store
+    store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+
     bot.run(creds["discord_token"])

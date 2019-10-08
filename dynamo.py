@@ -4,7 +4,7 @@ from decimal import Decimal
 import boto3
 from botocore.exceptions import ClientError
 
-from memegenerator import MemeTemplate, TextBox
+from render import MemeTemplate, TextBox
 
 class TemplateError(Exception):
     pass
@@ -51,7 +51,7 @@ class TemplateStore:
         updated = 0
         added = 0
         unchanged = 0
-        for t in self.default_templates(guild):
+        for t in self.default_templates(guild).values():
             item = t.serialize(True)
             if 'usage' in item: 
                 del item['usage']
@@ -97,8 +97,9 @@ class TemplateStore:
         try:
             return table.update_item(
                 Key=key,
-                UpdateExpression="set #attr = if_not_exists(#attr, :zero) + :one",
-                ExpressionAttributeNames={"#attr": "usage"},
+                ConditionExpression='attribute_exists(#source)',
+                UpdateExpression="set #usage = if_not_exists(#usage, :zero) + :one",
+                ExpressionAttributeNames={"#usage": "usage", "#source": "source"},
                 ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",
             )["Attributes"]
