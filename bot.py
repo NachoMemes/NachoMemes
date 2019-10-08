@@ -14,6 +14,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from render import MemeTemplate, TextBox, default_templates
 from dynamo import TemplateStore, TemplateError
+from localstore import LocalTemplateStore
 
 
 description = "A bot to generate custom memes using pre-loaded templates."
@@ -95,20 +96,30 @@ async def meme(ctx: Context, template: str, *text):
         guild = str(ctx.message.guild.id)
         meme = store.read_meme(guild, template, True)
         key = f"{uuid.uuid4().hex}.png"
-        with io.BytesIO() as buffer:
-            # Render the meme.
-            meme.render(text, buffer)
-            buffer.flush()
-            buffer.seek(0)
-            # Upload meme to S3.
-            s3.upload(key, buffer)
-        # Send the meme as a message.
-        e = discord.Embed().set_image(
-            url=f"http://discord-memes.s3.amazonaws.com/{key}"
-        )
-        if random.randrange(8) == 0:
-            e.set_footer(text=random.choice(credit_text))
-        msg = await ctx.send(embed=e)
+
+        if testing:
+            with io.BytesIO() as buffer:
+                meme.render(text, buffer)
+                buffer.flush()
+                buffer.seek(0)
+
+                msg = await ctx.send(file = discord.File(buffer, "meme.png"))
+        else:
+            with io.BytesIO() as buffer:
+                # Render the meme.
+                meme.render(text, buffer)
+                buffer.flush()
+                buffer.seek(0)
+                # Upload meme to S3.
+                s3.upload(key, buffer)
+            # Send the meme as a message.
+            e = discord.Embed().set_image(
+                url=f"http://discord-memes.s3.amazonaws.com/{key}"
+            )
+            if random.randrange(8) == 0:
+                e.set_footer(text=random.choice(credit_text))
+            msg = await ctx.send(embed=e)
+
         for r in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'):
             await msg.add_reaction(r)
     except TemplateError:
@@ -124,19 +135,25 @@ if __name__ == "__main__":
     global testing
     testing = True
 
-    if testing:
-        with open("config/testing-creds.json", "rb") as f:
-            creds = json.load(f)
-    else:
+    if not testing:
         with open("config/creds.json", "rb") as f:
             creds = json.load(f)
 
     global store
-    store = TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
+    store = LocalTemplateStore(default_templates) if testing else TemplateStore(creds["access_key"], creds["secret"], creds["region"], default_templates)
 
     global s3
-    s3 = tinys3.Connection(
-        creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
-    )
+    if not testing:
+        s3 = tinys3.Connection(
+            creds["access_key"], creds["secret"], tls=True, default_bucket="discord-memes"
+        )
 
-    bot.run(creds["discord_token"])
+    try:
+        token = creds["discord_token"]
+    except NameError:
+        token = os.environ.get("DISCORD_TOKEN")
+        if token == None:
+            print("Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!")
+            sys.exit(1)
+
+    bot.run(token)
