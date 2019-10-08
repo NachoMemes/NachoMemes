@@ -14,7 +14,7 @@ import discord
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
-from render import MemeTemplate, TextBox, default_templates
+from render import MemeTemplate, TextBox
 from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
 from store import Store, TemplateError
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 
     global store
-    store = LocalTemplateStore(default_templates)
+    store = LocalTemplateStore()
     if not args.local and "access_key" in creds:
         store =  DynamoTemplateStore(creds["access_key"], creds["secret"], creds["region"], store)
 

@@ -13,6 +13,7 @@ from decimal import Decimal
 from itertools import chain, takewhile
 
 
+
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
@@ -301,26 +302,6 @@ class MemeTemplate:
             img.save(output, format="PNG")
 
 
-def default_templates(guild: str) -> Iterable[MemeTemplate]:
-    # load meme layouts
-    with open("config/layouts.json", "rb") as t:
-        layouts = json.load(
-            t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
-        )
-
-    # load memes
-    with open("config/templates.json", "rb") as t:
-        memes = json.load(
-            t,
-            object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
-            if "source" in d
-            else d,
-        )
-
-    for name, meme in memes.items():
-        meme.name = name
-
-    return memes
 
 if __name__ == "__main__":
     args = sys.argv[1:]
@@ -329,7 +310,9 @@ if __name__ == "__main__":
         show_boxes = True
         args.remove('--show')
     (filename, template_name, *text) = args
-    template = default_templates(None)[template_name]
+    from localstore import LocalTemplateStore
+    store = LocalTemplateStore()
+    template = store.read_meme(None, template_name)
     with open(filename, 'wb') as f:
         template.render(text, f, show_boxes)
 
