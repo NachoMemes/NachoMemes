@@ -136,7 +136,7 @@
         "description": "she's got good brains",
         "docs": "https://knowyourmeme.com/memes/roll-safe",
         "source": "file:templates/rollsafe.jpg",
-        "layout": "rollsafe_layout",
+        "layout": "standard_layout",
         "usage": 0
     }
 
