@@ -7,6 +7,7 @@ import random
 import sys
 import traceback
 import uuid
+import re
 from datetime import datetime, timedelta
 from typing import Iterable
 
@@ -77,9 +78,13 @@ async def refresh_templates(ctx: Context, arg: str = None):
 async def meme(ctx: Context, template: str, *text):
     await ctx.trigger_typing()
     try:
+        # Case insensitive meme naming
+        template = template.lower()
+        # Have the meme name be reflective of the contents.
+        name = re.sub(r'\W+', "", str(text))
+        key = f"{template}-{name}.png"
         guild = str(ctx.message.guild.id)
         meme = store.read_meme(guild, template, True)
-        key = f"{uuid.uuid4().hex}.png"
 
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
