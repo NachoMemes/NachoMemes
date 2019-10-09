@@ -118,7 +118,7 @@
         "layout": "woman_yelling_at_a_cat_layout",
         "usage": 0
     },
-    "xzibit-yo-dawg": {
+    "xzibit": {
         "description": "yo dawg!",
         "docs": "https://knowyourmeme.com/memes/xzibit-yo-dawg",
         "source": "file:templates/xzibit-yo-dawg.jpg",
