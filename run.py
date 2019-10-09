@@ -25,10 +25,10 @@ def main(branch=None, debug=False, refresh=False, local=False):
     if branch:
         for c in ("git reset HEAD --hard",
                    "git fetch",
-                   "git checkout {branch}",
+                   f"git checkout {branch}",
                    "git pull" 
                 ):
-                if c == "git reset HEAD --hard" and refresh == false:
+                if c == "git reset HEAD --hard" and refresh == False:
                     continue
                 subprocess.call([c], shell=True)
     subprocess.call([runCommand], shell=True)
