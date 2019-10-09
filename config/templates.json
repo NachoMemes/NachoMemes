@@ -131,6 +131,13 @@
         "source": "file:templates/american-chopper.jpg",
         "layout": "american_chopper_layout",
         "usage": 0
+    },
+    "rollsafe": {
+        "description": "she's got good brains",
+        "docs": "https://knowyourmeme.com/memes/roll-safe",
+        "source": "file:templates/rollsafe.jpg",
+        "layout": "rollsafe_layout",
+        "usage": 0
     }
 
 }
