@@ -122,7 +122,7 @@
         "description": "yo dawg!",
         "docs": "https://knowyourmeme.com/memes/xzibit-yo-dawg",
         "source": "file:templates/xzibit-yo-dawg.jpg",
-        "layout": "xzibit_yo_dawg_layout",
+        "layout": "standard_layout",
         "usage": 0
     },
     "american-chopper": {
