@@ -21,18 +21,18 @@ def main(branch=None, debug=False, refresh=False, local=False):
         runCommand = runCommand + " --debug"
     if local:
         runCommand = runCommand + " --local"
-    
-    if branch:
-        for c in ("git reset HEAD --hard",
-                   "git fetch",
-                   f"git checkout {branch}",
-                   "git pull" 
-                ):
-                if c == "git reset HEAD --hard" and refresh == False:
-                    continue
-                subprocess.call([c], shell=True)
-    subprocess.call([runCommand], shell=True)
 
+    if branch:
+        for c in (
+            "git reset HEAD --hard",
+            "git fetch",
+            f"git checkout {branch}",
+            "git pull",
+        ):
+            if c == "git reset HEAD --hard" and refresh == False:
+                continue
+            subprocess.call([c], shell=True)
+    subprocess.call([runCommand], shell=True)
 
 
 if __name__ == "__main__":
@@ -44,9 +44,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "-b",
         "--branch",
-        type=str, 
-        action="store", 
-        help="Optional. Which branch the bot should be run from."
+        type=str,
+        action="store",
+        help="Optional. Which branch the bot should be run from.",
     )
     parser.add_argument(
         "-d",
@@ -63,10 +63,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-l",
-        "--local", 
-        action="store_true", 
-        help="Run locally without DynamoDB."
+        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
     )
 
     args = parser.parse_args()
