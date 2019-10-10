@@ -5,6 +5,7 @@ jobs:
     docker: 
       - image: circleci/python:3.7.3
     steps:
+      - run: apt-get update
       - run: echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
       - run: sudo apt-get install ttf-mscorefonts-installer -y
       - checkout
