@@ -580,4 +580,4 @@ min-public-methods=2
 overgeneral-exceptions=BaseException,
                        Exception
 
-generated-members=.*dynamo.*
+ignored-modules=boto3
