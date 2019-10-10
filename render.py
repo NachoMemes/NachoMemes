@@ -64,7 +64,7 @@ class Justify(Enum):
 
 
 class Font(Enum):
-    IMPACT = Path("/usr/share/fonts/truetype/msttcorefonts/Impact.ttf")
+    IMPACT = Path("fonts/impact.ttf")
     XKCD = Path("fonts/xkcd-script.ttf")
     COMIC_SANS = Path("/usr/share/fonts/truetype/msttcorefonts/comic.ttf")
 

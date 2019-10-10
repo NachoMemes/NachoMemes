@@ -2,19 +2,16 @@ version: 2.0
 
 jobs:
   build:
-    docker: 
-      - image: ubuntu:18.04
+    docker:
+      - image: circleci/python:3.7.3
     steps:
-      - run: "apt-get update \
-    && apt-get -y install \
-    python3 \
-    python3-pip \
-    git \
-    sudo"
-      - run: echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
-      - run: sudo apt-get install ttf-mscorefonts-installer -y
       - checkout
-      - run: pip3 install -r requirements.txt
-      - run: pip3 install pylint
-      - run: pylint  -E *.py
-      - run: python3 -m unittest
+      - run:
+          name: "Install dependencies."
+          command: sudo pip3 install -r requirements.txt pylint
+      - run:
+          name: "Check syntax."
+          command: pylint -E *.py
+      - run:
+          name: "Run unit tests."
+          command: python3 -m unittest
