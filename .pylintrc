@@ -582,3 +582,4 @@ overgeneral-exceptions=BaseException,
 
 ignored-modules=boto3
 ignored-classes=boto3
+generated-members=boto3.*
