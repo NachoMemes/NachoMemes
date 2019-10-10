@@ -50,21 +50,16 @@ class Color(Enum):
 
 
 class Justify(Enum):
-    LEFT = (lambda w1, w2: 0,)
-    CENTER = (lambda w1, w2: (w1 - w2) // 2,)
-    RIGHT = (lambda w1, w2: w1 - w2,)
+    LEFT = (lambda w1, w2: 0, )
+    CENTER = (lambda w1, w2: (w1 - w2) // 2, )
+    RIGHT = (lambda  w1, w2: w1 - w2, )
 
-    def __init__(self, formula: Callable[[int, int], int]):
-        self.formula = formula
-
-    def calculate(
-        self, width: int, height: int, text_width: int, text_height: int
-    ) -> Tuple[int, int]:
-        return self.formula(width, text_width), (height - text_height) // 2
+    def __call__(self, *args, **kwargs):
+        return self.value[0](*args, **kwargs)
 
 
 class Font(Enum):
-    IMPACT = Path("fonts/impact.ttf")
+    IMPACT = Path("/usr/share/fonts/truetype/msttcorefonts/Impact.ttf")
     XKCD = Path("fonts/xkcd-script.ttf")
     COMIC_SANS = Path("/usr/share/fonts/truetype/msttcorefonts/comic.ttf")
 
@@ -186,28 +181,37 @@ class TextBox:
         return int(self.left * image_width) + x, int(self.top * image_height) + y
 
     def render(self, img: Image, image_width, image_height, string, font_size):
-        lines = string.count("\n") + 1
-        # calculate the width of the text in pixels.
-        font_width = self.face.width(font_size, string)
+        lines = string.split("\n")
+
         # get the size of the bounding box in pixels
         bw, bh = self.box_size(image_width, image_height)
-        # find the start coordinates of the text within the bounding box based
-        # on the text alignment
-        tx, ty = self.justify.calculate(bw, bh, font_width, font_size * lines)
-        # translate the text position relative to the position of the text box
-        # in the image
-        x, y = self.offset(tx, ty, image_width, image_height)
-        # render at that position
-        if self.rotation:
-            self.face.render_rotated(
-                img, font_size, self.color, x, y, self.rotation, string
-            )
-        elif self.outline:
-            self.face.render_outlined(
-                ImageDraw.Draw(img), font_size, self.color, self.outline, x, y, string
-            )
-        else:
-            self.face.render(ImageDraw.Draw(img), font_size, self.color, x, y, string)
+
+        # find the offset of the first line of text
+        top = (bh - font_size * len(lines)) // 2
+        for num, line in enumerate(lines):
+            font_width = self.face.width(font_size, line)
+
+            # find the start x coordinate of the text within the bounding box 
+            # based on the text alignment
+            tx = self.justify(bw, font_width)
+            ty = top + font_size * num
+        
+            # translate the text position relative to the position of the text box
+            # in the image
+            x, y = self.offset(tx, ty, image_width, image_height)
+            # render at that position
+            if self.rotation:
+                self.face.render_rotated(
+                    img, font_size, self.color, x, y, self.rotation, line
+                )
+            elif self.outline:
+                self.face.render_outlined(
+                    ImageDraw.Draw(img), font_size, self.color, self.outline, x, y, line
+                )
+            else:
+                self.face.render(ImageDraw.Draw(img), font_size, self.color, x, y, line)
+
+
 
     def debug_box(self, img: Image, image_width, image_height):
         draw = ImageDraw.Draw(img)
