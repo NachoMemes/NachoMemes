@@ -18,8 +18,10 @@
   <a href="https://github.com/cooperpellaton/NachoMemes/tree/v1.0">
     <img src="https://img.shields.io/badge/version-1.0-bright%20green" alt="Version 1.0">
   </a>
+
   <a href=https://circleci.com/gh/cooperpellaton/NachoMemes>
-    <img src=https://circleci.com/gh/cooperpellaton/NachoMemes.svg?style=svg>
+    <img src=https://circleci.com/gh/cooperpellaton/NachoMemes.svg?style=svg
+
   </a>
 </p>
 
@@ -44,21 +46,26 @@ This is a bot to make memes from meme templates. To get more information try:
 ## Run This Yourself
 
 ### Local Development
+
 The bot can be run in local development mode in order to test functionality without having to connect to AWS. In this mode, debug information will be printed and the bot will send images locally instead of uploading to AWS. Additionally, the images will be sent as images instead of embeds.
 To setup local development mode you must do the following:
+
 1. Setup a bot on the [Discord Developers website](https://discordapp.com/developers/applications/)
 2. Ensure that `testing = True` is set in `bot.py`. This should be located in the `if __name__ == "__main__"` section.
 3. Run the bot with either the `"discord_token"` filled in in `config/creds.json` or the `$DISCORD_TOKEN` environment variable set:
+
 ```sh
 DISCORD_TOKEN=<TOKEN> python bot.py
 ```
 
 ### Local development with Docker
-The easiest way to run this locally is via docker. First create a `creds.json` file in the config directory. If you are running locally only include the discord token. If you are running in AWS incude the relevant key, secret, and region. You can see the `creds.json` format in a later section. Then run `docker-compose up`. 
+
+The easiest way to run this locally is via docker. First create a `creds.json` file in the config directory. If you are running locally only include the discord token. If you are running in AWS incude the relevant key, secret, and region. You can see the `creds.json` format in a later section. Then run `docker-compose up`.
 
 Alternatively you can specify the same sections from the `creds.json` format as environment variables and make them available when running the Docker compose command.
 
 ### Production
+
 Make sure you have the `Impact` font installed. On Ubuntu you can get it through this package: `ttf-mscorefonts-installer`. Then, clone this repository and `pip install -r requirements.txt`. Generate some keys (AWS and Discord), and put them in a `config/creds.json` file like so:
 
 ```json
@@ -72,7 +79,7 @@ Make sure you have the `Impact` font installed. On Ubuntu you can get it through
 
 Additionally, randomized footer messages are stored in [`config/messages.json`](config/messages.json). For more personality try editing the contents.
 
-To add custom templates and layouts (i.e. photos and the textboxes that go over them) look into [`config/templates.json`](config/templates.json) and [`config/layouts.json`](config/layouts.json) respectively. *In the future the bot will support dynamic addition without editing these files.*
+To add custom templates and layouts (i.e. photos and the textboxes that go over them) look into [`config/templates.json`](config/templates.json) and [`config/layouts.json`](config/layouts.json) respectively. _In the future the bot will support dynamic addition without editing these files._
 
 Run `python bot.py` and you're off to meme like a lord.
 
