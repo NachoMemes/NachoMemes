@@ -6,4 +6,6 @@ jobs:
       - image: python:3.7.4
     steps:
       - checkout
+      - run: pip install pylint
+      - run: pylint *.py
       - run: python -m unittest
