@@ -16,10 +16,10 @@ class LocalTemplateStore(Store):
     def read_meme(
         self, guild: str, id: str, increment_use: bool = False
     ) -> MemeTemplate:
-        return self._load()[id]
+        return _load(guild)[id]
 
     def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
-        result = (t.serialize(True) for t in self._load().values())
+        result = (t.serialize(True) for t in _load(guild).values())
         if fields:
             result = ({k: d[k] for k in fields} for d in result)
         return result
@@ -27,24 +27,24 @@ class LocalTemplateStore(Store):
     def guild_config(self, guild: str) -> dict:
         pass
 
-    @lru_cache(maxsize=1)
-    def _load(guild: str) -> Iterable[MemeTemplate]:
-        # load meme layouts
-        with open("config/layouts.json", "rb") as t:
-            layouts = json.load(
-                t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
-            )
+@lru_cache(maxsize=1)
+def _load(guild: str) -> Iterable[MemeTemplate]:
+    # load meme layouts
+    with open("config/layouts.json", "rb") as t:
+        layouts = json.load(
+            t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
+        )
 
-        # load memes
-        with open("config/templates.json", "rb") as t:
-            memes = json.load(
-                t,
-                object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
-                if "source" in d
-                else d,
-            )
+    # load memes
+    with open("config/templates.json", "rb") as t:
+        memes = json.load(
+            t,
+            object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
+            if "source" in d
+            else d,
+        )
 
-        for name, meme in memes.items():
-            meme.name = name
+    for name, meme in memes.items():
+        meme.name = name
 
-        return memes
+    return memes
