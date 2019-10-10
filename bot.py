@@ -6,6 +6,7 @@ import os
 import random
 import sys
 import traceback
+import psutil
 import uuid
 import re
 import textwrap
@@ -39,13 +40,22 @@ async def on_ready():
 async def status_task():
     while True:
         # cpu_p = discord.Game("CPU: " + psutil.cpu_percent())
-        
+
         with open("config/messages.json", "rb") as c:
             statuses = json.load(c)["credits"]
-        statuses.extend(["with the API", "with your MOM", "with MEMES"])
 
         await bot.change_presence(
-            status=discord.Status.online, activity=discord.Game(random.choice(statuses))
+            status=discord.Status.online,
+            activity=discord.Game(
+                name=random.choice(statuses),
+                details="Usage stats\nCPU: {0:.0%} RAM: {0:.0%}".format(
+                    psutil.cpu_percent,
+                    (
+                        psutil.virtual_memory()._asdict()["used"]
+                        / psutil.virtual_memory()._asdict()["total"]
+                    ),
+                ),
+            ),
         )
         await asyncio.sleep(90)
 
