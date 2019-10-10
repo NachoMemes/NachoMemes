@@ -112,17 +112,31 @@
         "usage": 0
     },
     "woman-yelling-at-a-cat": {
-        "description": "you pu**y!",
+        "description": "you pu--y!",
         "docs": "https://knowyourmeme.com/memes/woman-yelling-at-a-cat",
         "source": "file:templates/woman-yelling-at-a-cat.jpg",
         "layout": "woman_yelling_at_a_cat_layout",
         "usage": 0
     },
-    "xzibit-yo-dawg": {
+    "xzibit": {
         "description": "yo dawg!",
         "docs": "https://knowyourmeme.com/memes/xzibit-yo-dawg",
         "source": "file:templates/xzibit-yo-dawg.jpg",
-        "layout": "xzibit_yo_dawg_layout",
+        "layout": "standard_layout",
+        "usage": 0
+    },
+    "american-chopper": {
+        "description": "LISTEN YOU F**k",
+        "docs": "https://knowyourmeme.com/memes/american-copper",
+        "source": "file:templates/american-chopper.jpg",
+        "layout": "american_chopper_layout",
+        "usage": 0
+    },
+    "rollsafe": {
+        "description": "she's got good brains",
+        "docs": "https://knowyourmeme.com/memes/roll-safe",
+        "source": "file:templates/rollsafe.jpg",
+        "layout": "standard_layout",
         "usage": 0
     }
 

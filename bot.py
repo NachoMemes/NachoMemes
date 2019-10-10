@@ -7,6 +7,7 @@ import random
 import sys
 import traceback
 import uuid
+import re
 from datetime import datetime, timedelta
 from typing import Iterable
 
@@ -77,28 +78,27 @@ async def refresh_templates(ctx: Context, arg: str = None):
 async def meme(ctx: Context, template: str, *text):
     await ctx.trigger_typing()
     try:
+        # Case insensitive meme naming
+        template = template.lower()
         guild = str(ctx.message.guild.id)
         meme = store.read_meme(guild, template, True)
-        key = f"{uuid.uuid4().hex}.png"
+        # Have the meme name be reflective of the contents.
+        name = re.sub(r"\W+", "", str(text))
+        key = f"{template}-{name}.png"
 
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
             buffer.flush()
             buffer.seek(0)
             msg = await ctx.send(file=discord.File(buffer, key))
-        if random.randrange(8) >= 0:
+        if random.randrange(8) == 0:
             tmpmsg = msg
             e = discord.Embed().set_image(url=tmpmsg.attachments[0].url)
             e.set_footer(text=random.choice(credit_text))
             msg = await ctx.send(embed=e)
             await tmpmsg.delete()
-        await asyncio.gather(
-            *(
-                msg.add_reaction(r)
-                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")
-            )
-        )
-
+        for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+            await msg.add_reaction(r)
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
     except:

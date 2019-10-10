@@ -13,24 +13,26 @@ import subprocess
 import sys
 
 
-def main(branch, debug=False, refresh=False, local=False):
+def main(branch=None, debug=False, refresh=False, local=False):
     """ Builds and runs a list of processes.
     """
-    commands = [
-        "git reset HEAD --hard",
-        "git fetch",
-        f"git checkout {branch}",
-        "git pull",
-        "python bot.py",
-    ]
+    runCommand = "python3 bot.py"
     if debug:
-        commands[-1] = commands[-1] + " --debug"
+        runCommand = runCommand + " --debug"
     if local:
-        commands[-1] = commands[-1] + " --local"
-    if not refresh:
-        commands.pop(0)
-    for proc in commands:
-        subprocess.call([proc], shell=True)
+        runCommand = runCommand + " --local"
+
+    if branch:
+        for c in (
+            "git reset HEAD --hard",
+            "git fetch",
+            f"git checkout {branch}",
+            "git pull",
+        ):
+            if c == "git reset HEAD --hard" and refresh == False:
+                continue
+            subprocess.call([c], shell=True)
+    subprocess.call([runCommand], shell=True)
 
 
 if __name__ == "__main__":
@@ -40,24 +42,29 @@ if __name__ == "__main__":
         description="Runs the bot passed on input parameters."
     )
     parser.add_argument(
-        "branch", metavar="b", type=str, help="Which branch the bot should be run from."
+        "-b",
+        "--branch",
+        type=str,
+        action="store",
+        help="Optional. Which branch the bot should be run from.",
     )
     parser.add_argument(
+        "-d",
         "--debug",
         action="store_true",
         help="Run state::debug. True or false. Runs different credentials and logging level.",
     )
 
     parser.add_argument(
+        "-r",
         "--refresh",
         action="store_true",
         help="Whether or not to pull fresh from the branch",
     )
 
     parser.add_argument(
-        "--local", action="store_true", help="Run locally without DynamoDB."
+        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
     )
 
     args = parser.parse_args()
-
     main(args.branch, args.debug, args.refresh, args.local)

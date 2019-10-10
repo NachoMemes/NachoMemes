@@ -20,13 +20,13 @@
   </a>
 </p>
 
-Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=51264) to your server!
+Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=387136) to your server!
 
 ![A demo of the bot being used.](/watchme.gif)
 
 ## Overview
 
-[This](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=51264) is a [Discord](https://discordapp.com) bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends and meme quickly without ever leaving the chat.
+[This](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=387136) is a [Discord](https://discordapp.com) bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends and meme quickly without ever leaving the chat.
 
 Need help getting started? Try `/helpmeme`:
 
