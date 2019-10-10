@@ -8,6 +8,7 @@ import sys
 import traceback
 import uuid
 import re
+import textwrap
 from datetime import datetime, timedelta
 from typing import Iterable
 
@@ -41,14 +42,13 @@ async def templates(ctx, template=None):
         guild = str(ctx.message.guild.id)
         if template:
             meme = store.read_meme(guild, template)
-            await ctx.send(
-                f"""
+            await ctx.send(textwrap.dedent(f"""\
                 Name: {meme.name}
                 Description: *{meme.description}*
                 Times used: {meme.usage}
                 Expects {len(meme.textboxes)} strings
                 Read more: {meme.docs}"""
-            )
+            ))
         else:
             await ctx.send(
                 "== Templates =="
