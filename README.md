@@ -19,8 +19,8 @@
     <img src="https://img.shields.io/badge/version-1.0-bright%20green" alt="Version 1.0">
   </a>
 
-  <a href=https://circleci.com/gh/cooperpellaton/NachoMemes>
-    <img src=https://circleci.com/gh/cooperpellaton/NachoMemes.svg?style=svg
+  <a href="https://circleci.com/gh/cooperpellaton/NachoMemes">
+    <img src="https://circleci.com/gh/cooperpellaton/NachoMemes.svg?style=svg">
 
   </a>
 </p>
