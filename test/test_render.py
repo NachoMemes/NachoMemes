@@ -9,17 +9,17 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from render import default_templates
+from localstore import LocalTemplateStore
 
 
 class TestRender(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestRender, self).__init__(*args, **kwargs)
-        self.templates = default_templates(None)
+        self.store = LocalTemplateStore()
         self.has_errors = False
 
     def test_simple(self):
-        template = self.templates["bruh"]
+        template = self.store.read_meme(None, "bruh")
         with io.BytesIO() as buffer:
             template.render(("", "bruh"), buffer)
             buffer.flush()
