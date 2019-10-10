@@ -44,12 +44,11 @@ async def status_task():
 
         await bot.change_presence(
             status=discord.Status.online,
-            activity=discord.Activity(
-                name=random.choice(statuses),
-                state="All up in the memes",
-                details="""Usage stats\nCPU: {}% RAM: {}%""".format(
+            activity=discord.Game(
+                name=random.choice(statuses)
+                + """\nUsage \nCPU: {}% RAM: {}%""".format(
                     psutil.cpu_percent(), psutil.virtual_memory()._asdict()["percent"]
-                ),
+                )
             ),
         )
         await asyncio.sleep(90)
