@@ -34,7 +34,28 @@ with open("config/messages.json", "rb") as c:
 @bot.event
 async def on_ready():
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
+    bot.loop.create_task(status_task())
 
+
+# Needs work obv, going to add rich content for CPU and MEM and/or AVG LOAD usage
+# Going to move to json config template
+# Cycles through status changes: "Playing ..."
+@bot.event
+async def status_task():
+    while True:
+        #import psutil first
+        #cpu_p = discord.Game("CPU: " + psutil.cpu_percent())
+
+        game1 = discord.Game("with the API")
+        game2 = discord.Game("with your MOM")
+        game3 = discord.Game("with MEMES")
+
+        await bot.change_presence(status=discord.Status.online, activity=game1)
+        await asyncio.sleep(6)
+        await bot.change_presence(status=discord.Status.dnd, activity=game2)
+        await asyncio.sleep(9)
+        await bot.change_presence(status=discord.Status.online, activity=game3)
+        await asyncio.sleep(6)
 
 @bot.command(description="List templates.")
 async def templates(ctx, template=None):
