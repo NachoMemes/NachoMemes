@@ -4,16 +4,16 @@ import io
 import json
 import os
 import random
-import sys
-import traceback
-import psutil
-import uuid
 import re
+import sys
 import textwrap
+import traceback
+import uuid
 from datetime import datetime, timedelta
 from typing import Iterable
 
 import discord
+import psutil
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -39,8 +39,6 @@ async def on_ready():
 @bot.event
 async def status_task():
     while True:
-        # cpu_p = discord.Game("CPU: " + psutil.cpu_percent())
-
         with open("config/messages.json", "rb") as c:
             statuses = json.load(c)["credits"]
 
