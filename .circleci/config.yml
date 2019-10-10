@@ -6,8 +6,8 @@ jobs:
       - image: circleci/python:3.7.3
     steps:
       - run: sudo apt-get update
-      - run: echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
       - run: sudo apt-get install ttf-mscorefonts-installer -y
+      - run: echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
       - checkout
       - run: pip3 install -r requirements.txt
       - run: pip3 install pylint
