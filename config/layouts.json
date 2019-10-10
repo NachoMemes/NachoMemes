@@ -214,7 +214,56 @@
             "justify": "CENTER"
         }
     ],
-    "galaxy_layout_6": [],
+    "galaxy_layout_6": [
+        {
+            "left": 0.02,
+            "right": 0.48,
+            "top": 0.01,
+            "bottom": 0.15,
+            "face": "IMPACT",
+            "justify": "CENTER"
+        },
+        {
+            "left": 0.02,
+            "right": 0.48,
+            "top": 0.15,
+            "bottom": 0.32,
+            "face": "IMPACT",
+            "justify": "CENTER"
+        },
+        {
+            "left": 0.02,
+            "right": 0.48,
+            "top": 0.32,
+            "bottom": 0.47,
+            "face": "IMPACT",
+            "justify": "CENTER"
+        },
+        {
+            "left": 0.02,
+            "right": 0.48,
+            "top": 0.47,
+            "bottom": 0.64,
+            "face": "IMPACT",
+            "justify": "CENTER"
+        },
+        {
+            "left": 0.02,
+            "right": 0.48,
+            "top": 0.64,
+            "bottom": 0.81,
+            "face": "IMPACT",
+            "justify": "CENTER"
+        },
+        {
+            "left": 0.02,
+            "right": 0.48,
+            "top": 0.81,
+            "bottom": 0.99,
+            "face": "IMPACT",
+            "justify": "CENTER"
+        }
+    ],
     "hannibal_layout": [{
             "left": 0.1,
             "right": 0.4,

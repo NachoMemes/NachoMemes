@@ -41,6 +41,13 @@
         "layout": "galaxy_layout_4",
         "usage": 0
     },
+    "galaxy-brain-6": {
+        "description": "Galaxy Brain.",
+        "docs": "https://knowyourmeme.com/memes/galaxy-brain",
+        "source": "file:templates/galaxy-brain-6.jpg",
+        "layout": "galaxy_layout_6",
+        "usage": 0
+    },
     "millionaire1": {
         "description": "Call a friend?",
         "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
@@ -127,7 +134,7 @@
     },
     "american-chopper": {
         "description": "LISTEN YOU F**k",
-        "docs": "https://knowyourmeme.com/memes/american-copper",
+        "docs": "https://knowyourmeme.com/memes/american-chopper",
         "source": "file:templates/american-chopper.jpg",
         "layout": "american_chopper_layout",
         "usage": 0
