@@ -40,8 +40,6 @@ This is a bot to make memes from meme templates. To get more information try:
 
 ## Run This Yourself
 
-
-
 ### Local Development
 The bot can be run in local development mode in order to test functionality without having to connect to AWS. In this mode, debug information will be printed and the bot will send images locally instead of uploading to AWS. Additionally, the images will be sent as images instead of embeds.
 To setup local development mode you must do the following:
@@ -51,9 +49,11 @@ To setup local development mode you must do the following:
 ```sh
 DISCORD_TOKEN=<TOKEN> python bot.py
 ```
-### Local development with Docker
-The easiest way to run this locally is via docker. First create a `creds.json` file in the config directory. If you are running locally only include the discord token. If you are running in AWS incude the relevant key, secret, and region. You can see the `creds.json` format in a later section. Then build and run with docker. 
 
+### Local development with Docker
+The easiest way to run this locally is via docker. First create a `creds.json` file in the config directory. If you are running locally only include the discord token. If you are running in AWS incude the relevant key, secret, and region. You can see the `creds.json` format in a later section. Then run `docker-compose up`. 
+
+Alternatively you can specify the same sections from the `creds.json` format as environment variables and make them available when running the Docker compose command.
 
 ### Production
 Make sure you have the `Impact` font installed. On Ubuntu you can get it through this package: `ttf-mscorefonts-installer`. Then, clone this repository and `pip install -r requirements.txt`. Generate some keys (AWS and Discord), and put them in a `config/creds.json` file like so:
