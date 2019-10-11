@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# pylint: skip-file
+# # -*- coding: utf-8 -*-
 
 import io
 import json
@@ -59,9 +60,9 @@ class Justify(Enum):
 
 
 class Font(Enum):
-    IMPACT = Path("/usr/share/fonts/truetype/msttcorefonts/Impact.ttf")
+    IMPACT = Path("fonts/impact.ttf")
     XKCD = Path("fonts/xkcd-script.ttf")
-    COMIC_SANS = Path("/usr/share/fonts/truetype/msttcorefonts/comic.ttf")
+    COMIC_SANS = Path("fonts/comic.ttf")
 
     def load(self, font_size: int) -> ImageFont:
         return ImageFont.truetype(str(self.value), font_size)
