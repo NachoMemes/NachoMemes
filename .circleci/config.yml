@@ -30,14 +30,16 @@ jobs:
           name: "Run unit tests."
           command: python3 -m unittest
   build:
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    machine: true
     steps:
       - checkout
-      
       - run:
           name: "Install dependencies."
           command: sudo pip3 install -r requirements.txt
+      - run: 
+          name: "Build Docker Image"
+          command: docker build -t nachomeme .
+
 
   deploy_aws_staging:
     machine: true
@@ -65,6 +67,7 @@ workflows:
               only:
                 - develop
                 - master
+                - terraform
       - deploy_aws_staging:
           requires:
             - build
