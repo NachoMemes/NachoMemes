@@ -113,6 +113,7 @@ class TextBox:
             Color[src_dict.get("color", "BLACK")],
             Color[src_dict["outline"]] if src_dict.get("outline", None) else None,
             float(src_dict.get("rotation", 0)),
+            src_dict.get("independently-sized",False),
         )
 
     def serialize(self):
@@ -126,6 +127,7 @@ class TextBox:
             "color": self.color.name,
             "outline": self.outline.name if self.outline else None,
             "rotation": Decimal(str(self.rotation)),
+            "independently-sized": self.ind_size,
         }
 
     def __init__(
@@ -140,6 +142,7 @@ class TextBox:
         color: Color,
         outline: Color,
         rotation,
+        ind_size,
     ):
         assert all(0 < v < 1 for v in (left, right, top, bottom))
         assert left < right and top < bottom
@@ -154,6 +157,7 @@ class TextBox:
         self.color = color
         self.outline = outline
         self.rotation = rotation
+        self.ind_size = ind_size
 
     def font_size(self, image_width: int, image_height: int, string: str) -> int:
         if "\n" in string:
@@ -288,12 +292,13 @@ class MemeTemplate:
     def render(self, message: Iterable[str], output: IO, show_boxes: bool = False):
         strings = _reflow_text(message, len(self.textboxes))
         texts = list(zip(self.textboxes, strings))
-        font_size = min(tb.font_size(self.width, self.height, s) for tb, s in texts)
+        font_size = min(tb.font_size(self.width, self.height, s) for tb, s in texts if not tb.ind_size)
 
         with io.BytesIO() as buffer:
             img = self.read(buffer)
             for tb, s in texts:
-                tb.render(img, self.width, self.height, s, font_size)
+                line_size = tb.font_size(self.width, self.height, s) if tb.ind_size else font_size
+                tb.render(img, self.width, self.height, s, line_size)
                 if show_boxes:
                     tb.debug_box(img, self.width, self.height)
 
