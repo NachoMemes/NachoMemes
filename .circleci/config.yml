@@ -67,7 +67,7 @@ workflows:
               only:
                 - develop
                 - master
-                - terraform
+               
       - deploy_aws_staging:
           requires:
             - build
