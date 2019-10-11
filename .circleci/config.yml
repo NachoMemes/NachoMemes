@@ -1,5 +1,9 @@
-version: 2.0
+version: 2.1
+# This is the main CircleCI config file
 
+orbs: 
+  aws-ecs: circleci/aws-ecs@0.0.18
+  aws-ecr: circleci/aws-ecr@0.0.4
 jobs:
   build:
     docker:
