@@ -62,7 +62,7 @@ class Justify(Enum):
 class Font(Enum):
     IMPACT = Path("fonts/Impact.ttf")
     XKCD = Path("fonts/xkcd-script.ttf")
-    COMIC_SANS = Path("comic.ttf")
+    COMIC_SANS = Path("fonts/comic.ttf")
 
     def load(self, font_size: int) -> ImageFont:
         return ImageFont.truetype(str(self.value), font_size)
