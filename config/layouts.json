@@ -292,7 +292,8 @@
             "face": "IMPACT",
             "justify": "CENTER",
             "color": "WHITE",
-            "outline": "BLACK"
+            "outline": "BLACK",
+            "independently-sized": true
         }
     ],
     "stonks_layout": [{
