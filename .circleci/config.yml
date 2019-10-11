@@ -8,7 +8,7 @@ orbs:
 jobs:
 
 # The main job for testing, run on each commit
-  build:
+  test_and_lint:
     docker:
       - image: circleci/python:3.7.3
     steps:
@@ -29,12 +29,56 @@ jobs:
       - run:
           name: "Run unit tests."
           command: python3 -m unittest
-# Should add storing test results here
+  build:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: "Install dependencies."
+          command: sudo pip3 install -r requirements.txt
 
+  deploy_aws_staging:
+    machine: true
+    steps:
+      - checkout
 
-# Deploys to the staging environment, runs on every merge into develop
-  deploy_staging:
+  deploy_aws_prod:
+    machine: true
 
-# Deploys to the production environment, runs on every merge into master
-  deploy_production:
+    steps:
+      - checkout
+workflows:
+  version: 2
+  test_lint_build_deploy:
+    jobs:
+      - test_and_lint:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - build:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - deploy_aws_staging:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy_aws_prod:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+        
 
