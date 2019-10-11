@@ -4,18 +4,37 @@ version: 2.1
 orbs: 
   aws-ecs: circleci/aws-ecs@0.0.18
   aws-ecr: circleci/aws-ecr@0.0.4
+
 jobs:
+
+# The main job for testing, run on each commit
   build:
     docker:
       - image: circleci/python:3.7.3
     steps:
       - checkout
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
           name: "Install dependencies."
           command: sudo pip3 install -r requirements.txt pylint
+      - save_cache: # ** special step to save dependency cache **
+           key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+           paths:
+            - "app"
+
       - run:
           name: "Check syntax."
           command: pylint -E *.py
       - run:
           name: "Run unit tests."
           command: python3 -m unittest
+# Should add storing test results here
+
+
+# Deploys to the staging environment, runs on every merge into develop
+  deploy_staging:
+
+# Deploys to the production environment, runs on every merge into master
+  deploy_production:
+
