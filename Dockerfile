@@ -5,9 +5,7 @@ RUN apt-get update \
     python3-pip \
     git \
     sudo
-RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
-RUN sudo apt-get install ttf-mscorefonts-installer -y
-RUN rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /app
 
 WORKDIR /app
