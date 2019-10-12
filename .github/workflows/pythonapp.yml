@@ -19,6 +19,7 @@ jobs:
         pip install -r requirements.txt
     - name: Lint with pylint
       run: |
+        pip install pylint
         pylint -E *.py
         
     - name: Test with unittest
