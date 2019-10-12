@@ -1,12 +1,12 @@
 from sys import maxsize
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, Iterable, List, Optional, IO
 from dataclasses import dataclass
 from dacite import Config
 from enum import Enum, auto
 from pathlib import Path
 from urllib.request import Request, urlopen
-from PIL import ImageFont
+from PIL import ImageFont, Image
 
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
 
@@ -81,12 +81,25 @@ class MemeTemplate:
     # times used 
     usage: int
 
+    def read(self, buffer) -> Image:
+        with urlopen(self.source) as s:
+            buffer.write(s.read())
+            buffer.flush
+            buffer.seek(0)
+            return Image.open(buffer)
+
+    def render(self, message: Iterable[str], output: IO):
+        from render import render_template
+        render_template(self, message, output)
+
+
 da_config = Config({
     Font: lambda name: Font[name],
     Color: lambda name: Color[name],
     Justify: lambda name: Justify[name],
     Request: Request
 })
+
 
 class Store(ABC):
     @abstractmethod

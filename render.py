@@ -5,243 +5,191 @@ import io
 import json
 import sys
 from decimal import Decimal
-from enum import Enum, auto
 from itertools import chain, takewhile
 from math import cos, pi, sin
 from os import PathLike
-from pathlib import Path
-from typing import IO, Callable, Iterable, Tuple, List
-from urllib.request import Request, urlopen
+from typing import IO, Callable, Iterable, Tuple, List, Optional
+from store import MemeTemplate, TextBox, Color, Font
 
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
 
 def partition_on(pred, seq):
+    "Split a sequence into multuple sub-sequences using a provided value as the boundary"
     i = iter(seq)
     while True:
+        # note that we need to do an explicit StopIteration check because
+        # takewhile returns an empty sequence if it encounters StopIteration
         try:
             n = next(i)
         except StopIteration:
             return
+        # return the next sub-sequence up to the boundary.
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
-def _reflow_text(text, count):
+def _reflow_text(text, count) -> List[str]:
+    "Using slashes, break up the provided text into the requested number of boxes"
+
     if len(text) == count:
         return text
-    elif count == 1:
+
+    # if we are expecting a single string, smash everything together replacing 
+    # slash with newline
+    if count == 1:
         return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", text))]
-    elif "//" in text:
+
+    # if we see a double slash, use that as the text box boundary, and smash
+    # the sub-sequences together replacing slash with newline
+    if "//" in text:
         result = [
             "\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", b))
             for b in partition_on(lambda s: s == "//", text)
         ]
         assert len(result) == count
         return result
-    elif "/" in text:
+
+    # if we just see a single slash, use that as the text box boundary
+    if "/" in text:
         result = [" ".join(l) for l in partition_on(lambda s: s == "/", text)]
         assert len(result) == count
         return result
 
+    raise ValueError(f"could not fit provided text into {count} boxes")
+
+def _text_width(font: Font, size: int, string: str) -> int:
+    "Returns the width of the provided text at the given font size in pixels"
+    return font.load(size).getsize(string)[0]
+
+def _render_text(img: Image, font: ImageFont, color: Color, x, y, string):
+    "Render plain colored text with a transparent background"
+    ImageDraw.Draw(img).text((x, y), string, color.value, font)
+
+def _render_outlined(img: Image, font: ImageFont, color: Color, outline: Color, x, y, string: str):
+    "Render text with an outline"
+    offset = font.size / 15
+    draw = ImageDraw.Draw(img)
+    for angle in range(0, 360, 30):
+        r = angle / 360 * 2 * pi
+        pos = (x + (cos(r) * offset), y + (sin(r) * offset))
+        draw.text(pos, string, outline.value, font)
+    _render_text(img, font, color, x, y, string)
+
+def _render_rotated(img: Image, font: ImageFont, color: Color, x, y, angle, string: str):
+    txt = Image.new("RGBA", (800, 400), (255, 255, 255, 0))
+    d = ImageDraw.Draw(txt)
+    d.text((0, 0), string, (0, 0, 0, 255), font)
+    w = txt.rotate(angle, expand=1)
+    img.paste(w, (x, y), w)
 
 
+def _box_size(width: int, height: int, tb: TextBox) -> Tuple[int,int]:
+    "Calcutate the size of the textbox based on percent of the target image"
+    return (
+        int((tb.right - tb.left) * width),
+        int((tb.bottom - tb.top) * height),
+    )
+
+def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
+    """Calcuates the largest possible font size that allows the provided text 
+    to fit in the box"""
+
+    # starting with the box size divded by the number of lines
+    # OR the defined max size (whichever is smaller)
+    start = min(height//len(lines), tb.max_font_size or sys.maxsize)
+
+    # find the largest font size that allows all the text to fit (give up at 
+    # 5 pixels)
+    return next(
+        size
+        for size in range(start, 5, -1)
+        if all(_text_width(tb.face, size, s) < width for s in lines)
+    )
+
+def _offset(width: int, height: int, tb: TextBox, x: int, y: int) -> Tuple[int, int]:
+    "Calculate offset position relative to a textbox on an image"
+    return int(tb.left * width) + x, int(tb.top * height) + y
 
 
+def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
+    "Would you kindly render some text on an image"
 
+    # get the size of the bounding box in pixels
+    bw, bh = _box_size(*img.size, tb)
 
+    # if this is independently sized, calculate the size
+    size = base_size if not tb.ind_size else _font_size(bw, bh, tb, lines)
+    font = tb.face.load(size)
 
+    # find the offset of the first line of text
+    top = (bh - size * len(lines)) // 2
+    for num, line in enumerate(lines):
 
+        width = font.getsize(line)[0]
 
+        # find the start x coordinate of the text within the bounding box 
+        # based on the text alignment
+        tx = tb.justify(bw, width)
+        ty = top + size * num
+    
+        # translate the text position relative to the position of the text box
+        # in the image
+        x, y = _offset(*img.size, tb, tx, ty)
+        # render at that position
+        if tb.rotation:
+            _render_rotated(img, font, tb.color, x, y, tb.rotation, line)
+        elif tb.outline:
+            _render_outlined(img, font, tb.color, tb.outline, x, y, line)
+        else:
+            _render_text(img, font, tb.color, x, y, line)
 
+def debug_box(img: Image, tb: TextBox):
+    "draw an outline around the TextBox for debugging"
+    
+    ImageDraw.Draw(img).rectangle(
+        (
+            (self.image_width * tb.left, self.image_height * tb.top),
+            (self.image_width * tb.right, self.image_height * tb.bottom),
+        ),
+        outline=(0, 0, 0),
+    )
 
+def render_template(template: MemeTemplate, message: Iterable[str], output: IO, debug: bool=False):
+    """This is the thing that does the thing"""
 
+    # combine the strings into the required number of textboxes
+    strings = _reflow_text(message, len(template.textboxes))
 
+    # zip the strings up with the corrosponding textbox
+    texts: List[Tuple[TextBox,List[str]]] = list(zip(template.textboxes, [s.split('\n') for s in strings]))
 
+    with io.BytesIO() as buffer:
 
-
-
-
-
-class MemeTemplate:
-    """definition for a template
-    """
-
-    @staticmethod
-    def deserialize(src_dict, layouts=None):
-        result = MemeTemplate(
-            Request(src_dict["source"]),
-            src_dict["layout"],
-            [TextBox.deserialize(t) for t in src_dict["textboxes"]]
-            if src_dict.get("textboxes", None)
-            else layouts[src_dict["layout"]],
-            src_dict["description"],
-            src_dict["docs"],
-            src_dict.get("usage", 0),
-        )
-        if src_dict.get("name", None):
-            result.name = src_dict["name"]
-        return result
-
-    def serialize(self, deep=False):
-        result = {
-            "name": self.name,
-            "description": self.description,
-            "docs": self.docs,
-            "source": self.source.full_url,
-            "layout": self.layout,
-            "usage": self.usage,
-        }
-        if deep:
-            result["textboxes"] = [t.serialize() for t in self.textboxes]
-        return result
-
-    def __init__(
-        self,
-        source: Request,
-        layout: str,
-        textboxes: Iterable[TextBox],
-        description: str,
-        docs: str,
-        usage: int,
-    ):
-        self.source = source
-        self.textboxes = textboxes
-        self.box_count = len(textboxes)
-        self.layout = layout
-        self.description = description
-        self.docs = docs
-        self.usage = usage
-        with io.BytesIO() as buffer:
-            img = self.read(buffer)
-            self.width, self.height = img.size
-
-    def read(self, buffer) -> Image:
-        with urlopen(self.source) as s:
-            buffer.write(s.read())
-            buffer.flush
-            buffer.seek(0)
-            return Image.open(buffer)
-
-
-
-class Render:
-    def __init__(self, template: MemeTemplate, message: Iterable[str], show_boxes: bool = False):
-        self.template = template
-        self.message = message
-        self.show_boxes = show_boxes
-        self.width, self.height = self.template.width, self.template.height
-
-
-    def box_size(self, tb: TextBox) -> int:
-        return (
-            int((tb.right - tb.left) * self.width),
-            int((tb.bottom - tb.top) * self.height),
-        )
-
-    def font_size(self, tb: TextBox, lines: List[str]) -> int:
-        width, height = self.box_size(tb)
-        start = min(height//len(lines), tb.max_font_size)
-        return next(
-            font_size
-            for font_size in range(start, 5, -1)
-            if all(tb.face.width(font_size, s) < width for s in lines)
-        )
-
-    def render(self, output: IO):
-        # combine the strings into the required number of textboxes
-        strings = _reflow_text(self.message, len(self.template.textboxes))
-
-        # zip the strings up with the corrosponding textbox
-        texts = list(zip(self.template.textboxes, [s.split('\n') for s in strings]))
+        img = template.read(buffer)
 
         # Find the smallest required font size for all non-independent textboxes
-        base_size = min(self.font_size(tb, s) for tb, s in texts if not tb.ind_size)
+        shared_size = min(_font_size(*_box_size(*img.size, tb), tb, s) for tb, s in texts if not tb.ind_size)
 
-        with io.BytesIO() as buffer:
-            self.img = self.template.read(buffer)
-            for tb, s in texts:
-                # if tb.concat:
-                #     continue
-                self.render_box(tb, s, base_size)
-                if show_boxes:
-                    tb.debug_box(img, width, height)
+        for tb, s in texts:
+            _render_box(img, tb, s, shared_size)
+            if debug:
+                _debug_box(img, width, height)
 
-            self.img.save(output, format="PNG")
+        img.save(output, format="PNG")
 
 
-    def render_box(self, tb: TextBox, lines: List[str], base_size: int):
-
-        # if this is independently sized, calculate the size
-        fsize = base_size if tb.ind_size else self.font_size(tb, lines)
-
-        # get the size of the bounding box in pixels
-        bw, bh = self.box_size(tb)
-
-        # find the offset of the first line of text
-        top = (bh - fsize * len(lines)) // 2
-        for num, line in enumerate(lines):
-            font_width = tb.face.width(fsize, line)
-
-            # find the start x coordinate of the text within the bounding box 
-            # based on the text alignment
-            tx = tb.justify(bw, font_width)
-            ty = top + fsize * num
-        
-            # translate the text position relative to the position of the text box
-            # in the image
-            x, y = self.offset(tb, tx, ty)
-            # render at that position
-            if tb.rotation:
-                tb.face.render_rotated(
-                    img, fsize, tb.color, x, y, tb.rotation, line
-                )
-            elif tb.outline:
-                tb.face.render_outlined(
-                    ImageDraw.Draw(img), fsize, tb.color, tb.outline, x, y, line
-                )
-            else:
-                tb.face.render(ImageDraw.Draw(self.img), fsize, tb.color, x, y, line)
-
-    def offset(self, tb: TextBox, x: int, y: int) -> Tuple[int, int]:
-        return int(tb.left * self.width) + x, int(tb.top * self.height) + y
-
-    def width(self, font_size: int, string: str) -> int:
-        return self.load(font_size).getsize(string)[0]
-
-    def render_outlined(
-        self, tb:TextBox, font_size: int, color: Color, outline: Color, x, y, string
-    ):
-        font = self.tb.font.load(font_size)
-        offset = font_size / 15
-        for angle in range(0, 360, 30):
-            r = angle / 360 * 2 * pi
-            pos = (x + (cos(r) * offset)k, y + (sin(r) * offset))
-            draw.text(pos, string, outline.value, font)
-        self.render(draw, font_size, color, x, y, string)
-
-    def render_plain(self, draw, font_size, color: Color, x, y, string):
-        font = self.load(font_size)
-        draw.text((x, y), string, color.value, font)
-
-    def render_rotated(self, img: Image, font_size, color: Color, x, y, angle, string):
-        font = self.load(font_size)
-        txt = Image.new("RGBA", (800, 400), (255, 255, 255, 0))
-        d = ImageDraw.Draw(txt)
-        d.text((0, 0), string, (0, 0, 0, 255), font)
-        w = txt.rotate(angle, expand=1)
-        img.paste(w, (x, y), w)
 
 
-    def debug_box(self, tb: TextBox):
-        draw = ImageDraw.Draw(self.img)
-        draw.rectangle(
-            (
-                (self.image_width * tb.left, self.image_height * tb.top),
-                (self.image_width * tb.right, self.image_height * tb.bottom),
-            ),
-            outline=(0, 0, 0),
-        )
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -254,6 +202,5 @@ if __name__ == "__main__":
     from localstore import LocalTemplateStore
 
     store = LocalTemplateStore()
-    render = Render(store.read_meme(None, template_name), text, show_boxes)
     with open(filename, "wb") as f:
-        render.render(f)
+        store.read_meme(None, template_name).render(text, f)
