@@ -8,6 +8,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from PIL import ImageFont, Image
 
+# Monkeypatch Request to show the url in repr
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
 
 class TemplateError(Exception):
@@ -18,6 +19,8 @@ class Color(Enum):
     WHITE = (255, 255, 255)
 
 class Justify(Enum):
+    """Horizontal text position; lambda function calculates left offset from
+    enclosing box"""
     LEFT = (lambda w1, w2: 0, )
     CENTER = (lambda w1, w2: (w1 - w2) // 2, )
     RIGHT = (lambda  w1, w2: w1 - w2, )
@@ -92,11 +95,11 @@ class MemeTemplate:
         from render import render_template
         render_template(self, message, output)
 
-
+# additional deserializers for dacite
 da_config = Config({
-    Font: lambda name: Font[name],
-    Color: lambda name: Color[name],
-    Justify: lambda name: Justify[name],
+    Font: Font.__getitem__,
+    Color: Color.__getitem__,
+    Justify: Justify.__getitem__,
     Request: Request
 })
 

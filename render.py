@@ -28,6 +28,8 @@ def partition_on(pred, seq):
         # return the next sub-sequence up to the boundary.
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
+def partition_on_value(value, seq):
+    return partition_on(lambda v: v == value, seq)
 
 def _reflow_text(text, count) -> List[str]:
     "Using slashes, break up the provided text into the requested number of boxes"
@@ -38,21 +40,21 @@ def _reflow_text(text, count) -> List[str]:
     # if we are expecting a single string, smash everything together replacing 
     # slash with newline
     if count == 1:
-        return ["\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", text))]
+        return ["\n".join(" ".join(l) for l in partition_on_value("/", text))]
 
     # if we see a double slash, use that as the text box boundary, and smash
     # the sub-sequences together replacing slash with newline
     if "//" in text:
         result = [
-            "\n".join(" ".join(l) for l in partition_on(lambda s: s == "/", b))
-            for b in partition_on(lambda s: s == "//", text)
+            "\n".join(" ".join(l) for l in partition_on_value("/", b))
+            for b in partition_on_value("//", text)
         ]
         assert len(result) == count
         return result
 
     # if we just see a single slash, use that as the text box boundary
     if "/" in text:
-        result = [" ".join(l) for l in partition_on(lambda s: s == "/", text)]
+        result = [" ".join(l) for l in partition_on_value("/", text)]
         assert len(result) == count
         return result
 
@@ -177,19 +179,6 @@ def render_template(template: MemeTemplate, message: Iterable[str], output: IO, 
                 _debug_box(img, width, height)
 
         img.save(output, format="PNG")
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
