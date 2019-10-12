@@ -1,4 +1,4 @@
-name: Lint and Test Python App
+name: Lint and Test
 
 on: [push]
 
