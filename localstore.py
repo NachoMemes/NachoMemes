@@ -1,9 +1,10 @@
 import json
 from functools import lru_cache
-from typing import Callable, Iterable, List
+from typing import Callable, Iterable, List, Dict
 
-from render import MemeTemplate, TextBox
-from store import Store
+from dacite import from_dict, Config
+
+from store import Store, MemeTemplate, TextBox, da_config
 
 
 class LocalTemplateStore(Store):
@@ -27,24 +28,22 @@ class LocalTemplateStore(Store):
     def guild_config(self, guild: str) -> dict:
         pass
 
+
 @lru_cache(maxsize=1)
 def _load(guild: str) -> Iterable[MemeTemplate]:
-    # load meme layouts
-    with open("config/layouts.json", "rb") as t:
-        layouts = json.load(
-            t, object_hook=lambda d: TextBox.deserialize(d) if "face" in d else d
-        )
+
+    # load layouts
+    with open("config/layouts.json", "r") as f:
+        layouts = json.load(f)
 
     # load memes
-    with open("config/templates.json", "rb") as t:
-        memes = json.load(
-            t,
-            object_hook=lambda d: MemeTemplate.deserialize(d, layouts)
-            if "source" in d
-            else d,
-        )
+    with open("config/templates.json", "r") as f:
+        data = json.load(f)
 
-    for name, meme in memes.items():
-        meme.name = name
+    # add name and textbox date to template
+    for name, d in data.items():
+        d['textboxes'] = layouts[d['layout']]
+        d['name]'] = name
 
-    return memes
+    # deserialize
+    return { k: from_dict(MemeTemplate, v, config=da_config) for k,v in data.items() }

@@ -39,7 +39,8 @@
             "top": 0.02,
             "bottom": 0.4,
             "face": "IMPACT",
-            "justify": "LEFT"
+            "justify": "LEFT",
+            "concat": "TOP"
         }
     ],
     "change_mind_layout": [
@@ -60,7 +61,8 @@
             "top": 0.005,
             "bottom": 0.085,
             "face": "COMIC_SANS",
-            "justify": "CENTER"
+            "justify": "CENTER",
+            "independently-sized": true
         },{
             "left": 0.04,
             "right": 0.235,
@@ -113,7 +115,8 @@
             "face": "IMPACT",
             "justify": "CENTER",
             "color": "WHITE",
-            "outline": null
+            "outline": null,
+            "independently-sized": true
         },
         {
             "left": 0.19,
