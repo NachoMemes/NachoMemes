@@ -120,7 +120,7 @@ Now, however, memes are created using a custom [implementation](memegenerator.py
     </a>
     <p align="center"><strong>Sam</strong></p>
     <p align="center">Junior Apple Devotee & Lead Infrastructure Engineer</p>
-    <p align="center>I can't tell if pylint is actually running"</p>
+    <p align="center">I can't tell if pylint is actually running"</p>
   </p>
   
   <p align="center">
