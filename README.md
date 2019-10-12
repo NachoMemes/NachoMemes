@@ -18,7 +18,7 @@
   <a href="https://github.com/cooperpellaton/NachoMemes/tree/v1.0">
     <img src="https://img.shields.io/badge/version-1.0-bright%20green" alt="Version 1.0">
   </a>
-
+  <img src="https://github.com/cooperpellaton/NachoMemes/workflows/Lint%20and%20Test%20Python%20App/badge.svg">
 </p>
 
 Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=387136) to your server!
