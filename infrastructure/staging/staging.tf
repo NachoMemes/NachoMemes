@@ -3,6 +3,7 @@ provider "aws" {
   region     = var.aws_region
 }
 
-resource "aws_ecs_service" "nachomeme" {
-  name       = 
+resource "aws_instance" "nachomeme" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
 }
