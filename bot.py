@@ -161,7 +161,7 @@ if __name__ == "__main__":
     store = LocalTemplateStore()
     if not args.local and "access_key" in creds:
         store = DynamoTemplateStore(
-            creds["access_key"], creds["secret"], creds["region"], store
+            creds["access_key"], creds["secret"], creds["region"], store, args.debug
         )
 
     try:

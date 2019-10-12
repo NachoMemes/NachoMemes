@@ -69,7 +69,8 @@ def _render_text(img: Image, font: ImageFont, color: Color, x, y, string):
     ImageDraw.Draw(img).text((x, y), string, color.value, font)
 
 def _render_outlined(img: Image, font: ImageFont, color: Color, outline: Color, x, y, string: str):
-    "Render text with an outline"
+    """Render text with an outline by repeatedly rendering text in the outline
+     color offset by 1/15 of the font size at 30 degree intervals"""
     offset = font.size / 15
     draw = ImageDraw.Draw(img)
     for angle in range(0, 360, 30):
@@ -79,10 +80,14 @@ def _render_outlined(img: Image, font: ImageFont, color: Color, outline: Color, 
     _render_text(img, font, color, x, y, string)
 
 def _render_rotated(img: Image, font: ImageFont, color: Color, x, y, angle, string: str):
+    """render text rotated by an angle by creating a seperate image with the 
+    text, rotating it, and pasting it onto the target image"""
+
+    # create a new image with a transparent alpha channel
     txt = Image.new("RGBA", (800, 400), (255, 255, 255, 0))
     d = ImageDraw.Draw(txt)
-    d.text((0, 0), string, (0, 0, 0, 255), font)
-    w = txt.rotate(angle, expand=1)
+    d.text((0, 0), string, (*color.value, 255), font)
+    w = txt.rotate(angle, resample=Image.BICUBIC, expand=True)
     img.paste(w, (x, y), w)
 
 

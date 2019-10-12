@@ -70,6 +70,8 @@ class TextBox:
 class MemeTemplate:
     """Anatomy of a Meme"""
 
+    name: str
+
     # URL to load the image
     source: Request
 
@@ -100,7 +102,9 @@ da_config = Config({
     Font: Font.__getitem__,
     Color: Color.__getitem__,
     Justify: Justify.__getitem__,
-    Request: Request
+    Request: Request,
+    float: float,
+    int: int,
 })
 
 

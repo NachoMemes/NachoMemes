@@ -1,17 +1,36 @@
 # pylint: skip-file
  
 from decimal import Decimal
-from typing import Callable, Iterable, List
+from typing import Callable, Iterable, List, Any, Type, Dict
+from operator import attrgetter
+from urllib.request import Request
+from dacite import from_dict
 
 import boto3
 from botocore.exceptions import ClientError
 
-from render import MemeTemplate, TextBox
-from store import Store, TemplateError
+from store import Store, TemplateError, MemeTemplate, Font, Color, Justify, da_config
+
+dynamo_serializers = {
+    Request: attrgetter("full_url"),
+    float: lambda f: Decimal(str(f)),
+    Font: attrgetter("name"),
+    Color: attrgetter("name"),
+    Justify: attrgetter("name"),
+}
+
+def update_serialization(value: Any, serializers: Dict[Type,Callable]):
+    if type(value) in serializers:
+        return serializers[type(value)](value)
+    if dict == type(value):
+        return { k: update_serialization(v, serializers) for k,v in value.items() }
+    if list == type(value):
+        return [ update_serialization(v, serializers) for v in value ]
+    return value
 
 
 class DynamoTemplateStore(Store):
-    def __init__(self, access_key, secret, region, default_templates: Store):
+    def __init__(self, access_key, secret, region, default_templates: Store, beta: bool=False):
         self.dynamodb = boto3.resource(
             "dynamodb",
             aws_access_key_id=access_key,
@@ -19,17 +38,20 @@ class DynamoTemplateStore(Store):
             region_name=region,
         )
         self.default_templates = default_templates
+        self.table_suffix = ".templates" if not beta else ".templates-beta"
 
     def _template_table(
         self, guild: str, populate: bool = True
     ) -> "boto3.resources.factory.dynamodb.Table":
-        table_name = guild + ".templates"
+        table_name = guild + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
-            if table.table_status in ("CREATING", "UPDATING", "DELETING", "ACTIVE"):
+            if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
+            table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
         except ClientError:
-            print("creating table" + table_name)
+            pass
+        print("creating table" + table_name)
         # create and return table
         table = self._init_table(table_name)
         if populate:
@@ -41,7 +63,7 @@ class DynamoTemplateStore(Store):
 
     def refresh_memes(self, guild: str, hard: bool = False) -> str:
         if hard:
-            table_name = guild + ".templates"
+            table_name = guild + self.table_suffix
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 table.delete()
@@ -55,6 +77,7 @@ class DynamoTemplateStore(Store):
             if "usage" in item:
                 del item["usage"]
             name = item.pop("name")
+            item = update_serialization(item, dynamo_serializers)
             prior = table.update_item(
                 Key={"name": name},
                 UpdateExpression=f"SET {','.join(f'#{k}=:{k}' for k in item)}",
@@ -82,7 +105,7 @@ class DynamoTemplateStore(Store):
         table.meta.client.get_waiter("table_exists").wait(TableName=table_name)
         return table
 
-    def _fetch(self, table: "boto3.resources.factory.dynamodb.Table", key: dict):
+    def _fetch(self, table: "boto3.resources.factory.dynamodb.Table", key: dict) -> dict: 
         try:
             return table.get_item(Key=key)["Item"]
         except KeyError:
@@ -120,8 +143,6 @@ class DynamoTemplateStore(Store):
         item = (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )
-        return MemeTemplate.deserialize(item)
+        return from_dict(MemeTemplate, item, config=da_config)
 
-    def _write_meme(self, guild: str, template: MemeTemplate):
-        table = self._template_table(guild)
-        table.put_item(template.serialize(True))
+  
