@@ -1,3 +1,5 @@
+# pylint: skip-file
+ 
 from sys import maxsize
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable, List, Optional, IO
