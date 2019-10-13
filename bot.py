@@ -26,6 +26,8 @@ from store import Store, TemplateError
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
 
+global memes
+memes = 0
 
 @bot.event
 async def on_ready():
@@ -37,22 +39,22 @@ with open("config/messages.json", "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-# Needs work obv, going to add rich content for CPU and MEM and/or AVG LOAD usage
-# Going to move to json config template
-# Cycles through status changes: "Playing ..."
+
 @bot.event
 async def status_task():
     while True:
+        global memes
         await bot.change_presence(
             status=discord.Status.online,
             activity=discord.Game(
-                name=random.choice(statuses)
-                + """\nUsage - CPU: {}% RAM: {}%""".format(
-                    psutil.getloadavg()[2], psutil.virtual_memory()._asdict()["percent"]
+                name=f"{memes} memes/minute!"
+                + """\nUsage - CPU: {0:.2f}% RAM: {0:.2f}%""".format(
+                    psutil.getloadavg()[0], psutil.virtual_memory()._asdict()["percent"]
                 )
             ),
         )
-        await asyncio.sleep(90)
+        memes = 0
+        await asyncio.sleep(60)
 
 
 @bot.command(description="List templates.")
@@ -108,6 +110,9 @@ async def refresh_templates(ctx: Context, arg: str = None):
 async def meme(ctx: Context, template: str, *text):
     await ctx.trigger_typing()
     try:
+        # Log memes/minute.
+        global memes
+        memes += 1
         # Case insensitive meme naming
         template = template.lower()
         meme = store.read_meme(
