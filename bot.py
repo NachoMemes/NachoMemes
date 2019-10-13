@@ -32,6 +32,7 @@ async def on_ready():
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
     bot.loop.create_task(status_task())
 
+
 with open("config/messages.json", "rb") as c:
     statuses = json.load(c)["credits"]
 
@@ -101,8 +102,13 @@ async def meme(ctx: Context, template: str, *text):
     try:
         # Case insensitive meme naming
         template = template.lower()
-        guild = str(ctx.message.guild.id)
-        meme = store.read_meme(guild, template, True)
+        meme = store.read_meme(
+            str(ctx.message.guild.id)
+            if ctx.message.guild != None
+            else "nachomemes-default",
+            template,
+            True,
+        )
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
         key = f"{template}-{name}.png"
