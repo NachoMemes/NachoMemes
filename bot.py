@@ -92,10 +92,16 @@ async def templates(ctx, template=None):
 @bot.command(description="refresh templates.")
 @has_permissions(administrator=True)
 async def refresh_templates(ctx: Context, arg: str = None):
-    await ctx.trigger_typing()
-    guild = str(ctx.message.guild.id)
-    message = store.refresh_memes(guild, arg == "--hard")
-    await ctx.send(f"```{message}```")
+    try:
+        await ctx.trigger_typing()
+        guild = str(ctx.message.guild.id)
+        message = store.refresh_memes(guild, arg == "--hard")
+        await ctx.send(f"```{message}```")
+    except:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        print(err, file=sys.stderr)
        
 
 @bot.command(description="Make a new meme.")
