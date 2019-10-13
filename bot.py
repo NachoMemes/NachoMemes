@@ -47,7 +47,7 @@ async def status_task():
             activity=discord.Game(
                 name=random.choice(statuses)
                 + """\nUsage - CPU: {}% RAM: {}%""".format(
-                    psutil.getloadavg()[], psutil.virtual_memory()._asdict()["percent"]
+                    psutil.getloadavg()[2], psutil.virtual_memory()._asdict()["percent"]
                 )
             ),
         )
