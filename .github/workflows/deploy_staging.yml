@@ -1,0 +1,13 @@
+name: Deploy Bot to Staging
+
+on: 
+  push:
+    branches:
+      - develop
+
+
+jobs:
+  deploy_staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
