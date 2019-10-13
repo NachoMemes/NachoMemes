@@ -26,8 +26,10 @@ from store import Store, TemplateError
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
 
-global memes
-memes = 0
+# Used for calculating memes/minute.
+global MEMES
+MEMES = 0
+
 
 @bot.event
 async def on_ready():
@@ -39,21 +41,19 @@ with open("config/messages.json", "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-
 @bot.event
 async def status_task():
     while True:
-        global memes
+        global MEMES
         await bot.change_presence(
             status=discord.Status.online,
             activity=discord.Game(
-                name=f"{memes} memes/minute!"
-                + """\nUsage - CPU: {0:.2f}% RAM: {0:.2f}%""".format(
-                    psutil.getloadavg()[0], psutil.virtual_memory()._asdict()["percent"]
-                )
+                name=f"{MEMES} memes/minute! "
+                + "Load AVG - CPU: {0:.2f}% ".format(psutil.getloadavg()[0])
+                + "RAM: {0:.2f}% ".format(psutil.virtual_memory()._asdict()["percent"])
             ),
         )
-        memes = 0
+        MEMES = 0
         await asyncio.sleep(60)
 
 
@@ -104,15 +104,15 @@ async def refresh_templates(ctx: Context, arg: str = None):
         if testing:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
-       
+
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str, *text):
     await ctx.trigger_typing()
     try:
         # Log memes/minute.
-        global memes
-        memes += 1
+        global MEMES
+        MEMES += 1
         # Case insensitive meme naming
         template = template.lower()
         meme = store.read_meme(
