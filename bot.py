@@ -32,6 +32,9 @@ async def on_ready():
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
     bot.loop.create_task(status_task())
 
+with open("config/messages.json", "rb") as c:
+    statuses = json.load(c)["credits"]
+
 
 # Needs work obv, going to add rich content for CPU and MEM and/or AVG LOAD usage
 # Going to move to json config template
@@ -39,9 +42,6 @@ async def on_ready():
 @bot.event
 async def status_task():
     while True:
-        with open("config/messages.json", "rb") as c:
-            statuses = json.load(c)["credits"]
-
         await bot.change_presence(
             status=discord.Status.online,
             activity=discord.Game(
@@ -115,7 +115,7 @@ async def meme(ctx: Context, template: str, *text):
         if random.randrange(8) == 0:
             tmpmsg = msg
             e = discord.Embed().set_image(url=tmpmsg.attachments[0].url)
-            e.set_footer(text=random.choice(credit_text))
+            e.set_footer(text=random.choice(statuses))
             msg = await ctx.send(embed=e)
             await tmpmsg.delete()
         for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
