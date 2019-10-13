@@ -18,11 +18,7 @@
   <a href="https://github.com/cooperpellaton/NachoMemes/tree/v1.0">
     <img src="https://img.shields.io/badge/version-1.0-bright%20green" alt="Version 1.0">
   </a>
-
-  <a href="https://circleci.com/gh/cooperpellaton/NachoMemes">
-    <img src="https://circleci.com/gh/cooperpellaton/NachoMemes.svg?style=svg">
-
-  </a>
+  <img src="https://github.com/cooperpellaton/NachoMemes/workflows/Lint%20and%20Test/badge.svg">
 </p>
 
 Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=387136) to your server!
@@ -88,3 +84,52 @@ Run `python bot.py` and you're off to meme like a lord.
 Memes were originally generated using a forked version of the [Python Meme Generator](https://github.com/danieldiekmeier/memegenerator). Find the source [here](/memegenerator.py).
 
 Now, however, memes are created using a custom [implementation](memegenerator.py).
+
+## Meet the Team
+<div>
+  <p align="center">
+    <a href="https://github.com/ironchefpython">
+      <img src="https://i.imgur.com/pdicJne.png" height="100px" width="100px" alt="Chris">
+    </a>
+    <p align="center"><strong>Chris</strong></p>
+    <p align="center">Chief Code Breaker & Senior Tech Lead</p>
+    <p align="center">"I guess I wrote it, but I have no idea what it does"</p>
+  </p>
+  
+  <p align="center">
+    <a href="https://github.com/cooperpellaton/">
+      <img src="https://imgur.com/aWzyoSe.png" height="100px" width="100px" alt="Cooper">
+    </a>
+    <p align="center"><strong>Cooper</strong></p>
+    <p align="center">Senior Liason to Asia & Memechine Learning Engineer</p>
+    <p align="center">"YOU SIGNED A BINDING ARBITRATION AGREEMENT FUCKO I OWN YOU NOW!"</p>
+  </p>
+  
+  <p align="center">
+    <a href="https://github.com/jswny">
+      <img src="https://i.imgur.com/s6Vu0L4.png" height="100px" width="100px" alt="Joe">
+    </a>
+    <p align="center"><strong>Joe</strong></p>
+    <p align="center">Senior Python Hater & Lead Code Integrity Analyst</p>
+    <p align="center">"tbh i know this sounds weird but i find im most productive yell-pair-programming"</p>
+  </p>
+  
+  <p align="center">
+    <a href="https://github.com/samcat116">
+      <img src="https://i.imgur.com/rMwyYOx.png" height="100px" width="100px" alt="Sam">
+    </a>
+    <p align="center"><strong>Sam</strong></p>
+    <p align="center">Junior Apple Devotee & Lead Infrastructure Engineer</p>
+    <p align="center">"I can't tell if pylint is actually running"</p>
+  </p>
+  
+  <p align="center">
+    <a href="https://github.com/coreysabia">
+      <img src="https://i.imgur.com/AjnpJbo.png" height="100px" width="100px" alt="Version 1.0">
+    </a>
+    <p align="center"><strong>Corey</strong></p>
+    <p align="center">Chief Sailor & Senior Meme Engineer</p>
+    <p align="center">"Google something new every day"</p>
+  </p>
+  
+</div>
