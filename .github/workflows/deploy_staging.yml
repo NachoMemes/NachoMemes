@@ -1,11 +1,7 @@
 name: Deploy Bot to Staging
 
 on: 
-<<<<<<< HEAD
   push:
-=======
-  pull_request:
->>>>>>> develop
     branches:
       - develop
 
