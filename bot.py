@@ -4,15 +4,16 @@ import io
 import json
 import os
 import random
+import re
 import sys
+import textwrap
 import traceback
 import uuid
-import re
-import textwrap
 from datetime import datetime, timedelta
 from typing import Iterable
 
 import discord
+import psutil
 import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -24,11 +25,6 @@ from store import Store, TemplateError
 
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
-
-
-# Load credit messages to put in the footer.
-with open("config/messages.json", "rb") as c:
-    credit_text = json.load(c)["credits"]
 
 
 @bot.event
@@ -43,19 +39,20 @@ async def on_ready():
 @bot.event
 async def status_task():
     while True:
-        #import psutil first
-        #cpu_p = discord.Game("CPU: " + psutil.cpu_percent())
+        with open("config/messages.json", "rb") as c:
+            statuses = json.load(c)["credits"]
 
-        game1 = discord.Game("with the API")
-        game2 = discord.Game("with your MOM")
-        game3 = discord.Game("with MEMES")
+        await bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(
+                name=random.choice(statuses)
+                + """\nUsage - CPU: {}% RAM: {}%""".format(
+                    psutil.getloadavg()[], psutil.virtual_memory()._asdict()["percent"]
+                )
+            ),
+        )
+        await asyncio.sleep(90)
 
-        await bot.change_presence(status=discord.Status.online, activity=game1)
-        await asyncio.sleep(6)
-        await bot.change_presence(status=discord.Status.dnd, activity=game2)
-        await asyncio.sleep(9)
-        await bot.change_presence(status=discord.Status.online, activity=game3)
-        await asyncio.sleep(6)
 
 @bot.command(description="List templates.")
 async def templates(ctx, template=None):
@@ -63,13 +60,16 @@ async def templates(ctx, template=None):
         guild = str(ctx.message.guild.id)
         if template:
             meme = store.read_meme(guild, template)
-            await ctx.send(textwrap.dedent(f"""\
+            await ctx.send(
+                textwrap.dedent(
+                    f"""\
                 Name: {meme.name}
                 Description: *{meme.description}*
                 Times used: {meme.usage}
                 Expects {len(meme.textboxes)} strings
                 Read more: {meme.docs}"""
-            ))
+                )
+            )
         else:
             await ctx.send(
                 "== Templates =="
