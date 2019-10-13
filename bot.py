@@ -16,7 +16,7 @@ import discord
 import psutil
 import tinys3
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Context, has_permissions
 
 from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
@@ -88,13 +88,15 @@ async def templates(ctx, template=None):
         print(err, file=sys.stderr)
 
 
+# Only allows an administrator to refresh templates.
 @bot.command(description="refresh templates.")
+@has_permissions(administrator=True)
 async def refresh_templates(ctx: Context, arg: str = None):
     await ctx.trigger_typing()
     guild = str(ctx.message.guild.id)
     message = store.refresh_memes(guild, arg == "--hard")
     await ctx.send(f"```{message}```")
-
+       
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str, *text):
