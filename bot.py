@@ -16,7 +16,7 @@ import discord
 import psutil
 import tinys3
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Context, has_permissions
 
 from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
@@ -25,6 +25,10 @@ from store import Store, TemplateError
 
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
+
+# Used for calculating memes/minute.
+global MEMES
+MEMES = 0
 
 
 @bot.event
@@ -37,22 +41,20 @@ with open("config/messages.json", "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-# Needs work obv, going to add rich content for CPU and MEM and/or AVG LOAD usage
-# Going to move to json config template
-# Cycles through status changes: "Playing ..."
 @bot.event
 async def status_task():
     while True:
+        global MEMES
         await bot.change_presence(
             status=discord.Status.online,
             activity=discord.Game(
-                name=random.choice(statuses)
-                + """\nUsage - CPU: {}% RAM: {}%""".format(
-                    psutil.getloadavg()[2], psutil.virtual_memory()._asdict()["percent"]
-                )
+                name=f"{MEMES} memes/minute! "
+                + "Load AVG - CPU: {0:.2f}% ".format(psutil.getloadavg()[0])
+                + "RAM: {0:.2f}% ".format(psutil.virtual_memory()._asdict()["percent"])
             ),
         )
-        await asyncio.sleep(90)
+        MEMES = 0
+        await asyncio.sleep(60)
 
 
 @bot.command(description="List templates.")
@@ -88,18 +90,29 @@ async def templates(ctx, template=None):
         print(err, file=sys.stderr)
 
 
+# Only allows an administrator to refresh templates.
 @bot.command(description="refresh templates.")
+@has_permissions(administrator=True)
 async def refresh_templates(ctx: Context, arg: str = None):
-    await ctx.trigger_typing()
-    guild = str(ctx.message.guild.id)
-    message = store.refresh_memes(guild, arg == "--hard")
-    await ctx.send(f"```{message}```")
+    try:
+        await ctx.trigger_typing()
+        guild = str(ctx.message.guild.id)
+        message = store.refresh_memes(guild, arg == "--hard")
+        await ctx.send(f"```{message}```")
+    except:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        print(err, file=sys.stderr)
 
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str, *text):
     await ctx.trigger_typing()
     try:
+        # Log memes/minute.
+        global MEMES
+        MEMES += 1
         # Case insensitive meme naming
         template = template.lower()
         meme = store.read_meme(
