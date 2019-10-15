@@ -15,7 +15,6 @@ from pathlib import Path
 
 import discord
 import psutil
-import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
 
