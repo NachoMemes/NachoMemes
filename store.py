@@ -75,7 +75,7 @@ class MemeTemplate:
     name: str
 
     # URL to load the image
-    source: Request
+    source_image_url: Request
 
     # Where to put the text
     textboxes: List[TextBox]
@@ -88,8 +88,8 @@ class MemeTemplate:
     # times used 
     usage: int
 
-    def read(self, buffer) -> Image:
-        with urlopen(self.source) as s:
+    def read_source_image(self, buffer) -> Image:
+        with urlopen(self.source_image_url) as s:
             buffer.write(s.read())
             buffer.flush
             buffer.seek(0)

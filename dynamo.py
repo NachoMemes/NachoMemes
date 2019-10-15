@@ -117,9 +117,9 @@ class DynamoTemplateStore(Store):
         try:
             return table.update_item(
                 Key=key,
-                ConditionExpression="attribute_exists(#source)",
+                ConditionExpression="attribute_exists(#source_image_url)",
                 UpdateExpression="set #usage = if_not_exists(#usage, :zero) + :one",
-                ExpressionAttributeNames={"#usage": "usage", "#source": "source"},
+                ExpressionAttributeNames={"#usage": "usage", "#source_image_url": "source_image_url"},
                 ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",
             )["Attributes"]

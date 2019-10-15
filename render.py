@@ -173,7 +173,7 @@ def render_template(template: MemeTemplate, message: Iterable[str], output: IO, 
 
     with io.BytesIO() as buffer:
 
-        img = template.read(buffer)
+        img = template.read_source_image(buffer)
 
         # Find the smallest required font size for all non-independent textboxes
         shared_size = min(_font_size(*_box_size(*img.size, tb), tb, s) for tb, s in texts if not tb.ind_size)
