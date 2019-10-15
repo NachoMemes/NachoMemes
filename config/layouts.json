@@ -62,7 +62,7 @@
             "bottom": 0.085,
             "face": "COMIC_SANS",
             "justify": "CENTER",
-            "independently-sized": true
+            "ind_size": true
         },{
             "left": 0.04,
             "right": 0.235,
@@ -116,7 +116,7 @@
             "justify": "CENTER",
             "color": "WHITE",
             "outline": null,
-            "independently-sized": true
+            "ind_size": true
         },
         {
             "left": 0.19,
@@ -296,7 +296,7 @@
             "justify": "CENTER",
             "color": "WHITE",
             "outline": "BLACK",
-            "independently-sized": true
+            "ind_size": true
         }
     ],
     "stonks_layout": [{
