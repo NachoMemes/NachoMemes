@@ -11,6 +11,7 @@ import traceback
 import uuid
 from datetime import datetime, timedelta
 from typing import Iterable
+from pathlib import Path
 
 import discord
 import psutil
@@ -30,6 +31,10 @@ bot = commands.Bot(command_prefix="/", description=description)
 global MEMES
 MEMES = 0
 
+# Base directory from which paths should extend.
+global BASE_DIR
+BASE_DIR = Path(__file__).parent.parent
+
 
 @bot.event
 async def on_ready():
@@ -37,7 +42,7 @@ async def on_ready():
     bot.loop.create_task(status_task())
 
 
-with open("config/messages.json", "rb") as c:
+with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
@@ -168,7 +173,7 @@ if __name__ == "__main__":
         creds_file_name = (
             "config/creds.json" if not testing else "config/testing-creds.json"
         )
-        with open(creds_file_name, "rb") as f:
+        with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
             creds = json.load(f)
     except:
         creds = {}
