@@ -81,6 +81,11 @@ resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.staging-vpc.id}"
 }
 
+resource "aws_key_pair" "deploy-key" {
+  key_name = "deploy-key"
+  public_key = "${var.public-key}"
+}
+
 
 # Main EC2 instance
 resource "aws_instance" "nachomeme" {

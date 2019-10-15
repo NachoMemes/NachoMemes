@@ -17,4 +17,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
-      
+      - name: Generate SSH Key
+        run:  |
+          ssh-keygen -t rsa -b 4096 -f ~/.ssh/    
+      - name: Generate variables
+        run: |
+      - name: Run Terraform Apply
+        run: terraform apply -lock=true -auto-approve -refresh=true ~/infrastructure/staging -out=
+        run: terraform output > inventory.txt
+      - name: Run Deploy Playbook
+        run: ansible-playbook -i inventory.txt staging-deploy.yml
