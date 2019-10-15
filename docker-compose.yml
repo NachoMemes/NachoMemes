@@ -1,0 +1,13 @@
+version: "3"
+services:
+  bot:
+    image: nachomemes
+    container_name: nachomemes
+    build: .
+    command: --local
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DISCORD_TOKEN
+      - ACCESS_KEY
+      - SECRET
+      - REGION

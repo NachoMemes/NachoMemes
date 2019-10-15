@@ -1,6 +1,10 @@
-creds.json
 .vscode
 .DS_Store
+
+# Credentials
+dev_bot_test-creds.json
+testing-creds.json
+creds.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -93,7 +97,8 @@ ipython_config.py
 #   However, in case of collaboration, if having platform-specific dependencies or dependencies
 #   having no cross-platform support, pipenv may install dependencies that don't work, or not
 #   install all needed dependencies.
-#Pipfile.lock
+Pipfile.lock
+Pipfile
 
 # celery beat schedule file
 celerybeat-schedule
@@ -129,3 +134,7 @@ dmypy.json
 .pyre/
 
 
+/infrastructure/staging/terraform.tfstate.backup
+/infrastructure/staging/terraform.tfstate
+/infrastructure/staging/.terraform/plugins/darwin_amd64/terraform-provider-aws_v2.32.0_x4
+/infrastructure/staging/.terraform/plugins/darwin_amd64/lock.json

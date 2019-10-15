@@ -2,92 +2,148 @@
     "aliens": {
         "description": "Woah dude.",
         "docs": "https://knowyourmeme.com/memes/ancient-aliens",
-        "source": "file:templates/aliens.jpg",
+        "source_image_url": "file:source_images/aliens.jpg",
         "layout": "standard_layout",
         "usage": 0
     },
     "sam": {
         "description": "stay hungry.",
         "docs": "http://www.wiltonps.org/wilton-high-school",
-        "source": "file:templates/sam.png",
+        "source_image_url": "file:source_images/sam.png",
         "usage": 0,
         "layout": "sam_layout"
     },
     "successkid": {
         "description": "Success.",
         "docs": "https://knowyourmeme.com/memes/success-kid-i-hate-sandcastles",
-        "source": "file:templates/successkid.jpg",
+        "source_image_url": "file:source_images/successkid.jpg",
         "usage": 0,
         "layout": "standard_layout"
     },
     "drake": {
         "description": "Hotline Bling.",
         "docs": "https://knowyourmeme.com/memes/drakeposting",
-        "source": "file:templates/drake.jpg",
+        "source_image_url": "file:source_images/drake.jpg",
         "usage": 0,
         "layout": "drake_layout"
     },
     "galaxy-brain-3": {
         "description": "Galaxy Brain.",
         "docs": "https://knowyourmeme.com/memes/galaxy-brain",
-        "source": "file:templates/galaxy-brain-3.jpg",
+        "source_image_url": "file:source_images/galaxy-brain-3.jpg",
         "usage": 0,
         "layout": "galaxy_layout_3"
     },
     "galaxy-brain-4": {
         "description": "Galaxy Brain.",
         "docs": "https://knowyourmeme.com/memes/galaxy-brain",
-        "source": "file:templates/galaxy-brain-4.jpg",
+        "source_image_url": "file:source_images/galaxy-brain-4.jpg",
         "layout": "galaxy_layout_4",
+        "usage": 0
+    },
+    "galaxy-brain-6": {
+        "description": "Galaxy Brain.",
+        "docs": "https://knowyourmeme.com/memes/galaxy-brain",
+        "source_image_url": "file:source_images/galaxy-brain-6.jpg",
+        "layout": "galaxy_layout_6",
         "usage": 0
     },
     "millionaire1": {
         "description": "Call a friend?",
         "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
-        "source": "file:templates/millionaire1.jpg",
+        "source_image_url": "file:source_images/millionaire1.jpg",
         "layout": "millionaire_layout",
         "usage": 0
     },
     "millionaire2": {
         "description": "Call a friend?",
         "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
-        "source": "file:templates/millionaire2.jpg",
+        "source_image_url": "file:source_images/millionaire2.jpg",
         "layout": "millionaire_layout",
         "usage": 0
     },
     "pikachu": {
         "description": "Pika!?",
         "docs": "https://knowyourmeme.com/memes/surprised-pikachu",
-        "source": "file:templates/surprised-pikachu.jpg",
+        "source_image_url": "file:source_images/surprised-pikachu.jpg",
         "layout": "pikachu_layout",
         "usage": 0
     },
     "big-brain": {
         "description": "It's big brain time",
         "docs": "https://knowyourmeme.com/memes/yeah-this-is-big-brain-time",
-        "source": "file:templates/bigbrain.png",
+        "source_image_url": "file:source_images/bigbrain.png",
         "layout": "standard_layout",
         "usage": 0
     },
     "change-my-mind": {
         "description": "Change my mind",
         "docs": "https://knowyourmeme.com/memes/steven-crowders-change-my-mind-campus-sign",
-        "source": "file:templates/change-my-mind.png",
+        "source_image_url": "file:source_images/change-my-mind.png",
         "layout": "change_mind_layout",
         "usage": 0
     },
     "bruh": {
         "description": "bruh",
         "docs": "https://knowyourmeme.com/memes/bruh",
-        "source": "file:templates/bruh.jpg",
+        "source_image_url": "file:source_images/bruh.jpg",
         "layout": "standard_layout",
         "usage": 0
     },
     "boardroom": {
         "description": "and out the window he goes",
         "docs": "https://knowyourmeme.com/memes/boardroom-suggestion",
-        "source": "file:templates/boardroom.jpg",
+        "source_image_url": "file:source_images/boardroom.jpg",
         "layout": "boardroom_layout",
+        "usage": 0
+    },
+    "penguin": {
+        "description": "awkward...",
+        "docs": "https://knowyourmeme.com/memes/socially-awkward-penguin",
+        "source_image_url": "file:source_images/sap.jpg",
+        "layout": "standard_layout",
+        "usage": 0
+    },
+    "hannibal": {
+        "description": "why would he do this?",
+        "docs": "https://knowyourmeme.com/memes/who-killed-hannibal",
+        "source_image_url": "file:source_images/hannibal.jpg",
+        "layout": "hannibal_layout",
+        "usage": 0
+    },
+    "stonks": {
+        "description": "stonks go up and up",
+        "docs": "https://knowyourmeme.com/memes/stonks",
+        "source_image_url": "file:source_images/stonks.jpg",
+        "layout": "stonks_layout",
+        "usage": 0
+    },
+    "woman-yelling-at-a-cat": {
+        "description": "you pu--y!",
+        "docs": "https://knowyourmeme.com/memes/woman-yelling-at-a-cat",
+        "source_image_url": "file:source_images/woman-yelling-at-a-cat.jpg",
+        "layout": "woman_yelling_at_a_cat_layout",
+        "usage": 0
+    },
+    "xzibit": {
+        "description": "yo dawg!",
+        "docs": "https://knowyourmeme.com/memes/xzibit-yo-dawg",
+        "source_image_url": "file:source_images/xzibit-yo-dawg.jpg",
+        "layout": "standard_layout",
+        "usage": 0
+    },
+    "american-chopper": {
+        "description": "LISTEN YOU F**k",
+        "docs": "https://knowyourmeme.com/memes/american-chopper",
+        "source_image_url": "file:source_images/american-chopper.jpg",
+        "layout": "american_chopper_layout",
+        "usage": 0
+    },
+    "rollsafe": {
+        "description": "she's got good brains",
+        "docs": "https://knowyourmeme.com/memes/roll-safe",
+        "source_image_url": "file:source_images/rollsafe.jpg",
+        "layout": "standard_layout",
         "usage": 0
     }
 
