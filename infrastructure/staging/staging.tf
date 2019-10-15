@@ -34,6 +34,19 @@ resource "aws_security_group" "allow_https" {
   }
 }
 
+resource "aws_security_group" "accept_ping" {
+    name = "accept_ping"
+    description = "Allow Pinging the instance"
+
+    ingress {
+      from_port = 8
+      to_port = 0
+      protocol = "icmp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+
+}
+
 # Ideally in the future this should be limited to Azure IPs for CI
 resource "aws_security_group" "allow_ssh" {
   name = "allow_ssh"
