@@ -8,8 +8,6 @@ import re
 import sys
 import textwrap
 import traceback
-import uuid
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable
 
