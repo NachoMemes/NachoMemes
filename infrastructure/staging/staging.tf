@@ -37,7 +37,7 @@ resource "aws_security_group" "allow_https" {
 resource "aws_security_group" "accept_ping" {
     name = "accept_ping"
     description = "Allow Pinging the instance"
-
+    vpc_id = "${aws_vpc.staging-vpc.id}"
     ingress {
       from_port = 8
       to_port = 0
