@@ -1,5 +1,3 @@
-# pylint: skip-file
- 
 from decimal import Decimal
 from typing import Callable, Iterable, List, Any, Type, Dict
 from operator import attrgetter

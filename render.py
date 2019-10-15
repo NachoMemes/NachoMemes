@@ -1,5 +1,4 @@
-# pylint: skip-file
-# # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import io
 import json
