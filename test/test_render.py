@@ -1,18 +1,19 @@
 import io
 import os
+import shlex
 import sys
 import unittest
 import zlib
-import shlex
 from tempfile import NamedTemporaryFile
+
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 srcdir = os.path.join(parentdir, "nachomemes")
 sys.path.append(srcdir)
 
-from localstore import LocalTemplateStore
 from generate_samples import SAMPLES
+from localstore import LocalTemplateStore
 
 
 class TestRender(unittest.TestCase):

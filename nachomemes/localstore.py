@@ -1,11 +1,11 @@
 import json
-from functools import lru_cache
-from typing import Callable, Iterable, List, Dict, Any, Type
 from dataclasses import asdict
+from functools import lru_cache
+from typing import Any, Callable, Dict, Iterable, List, Type
 
-from dacite import from_dict, Config
+from dacite import Config, from_dict
 
-from store import Store, MemeTemplate, da_config
+from store import MemeTemplate, Store, da_config
 
 
 class LocalTemplateStore(Store):
@@ -43,10 +43,8 @@ def _load(guild: str) -> Iterable[MemeTemplate]:
 
     # add name and textbox date to template
     for name, d in data.items():
-        d['textboxes'] = layouts[d['layout']]
-        d['name'] = name
-
+        d["textboxes"] = layouts[d["layout"]]
+        d["name"] = name
 
     # deserialize
-    return { k: from_dict(MemeTemplate, v, config=da_config) for k,v in data.items() }
-
+    return {k: from_dict(MemeTemplate, v, config=da_config) for k, v in data.items()}

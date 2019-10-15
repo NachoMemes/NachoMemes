@@ -7,11 +7,12 @@ from decimal import Decimal
 from itertools import chain, takewhile
 from math import cos, pi, sin
 from os import PathLike
-from typing import IO, Callable, Iterable, Tuple, List, Optional
-from store import MemeTemplate, TextBox, Color, Font
+from typing import IO, Callable, Iterable, List, Optional, Tuple
 
 import PIL
 from PIL import Image, ImageDraw, ImageFont
+
+from store import Color, Font, MemeTemplate, TextBox
 
 
 def partition_on(pred, seq):
@@ -27,8 +28,10 @@ def partition_on(pred, seq):
         # return the next sub-sequence up to the boundary.
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
+
 def partition_on_value(value, seq):
     return partition_on(lambda v: v == value, seq)
+
 
 def _reflow_text(text, count) -> List[str]:
     "Using slashes, break up the provided text into the requested number of boxes"
@@ -36,7 +39,7 @@ def _reflow_text(text, count) -> List[str]:
     if len(text) == count:
         return text
 
-    # if we are expecting a single string, smash everything together replacing 
+    # if we are expecting a single string, smash everything together replacing
     # slash with newline
     if count == 1:
         return ["\n".join(" ".join(l) for l in partition_on_value("/", text))]
@@ -59,15 +62,20 @@ def _reflow_text(text, count) -> List[str]:
 
     raise ValueError(f"could not fit provided text into {count} boxes")
 
+
 def _text_width(font: Font, size: int, string: str) -> int:
     "Returns the width of the provided text at the given font size in pixels"
     return font.load(size).getsize(string)[0]
+
 
 def _render_text(img: Image, font: ImageFont, color: Color, x, y, string):
     "Render plain colored text with a transparent background"
     ImageDraw.Draw(img).text((x, y), string, color.value, font)
 
-def _render_outlined(img: Image, font: ImageFont, color: Color, outline: Color, x, y, string: str):
+
+def _render_outlined(
+    img: Image, font: ImageFont, color: Color, outline: Color, x, y, string: str
+):
     """Render text with an outline by repeatedly rendering text in the outline
      color offset by 1/15 of the font size at 30 degree intervals"""
     offset = font.size / 15
@@ -78,7 +86,10 @@ def _render_outlined(img: Image, font: ImageFont, color: Color, outline: Color, 
         draw.text(pos, string, outline.value, font)
     _render_text(img, font, color, x, y, string)
 
-def _render_rotated(img: Image, font: ImageFont, color: Color, x, y, angle, string: str):
+
+def _render_rotated(
+    img: Image, font: ImageFont, color: Color, x, y, angle, string: str
+):
     """render text rotated by an angle by creating a seperate image with the 
     text, rotating it, and pasting it onto the target image"""
 
@@ -90,12 +101,10 @@ def _render_rotated(img: Image, font: ImageFont, color: Color, x, y, angle, stri
     img.paste(w, (x, y), w)
 
 
-def _box_size(width: int, height: int, tb: TextBox) -> Tuple[int,int]:
+def _box_size(width: int, height: int, tb: TextBox) -> Tuple[int, int]:
     "Calcutate the size of the textbox based on percent of the target image"
-    return (
-        int((tb.right - tb.left) * width),
-        int((tb.bottom - tb.top) * height),
-    )
+    return (int((tb.right - tb.left) * width), int((tb.bottom - tb.top) * height))
+
 
 def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
     """Calcuates the largest possible font size that allows the provided text 
@@ -103,15 +112,16 @@ def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
 
     # starting with the box size divded by the number of lines
     # OR the defined max size (whichever is smaller)
-    start = min(height//len(lines), tb.max_font_size or sys.maxsize)
+    start = min(height // len(lines), tb.max_font_size or sys.maxsize)
 
-    # find the largest font size that allows all the text to fit (give up at 
+    # find the largest font size that allows all the text to fit (give up at
     # 5 pixels)
     return next(
         size
         for size in range(start, 5, -1)
         if all(_text_width(tb.face, size, s) < width for s in lines)
     )
+
 
 def _offset(width: int, height: int, tb: TextBox, x: int, y: int) -> Tuple[int, int]:
     "Calculate offset position relative to a textbox on an image"
@@ -134,11 +144,11 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
 
         width = font.getsize(line)[0]
 
-        # find the start x coordinate of the text within the bounding box 
+        # find the start x coordinate of the text within the bounding box
         # based on the text alignment
         tx = tb.justify(bw, width)
         ty = top + size * num
-    
+
         # translate the text position relative to the position of the text box
         # in the image
         x, y = _offset(*img.size, tb, tx, ty)
@@ -150,9 +160,10 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
         else:
             _render_text(img, font, tb.color, x, y, line)
 
+
 def _debug_box(img: Image, tb: TextBox):
     "draw an outline around the TextBox for debugging"
-    
+
     ImageDraw.Draw(img).rectangle(
         (
             (img.image_width * tb.left, img.image_height * tb.top),
@@ -161,21 +172,30 @@ def _debug_box(img: Image, tb: TextBox):
         outline=(0, 0, 0),
     )
 
-def render_template(template: MemeTemplate, message: Iterable[str], output: IO, debug: bool=False):
+
+def render_template(
+    template: MemeTemplate, message: Iterable[str], output: IO, debug: bool = False
+):
     """This is the thing that does the thing"""
 
     # combine the strings into the required number of textboxes
     strings = _reflow_text(message, len(template.textboxes))
 
     # zip the strings up with the corrosponding textbox
-    texts: List[Tuple[TextBox,List[str]]] = list(zip(template.textboxes, [s.split('\n') for s in strings]))
+    texts: List[Tuple[TextBox, List[str]]] = list(
+        zip(template.textboxes, [s.split("\n") for s in strings])
+    )
 
     with io.BytesIO() as buffer:
 
         img = template.read_source_image(buffer)
 
         # Find the smallest required font size for all non-independent textboxes
-        shared_size = min(_font_size(*_box_size(*img.size, tb), tb, s) for tb, s in texts if not tb.ind_size)
+        shared_size = min(
+            _font_size(*_box_size(*img.size, tb), tb, s)
+            for tb, s in texts
+            if not tb.ind_size
+        )
 
         for tb, s in texts:
             _render_box(img, tb, s, shared_size)

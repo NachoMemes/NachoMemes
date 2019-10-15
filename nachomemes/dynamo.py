@@ -1,13 +1,13 @@
 from decimal import Decimal
-from typing import Callable, Iterable, List, Any, Type, Dict
 from operator import attrgetter
+from typing import Any, Callable, Dict, Iterable, List, Type
 from urllib.request import Request
-from dacite import from_dict
 
 import boto3
 from botocore.exceptions import ClientError
+from dacite import from_dict
 
-from store import Store, TemplateError, MemeTemplate, Font, Color, Justify, da_config
+from store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config
 
 dynamo_serializers = {
     Request: attrgetter("full_url"),
@@ -17,18 +17,21 @@ dynamo_serializers = {
     Justify: attrgetter("name"),
 }
 
-def update_serialization(value: Any, serializers: Dict[Type,Callable]):
+
+def update_serialization(value: Any, serializers: Dict[Type, Callable]):
     if type(value) in serializers:
         return serializers[type(value)](value)
     if dict == type(value):
-        return { k: update_serialization(v, serializers) for k,v in value.items() }
+        return {k: update_serialization(v, serializers) for k, v in value.items()}
     if list == type(value):
-        return [ update_serialization(v, serializers) for v in value ]
+        return [update_serialization(v, serializers) for v in value]
     return value
 
 
 class DynamoTemplateStore(Store):
-    def __init__(self, access_key, secret, region, default_templates: Store, beta: bool=False):
+    def __init__(
+        self, access_key, secret, region, default_templates: Store, beta: bool = False
+    ):
         self.dynamodb = boto3.resource(
             "dynamodb",
             aws_access_key_id=access_key,
@@ -103,7 +106,9 @@ class DynamoTemplateStore(Store):
         table.meta.client.get_waiter("table_exists").wait(TableName=table_name)
         return table
 
-    def _fetch(self, table: "boto3.resources.factory.dynamodb.Table", key: dict) -> dict: 
+    def _fetch(
+        self, table: "boto3.resources.factory.dynamodb.Table", key: dict
+    ) -> dict:
         try:
             return table.get_item(Key=key)["Item"]
         except KeyError:
@@ -117,7 +122,10 @@ class DynamoTemplateStore(Store):
                 Key=key,
                 ConditionExpression="attribute_exists(#source_image_url)",
                 UpdateExpression="set #usage = if_not_exists(#usage, :zero) + :one",
-                ExpressionAttributeNames={"#usage": "usage", "#source_image_url": "source_image_url"},
+                ExpressionAttributeNames={
+                    "#usage": "usage",
+                    "#source_image_url": "source_image_url",
+                },
                 ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",
             )["Attributes"]
@@ -142,5 +150,3 @@ class DynamoTemplateStore(Store):
             table, key
         )
         return from_dict(MemeTemplate, item, config=da_config)
-
-  

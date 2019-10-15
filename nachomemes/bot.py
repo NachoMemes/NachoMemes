@@ -10,8 +10,8 @@ import textwrap
 import traceback
 import uuid
 from datetime import datetime, timedelta
-from typing import Iterable
 from pathlib import Path
+from typing import Iterable
 
 import discord
 import psutil
