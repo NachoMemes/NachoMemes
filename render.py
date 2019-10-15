@@ -150,13 +150,13 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
         else:
             _render_text(img, font, tb.color, x, y, line)
 
-def debug_box(img: Image, tb: TextBox):
+def _debug_box(img: Image, tb: TextBox):
     "draw an outline around the TextBox for debugging"
     
     ImageDraw.Draw(img).rectangle(
         (
-            (self.image_width * tb.left, self.image_height * tb.top),
-            (self.image_width * tb.right, self.image_height * tb.bottom),
+            (img.image_width * tb.left, img.image_height * tb.top),
+            (img.image_width * tb.right, img.image_height * tb.bottom),
         ),
         outline=(0, 0, 0),
     )
@@ -180,7 +180,7 @@ def render_template(template: MemeTemplate, message: Iterable[str], output: IO, 
         for tb, s in texts:
             _render_box(img, tb, s, shared_size)
             if debug:
-                _debug_box(img, width, height)
+                _debug_box(img, tb)
 
         img.save(output, format="PNG")
 
