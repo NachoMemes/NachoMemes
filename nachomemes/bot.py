@@ -15,6 +15,7 @@ import discord
 import psutil
 from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
+from fuzzywuzzy import process
 
 from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
@@ -43,6 +44,12 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
+def _match_template_name(name, guild):
+    "Matches input fuzzily against proper names."
+    fuzzed = process.extractOne(name, store.list_memes("guild_id", ("name",)))
+    return fuzzed[0]["name"] if fuzzed[1] > 5 else None
+
+
 @bot.event
 async def status_task():
     while True:
@@ -64,7 +71,10 @@ async def templates(ctx, template=None):
     try:
         guild = str(ctx.message.guild.id)
         if template:
-            meme = store.read_meme(guild, template)
+            fmeme = _match_template_name(template, guild)
+            if fmeme == None:
+                raise TemplateError
+            meme = store.read_meme(guild, fmeme)
             await ctx.send(
                 textwrap.dedent(
                     f"""\
@@ -115,18 +125,20 @@ async def meme(ctx: Context, template: str, *text):
         # Log memes/minute.
         global MEMES
         MEMES += 1
-        # Case insensitive meme naming
-        template = template.lower()
+        ftemplate = _match_template_name(template, str(ctx.message.guild.id))
+        print(ftemplate)
+        if ftemplate == None:
+            raise TemplateError
         meme = store.read_meme(
             str(ctx.message.guild.id)
             if ctx.message.guild != None
             else "nachomemes-default",
-            template,
+            ftemplate,
             True,
         )
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
-        key = f"{template}-{name}.png"
+        key = f"{ftemplate}-{name}.png"
 
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
