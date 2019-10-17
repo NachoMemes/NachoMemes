@@ -47,7 +47,9 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
 def _match_template_name(name, guild):
     "Matches input fuzzily against proper names."
     fuzzed = process.extractOne(name, store.list_memes("guild_id", ("name",)))
-    return fuzzed[0]["name"] if fuzzed[1] > 5 else None
+    if fuzzed[1] < 5:
+        raise TemplateError(f"could not load a template matching {name}")
+    return fuzzed[0]["name"]
 
 
 @bot.event
@@ -72,8 +74,6 @@ async def templates(ctx, template=None):
         guild = str(ctx.message.guild.id)
         if template:
             fmeme = _match_template_name(template, guild)
-            if fmeme == None:
-                raise TemplateError
             meme = store.read_meme(guild, fmeme)
             await ctx.send(
                 textwrap.dedent(
@@ -126,8 +126,6 @@ async def meme(ctx: Context, template: str, *text):
         global MEMES
         MEMES += 1
         ftemplate = _match_template_name(template, str(ctx.message.guild.id))
-        if ftemplate == None:
-            raise TemplateError
         meme = store.read_meme(
             str(ctx.message.guild.id)
             if ctx.message.guild != None
