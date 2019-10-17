@@ -126,7 +126,6 @@ async def meme(ctx: Context, template: str, *text):
         global MEMES
         MEMES += 1
         ftemplate = _match_template_name(template, str(ctx.message.guild.id))
-        print(ftemplate)
         if ftemplate == None:
             raise TemplateError
         meme = store.read_meme(
