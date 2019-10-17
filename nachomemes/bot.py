@@ -47,7 +47,7 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
 def _match_template_name(name, guild):
     "Matches input fuzzily against proper names."
     fuzzed = process.extractOne(name, store.list_memes("guild_id", ("name",)))
-    if fuzzed[1] < 5:
+    if fuzzed[1] < 25:
         raise TemplateError(f"could not load a template matching {name}")
     return fuzzed[0]["name"]
 
