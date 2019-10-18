@@ -27,15 +27,17 @@ Add [me](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&s
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Run This Yourself](#run-this-yourself)
-  * [Local Development](#local-development)
-    + [Without Docker](#without-docker)
-    + [With Docker](#with-docker)
-  * [Production](#production)
-- [Dependencies](#dependencies)
-- [Meet the Team](#meet-the-team)
+- [Nacho Memes](#nacho-memes)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Project Structure](#project-structure)
+  - [Run This Yourself](#run-this-yourself)
+    - [Local Development](#local-development)
+      - [Without Docker](#without-docker)
+      - [With Docker](#with-docker)
+    - [Production](#production)
+  - [Dependencies](#dependencies)
+  - [Meet the Team](#meet-the-team)
 
 ## Overview
 
@@ -150,7 +152,7 @@ Memes are created using a custom [implementation](render.py). The render engine 
 <div>
   <p align="center">
     <a href="https://github.com/ironchefpython">
-      <img src="https://i.imgur.com/pdicJne.png" height="100px" width="100px" alt="Chris">
+      <img src="https://i.imgur.com/6AUlqAm.png" height="100px" width="100px" alt="Chris">
     </a>
     <p align="center"><strong>Chris</strong></p>
     <p align="center">Chief Code Breaker & Senior Tech Lead</p>
