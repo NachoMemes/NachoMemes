@@ -5,11 +5,14 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional
+from typing import IO, Callable, Iterable, List, Optional, Union
 from urllib.request import Request, urlopen
 
+from discord import Member, Role, Guild
 from dacite import Config
 from PIL import Image, ImageFont
+
+from guild_config import GuildConfig
 
 # Monkeypatch Request to show the url in repr
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
@@ -47,7 +50,7 @@ class Font(Enum):
 
 @dataclass
 class TextBox:
-    """ Definition for text that will be placed in a template."""
+    "Definition for text that will be placed in a template."
 
     # left, right, top and bottom are offsets from the top left corner as a
     # percentage of the target image
@@ -76,7 +79,7 @@ class TextBox:
 
 @dataclass
 class MemeTemplate:
-    """Anatomy of a Meme"""
+    "Anatomy of a Meme"
 
     name: str
 
@@ -92,7 +95,7 @@ class MemeTemplate:
     docs: str
 
     # times used
-    usage: int
+    usage: int = 0
 
     def read_source_image(self, buffer) -> Image:
         with urlopen(self.source_image_url) as s:
@@ -105,6 +108,8 @@ class MemeTemplate:
         from render import render_template
 
         render_template(self, message, output)
+
+
 
 
 # additional deserializers for dacite
@@ -122,19 +127,35 @@ da_config = Config(
 
 class Store(ABC):
     @abstractmethod
-    def refresh_memes(self, guild: str, hard: bool = False) -> str:
+    def refresh_memes(self, guild: Union[str, int, Guild], hard: bool = False) -> str:
         pass
 
     @abstractmethod
     def read_meme(
-        self, guild: str, id: str, increment_use: bool = False
+        self, guild: Union[str, int, Guild], id: str, increment_use: bool = False
     ) -> MemeTemplate:
         pass
 
     @abstractmethod
-    def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Union[str, int, Guild], fields: List[str] = None) -> Iterable[dict]:
+        "Get all the memes as dictionaries, optionally pass fields to get only those fields in the dicts"
         pass
 
     @abstractmethod
-    def guild_config(self, guild: str) -> dict:
+    def guild_config(self, guild: Guild) -> GuildConfig:
         pass
+
+    @abstractmethod
+    def save_guild_config(self, guild: GuildConfig):
+        pass
+
+def guild_id(guild: Union[str, int, Guild]) -> str:
+    if type(guild) == str:
+        return guild
+    elif type(guild) == int:
+        return str(guild)
+    elif type(guild) == Guild:
+        return str(guild.id)
+    elif type(guild) == GuildConfig:
+        return str(guild.id)
+    raise ValueError(guild)

@@ -1,13 +1,19 @@
 from decimal import Decimal
 from operator import attrgetter
-from typing import Any, Callable, Dict, Iterable, List, Type
+from typing import Any, Callable, Dict, Iterable, List, Type, Union, Sequence
 from urllib.request import Request
+from enum import Enum, auto
+from dataclasses import asdict
+
 
 import boto3
 from botocore.exceptions import ClientError
 from dacite import from_dict
+from discord import Guild
 
-from store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config
+from guild_config import GuildConfig
+from store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
+
 
 dynamo_serializers = {
     Request: attrgetter("full_url"),
@@ -16,6 +22,12 @@ dynamo_serializers = {
     Color: attrgetter("name"),
     Justify: attrgetter("name"),
 }
+
+class Result(Enum):
+    ADDED = auto()
+    UPDATED = auto()
+    UNCHANGED = auto()
+
 
 
 def update_serialization(value: Any, serializers: Dict[Type, Callable]):
@@ -30,7 +42,7 @@ def update_serialization(value: Any, serializers: Dict[Type, Callable]):
 
 class DynamoTemplateStore(Store):
     def __init__(
-        self, access_key, secret, region, default_templates: Store, beta: bool = False
+        self, access_key, secret, region, default_store: Store, beta: bool = False
     ):
         self.dynamodb = boto3.resource(
             "dynamodb",
@@ -38,13 +50,14 @@ class DynamoTemplateStore(Store):
             aws_secret_access_key=secret,
             region_name=region,
         )
-        self.default_templates = default_templates
+        self.default_store = default_store
         self.table_suffix = ".templates" if not beta else ".templates-beta"
+        self.config_suffix = ".config" if not beta else ".config-beta"
 
     def _template_table(
-        self, guild: str, populate: bool = True
+        self, guild: Union[str, int, Guild], populate: bool = True
     ) -> "boto3.resources.factory.dynamodb.Table":
-        table_name = guild + self.table_suffix
+        table_name = guild_id(guild) + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
@@ -54,51 +67,87 @@ class DynamoTemplateStore(Store):
             pass
         print("creating table" + table_name)
         # create and return table
-        table = self._init_table(table_name)
+        table = self._init_table(table_name, ("name",))
         if populate:
             self.refresh_memes(guild)
         return table
 
-    def guild_config(self, guild: str) -> dict:
-        pass
-
-    def refresh_memes(self, guild: str, hard: bool = False) -> str:
-        if hard:
-            table_name = guild + self.table_suffix
+    def _config_table(
+        self, guild: Guild, populate: bool = True
+    ) -> "boto3.resources.factory.dynamodb.Table":
+        table_name = guild_id(guild) + self.config_suffix
+        try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
-                table.delete()
+                return table
             table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
+        except ClientError:
+            pass
+        print("creating table" + table_name)
+        # create and return table
+        table = self._init_table(table_name, ("id",))
+        if populate:
+            self.save_guild_config(self.default_store.guild_config(guild))
+        return table
+
+
+    def guild_config(self, guild: Union[str, int, Guild]) -> GuildConfig:
+        table = self._config_table(guild)
+        item = self._fetch(table, {"id": guild_id(guild)})
+        return from_dict(GuildConfig, item, config=da_config)
+
+    def save_guild_config(self, guild: GuildConfig):
+        table = self._config_table(guild, False)
+        self._write(table, ("id",), asdict(guild))
+
+
+    def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str,Any]):
+        item = update_serialization(value, dynamo_serializers)
+        key = {k:item.pop(k) for k in keys}
+        prior = table.update_item(
+            Key=key,
+            UpdateExpression=f"SET {','.join(f'#{k}=:{k}' for k in item)}",
+            ExpressionAttributeValues={f":{k}": v for k, v in item.items()},
+            ExpressionAttributeNames={f"#{k}": k for k in item},
+            ReturnValues="UPDATED_OLD",
+        ).get("Attributes", None)
+        if not prior:
+            return Result.ADDED
+        elif item != prior:
+            return Result.UPDATED
+        else:
+            return Result.UNCHANGED
+
+    def _delete_table(self, name: str):
+        try:
+            table = self.dynamodb.Table(name)
+            if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
+                print("deleting: " + name)
+                table.delete()
+            table.meta.client.get_waiter("table_not_exists").wait(TableName=name)
+        except ClientError:
+            pass
+
+
+    def refresh_memes(self, guild: Union[str, int, Guild], hard: bool = False) -> str:
+        if hard:
+            self._delete_table(guild_id(guild) + self.config_suffix)
+            self._delete_table(guild_id(guild) + self.table_suffix)
 
         table = self._template_table(guild, False)
-        updated = 0
-        added = 0
-        unchanged = 0
-        for item in self.default_templates.list_memes(guild):
+        results = {Result.ADDED: 0, Result.UPDATED: 0, Result.UNCHANGED: 0}
+        for item in self.default_store.list_memes(guild):
             if "usage" in item:
                 del item["usage"]
-            name = item.pop("name")
-            item = update_serialization(item, dynamo_serializers)
-            prior = table.update_item(
-                Key={"name": name},
-                UpdateExpression=f"SET {','.join(f'#{k}=:{k}' for k in item)}",
-                ExpressionAttributeValues={f":{k}": v for k, v in item.items()},
-                ExpressionAttributeNames={f"#{k}": k for k in item},
-                ReturnValues="UPDATED_OLD",
-            ).get("Attributes", None)
-            if not prior:
-                added += 1
-            elif item != prior:
-                updated += 1
-            else:
-                unchanged += 1
-        return f"{'hard ' if hard else ''}refresh on '{guild}.templates' complete: {added} added, {updated} updated, {unchanged} unchanged"
+            r = self._write(table, ("name",), item)
+            results[r] += 1
+        return f"{'hard ' if hard else ''}refresh on '{guild}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
 
-    def _init_table(self, table_name: str) -> "boto3.resources.factory.dynamodb.Table":
+    def _init_table(self, table_name: str, keys=Sequence[str]) -> "boto3.resources.factory.dynamodb.Table":
         table = self.dynamodb.create_table(
             TableName=table_name,
-            KeySchema=[{"AttributeName": "name", "KeyType": "HASH"}],
-            AttributeDefinitions=[{"AttributeName": "name", "AttributeType": "S"}],
+            KeySchema=[{"AttributeName": k, "KeyType": "HASH"} for k in keys],
+            AttributeDefinitions=[{"AttributeName": k, "AttributeType": "S"} for k in keys],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
         )
 
@@ -132,8 +181,8 @@ class DynamoTemplateStore(Store):
         except ClientError:
             raise TemplateError
 
-    def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
-        table = self._template_table(guild)
+    def list_memes(self, guild: Union[str, int, Guild], fields: List[str] = None) -> Iterable[dict]:
+        table = self._template_table(guild_id(guild))
         if not fields:
             return table.scan()["Items"]
         else:
@@ -143,9 +192,9 @@ class DynamoTemplateStore(Store):
             )["Items"]
 
     def read_meme(
-        self, guild: str, id: str, increment_use: bool = False
+        self, guild: Union[str, int, Guild], id: str, increment_use: bool = False
     ) -> MemeTemplate:
-        table, key = self._template_table(guild), {"name": id}
+        table, key = self._template_table(guild_id(guild)), {"name": id}
         item = (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )
