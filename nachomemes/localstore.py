@@ -19,7 +19,7 @@ class LocalTemplateStore(Store):
     def read_meme(
         self, guild: Union[str, int, Guild], id: str, increment_use: bool = False
     ) -> MemeTemplate:
-        return _load_templates(guild_id(guild))[id]
+        return _load_templates(guild)[id]
 
     def list_memes(self, guild: Union[str, int, Guild], fields: List[str] = None) -> Iterable[dict]:
         result = (asdict(t) for t in _load_templates(guild_id(guild)).values())
@@ -43,7 +43,7 @@ def _load_config(guild: Guild) -> GuildConfig:
     return config
 
 @lru_cache(maxsize=1)
-def _load_templates(guild: str) -> Iterable[MemeTemplate]:
+def _load_templates(guild: Union[str, int, Guild]) -> Iterable[MemeTemplate]:
 
     # load layouts
     with open("config/layouts.json", "r") as f:
