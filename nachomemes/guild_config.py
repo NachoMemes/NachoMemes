@@ -53,8 +53,8 @@ class GuildConfig:
         elif victim.id in self.override:
             self.pariah.append(member.id)
             return f"{self.member_nick(member)}. Your membership to The Continental has been, by thine own hand, revoked."
-        elif not member.id in self.override and victim.guild_permissions.administrator:
-           return "As fun as it sounds, it's probably not a good idea."
+        # elif not member.id in self.override and victim.guild_permissions.administrator:
+        #    return "As fun as it sounds, it's probably not a good idea."
         else:
             self.pariah.append(victim.id)
             return f"{self.member_nick(victim)} is now excommunicado"
