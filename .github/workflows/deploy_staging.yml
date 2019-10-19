@@ -24,7 +24,7 @@ jobs:
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
-          ssh-keygen -t rsa -b 4096 -f ~/.ssh/  -y
+          ssh-keygen -t rsa -b 4096 -f  -y
       - name: Run Terraform Apply
         run: terraform apply -lock=true -auto-approve -refresh=true ~/infrastructure/staging 
       - name: Set output  
