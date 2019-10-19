@@ -1,2 +1,8 @@
-tasks: 
-  - ping:
+- name: Staging Deploy
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  hosts: all
+
+  tasks: 
+    - ping:
