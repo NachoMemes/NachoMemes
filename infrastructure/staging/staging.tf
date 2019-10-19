@@ -1,5 +1,9 @@
 # Set AWS Provider, all options will be read from ENV
-provider "aws" { }
+provider "aws" { 
+  region     = "${{ secrets.region }}"
+  access_key = "${{ secrets.access_key }}"
+  secret_key = "${{ secrets.secret }}"
+}
 
 
 # Basic VPC
