@@ -21,10 +21,9 @@ jobs:
       - name: Generate SSH Key
         run:  |
           ssh-keygen -t rsa -b 4096 -f ~/.ssh/    
-      - name: Generate variables
-        run: |
       - name: Run Terraform Apply
         run: terraform apply -lock=true -auto-approve -refresh=true ~/infrastructure/staging 
+      - name: Set output  
         run: terraform output > inventory.txt
       - name: Run Deploy Playbook
         run: ansible-playbook -i inventory.txt staging-deploy.yml
