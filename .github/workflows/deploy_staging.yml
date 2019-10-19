@@ -27,7 +27,7 @@ jobs:
         run:  |
           ssh-keygen -t rsa -b 4096 -f  -y
       - name: Run Terraform Plan
-        run: terraform plan
+        run: terraform plan /home/runner/work/NachoMemes/NachoMemes
 
       - name: Run Terraform Apply
         run: terraform apply -lock=true -auto-approve -refresh=true /home/runner/work/NachoMemes/NachoMemes 
