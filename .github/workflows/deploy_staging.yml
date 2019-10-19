@@ -19,7 +19,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
         run: mkdir ~/.ssh/ 
       - name: Change folder perms
-        run: run: chmod 700 ~/.ssh/ 
+        run:  chmod 700 ~/.ssh/ 
         
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
