@@ -30,7 +30,7 @@ jobs:
         run: terraform init /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
       
       - name: Run Terraform Plan
-        run: terraform plan -var="$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging -var=$(</home/runner/.ssh/id_rsa.pub)
+        run: terraform plan -var="$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
         env: 
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
