@@ -20,9 +20,9 @@ jobs:
         run: mkdir ~/.ssh/ 
       - name: Change folder perms
         run:  chmod 700 ~/.ssh/ 
-      -name: Help
+      - name: Help
         run: pwd
-        
+
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
