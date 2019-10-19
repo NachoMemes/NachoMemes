@@ -24,18 +24,20 @@ jobs:
         run:  |
           ssh-keygen -t rsa -b 4096 -N '' -f /home/runner/.ssh/id_rsa
 
+      
+
       - name: Run Terraform Init
         run: terraform init /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
       
       - name: Run Terraform Plan
-        run: terraform plan /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging
+        run: terraform plan /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging -var=$(</home/runner/.ssh/id_rsa.pub)
         env: 
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
 
       - name: Run Terraform Apply
-        run: terraform apply -lock=true -auto-approve -refresh=true /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
+        run: terraform apply -lock=true -auto-approve -refresh=true /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging -var=$(</home/runner/.ssh/id_rsa.pub)
         env: 
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
