@@ -26,6 +26,9 @@ jobs:
       - name: Generate SSH Key
         run:  |
           ssh-keygen -t rsa -b 4096 -f  -y
+      - name: Run Terraform Plan
+        run: terraform plan
+
       - name: Run Terraform Apply
         run: terraform apply -lock=true -auto-approve -refresh=true /home/runner/work/NachoMemes/NachoMemes 
       - name: Set output  
