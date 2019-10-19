@@ -20,13 +20,16 @@ jobs:
         run: mkdir ~/.ssh/ 
       - name: Change folder perms
         run:  chmod 700 ~/.ssh/ 
-      - name: Test LS
-        run: ls -al ~/.ssh/ 
+      
 
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
           ssh-keygen -t rsa -b 4096 -f  -y
+
+      - name: Test LS
+        run: ls -al ~/.ssh/ 
+        
       - name: Run Terraform Init
         run: terraform init /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
       
