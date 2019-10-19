@@ -30,14 +30,14 @@ jobs:
         run: terraform init /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
       
       - name: Run Terraform Plan
-        run: terraform plan -var="$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
+        run: terraform plan -var="public_key=$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
         env: 
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
 
       - name: Run Terraform Apply
-        run: terraform apply -lock=true -auto-approve -refresh=true -var="$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
+        run: terraform apply -lock=true -auto-approve -refresh=true -var="public_key=$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
         env: 
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
