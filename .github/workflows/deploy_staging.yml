@@ -12,16 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-
-        
+      - name: Set ENV
+        env: 
+          AWS_DEFAULT_REGION: ${{ secrets.region }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
           ssh-keygen -t rsa -b 4096 -f ~/.ssh/    
-        ENV: 
-          AWS_DEFAULT_REGION: ${{ secrets.region }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
       - name: Generate variables
         run: |
       - name: Run Terraform Apply
