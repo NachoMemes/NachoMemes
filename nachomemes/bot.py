@@ -8,15 +8,14 @@ import re
 import sys
 import textwrap
 import traceback
-import uuid
-from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Iterable
 
 import discord
 import psutil
-import tinys3
 from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
+from fuzzywuzzy import process
 
 from dynamo import DynamoTemplateStore
 from localstore import LocalTemplateStore
@@ -30,6 +29,10 @@ bot = commands.Bot(command_prefix="/", description=description)
 global MEMES
 MEMES = 0
 
+# Base directory from which paths should extend.
+global BASE_DIR
+BASE_DIR = Path(__file__).parent.parent
+
 
 @bot.event
 async def on_ready():
@@ -37,8 +40,16 @@ async def on_ready():
     bot.loop.create_task(status_task())
 
 
-with open("config/messages.json", "rb") as c:
+with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
+
+
+def _match_template_name(name, guild):
+    "Matches input fuzzily against proper names."
+    fuzzed = process.extractOne(name, store.list_memes("guild_id", ("name",)))
+    if fuzzed[1] < 25:
+        raise TemplateError(f"could not load a template matching {name}")
+    return fuzzed[0]["name"]
 
 
 @bot.event
@@ -62,7 +73,8 @@ async def templates(ctx, template=None):
     try:
         guild = str(ctx.message.guild.id)
         if template:
-            meme = store.read_meme(guild, template)
+            fmeme = _match_template_name(template, guild)
+            meme = store.read_meme(guild, fmeme)
             await ctx.send(
                 textwrap.dedent(
                     f"""\
@@ -113,18 +125,17 @@ async def meme(ctx: Context, template: str, *text):
         # Log memes/minute.
         global MEMES
         MEMES += 1
-        # Case insensitive meme naming
-        template = template.lower()
+        ftemplate = _match_template_name(template, str(ctx.message.guild.id))
         meme = store.read_meme(
             str(ctx.message.guild.id)
             if ctx.message.guild != None
             else "nachomemes-default",
-            template,
+            ftemplate,
             True,
         )
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
-        key = f"{template}-{name}.png"
+        key = f"{ftemplate}-{name}.png"
 
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
@@ -168,7 +179,7 @@ if __name__ == "__main__":
         creds_file_name = (
             "config/creds.json" if not testing else "config/testing-creds.json"
         )
-        with open(creds_file_name, "rb") as f:
+        with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
             creds = json.load(f)
     except:
         creds = {}
@@ -180,7 +191,7 @@ if __name__ == "__main__":
     store = LocalTemplateStore()
     if not args.local and "access_key" in creds:
         store = DynamoTemplateStore(
-            creds["access_key"], creds["secret"], creds["region"], store
+            creds["access_key"], creds["secret"], creds["region"], store, args.debug
         )
 
     try:
