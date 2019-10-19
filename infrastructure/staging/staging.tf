@@ -1,5 +1,7 @@
 # Set AWS Provider, all options will be read from ENV
-provider "aws" { }
+provider "aws" { 
+  region = "us-east-1"
+}
 
 
 # Basic VPC
