@@ -96,7 +96,7 @@ resource "aws_internet_gateway" "gw" {
 
 resource "aws_key_pair" "deploy-key" {
   key_name = "deploy-key"
-  public_key = file("/home/runner/work/NachoMemes/.ssh/id_rsa.pub")
+  public_key = file("/home/.ssh/id_rsa.pub")
 }
 
 
