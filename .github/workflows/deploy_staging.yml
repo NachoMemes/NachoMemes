@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - terraform
 
 
 jobs:
@@ -23,7 +24,7 @@ jobs:
       - name: Generate variables
         run: |
       - name: Run Terraform Apply
-        run: terraform apply -lock=true -auto-approve -refresh=true ~/infrastructure/staging -out=
+        run: terraform apply -lock=true -auto-approve -refresh=true ~/infrastructure/staging 
         run: terraform output > inventory.txt
       - name: Run Deploy Playbook
         run: ansible-playbook -i inventory.txt staging-deploy.yml
