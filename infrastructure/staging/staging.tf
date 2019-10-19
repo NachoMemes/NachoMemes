@@ -1,6 +1,5 @@
 # Set AWS Provider, all options will be read from ENV
 provider "aws" { 
-  region = "us-east-1"
 }
 
 
