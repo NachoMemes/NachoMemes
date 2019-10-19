@@ -17,7 +17,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.region }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
-        run: echo "Set env variables"
+        run: mkdir ~/.ssh/
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
