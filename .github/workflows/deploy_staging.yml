@@ -25,7 +25,7 @@ jobs:
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
-          ssh-keygen -t rsa -b 4096   -y
+          ssh-keygen -t rsa -b 4096 -N ''
 
       - name: Test LS
         run: ls -al ~/.ssh/ 
