@@ -13,12 +13,13 @@ from typing import Iterable
 
 import discord
 import psutil
+from discord import Guild
 from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
 from fuzzywuzzy import process
 
-from dynamo import DynamoTemplateStore
-from localstore import LocalTemplateStore
+from dynamo_store import DynamoTemplateStore
+from local_store import LocalTemplateStore
 from render import MemeTemplate, TextBox
 from store import Store, TemplateError
 
@@ -34,6 +35,10 @@ global BASE_DIR
 BASE_DIR = Path(__file__).parent.parent
 
 
+def mentioned_members(ctx: Context):
+    return (ctx.guild.get_member(m.id) for m in ctx.message.mentions)
+
+
 @bot.event
 async def on_ready():
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
@@ -44,9 +49,9 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-def _match_template_name(name, guild):
+def _match_template_name(name, guild: Guild):
     "Matches input fuzzily against proper names."
-    fuzzed = process.extractOne(name, store.list_memes("guild_id", ("name",)))
+    fuzzed = process.extractOne(name, store.list_memes(guild, ("name",)))
     if fuzzed[1] < 25:
         raise TemplateError(f"could not load a template matching {name}")
     return fuzzed[0]["name"]
@@ -71,10 +76,10 @@ async def status_task():
 @bot.command(description="List templates.")
 async def templates(ctx, template=None):
     try:
-        config = store.guild_config(ctx.message.guild)
+        guild = ctx.message.guild
+        config = store.guild_config(guild)
         if not config.can_use(ctx.message.author):
             return await ctx.send(f"```{config.no_memes(ctx.message.author)}```")
-        guild = str(ctx.message.guild.id)
         if template:
             fmeme = _match_template_name(template, guild)
             meme = store.read_meme(guild, fmeme)
@@ -89,13 +94,9 @@ async def templates(ctx, template=None):
                 )
             )
         else:
-            await ctx.send(
-                "== Templates =="
-                + "".join(
-                    f"\n{meme['name']}: *{meme['description']}*"
-                    for meme in store.list_memes(guild, ("name", "description"))
-                )
-            )
+            memes = store.list_memes(guild, ("name", "description"))
+            lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
+            await ctx.send("**Templates**" + "".join(lines))
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
     except:
@@ -121,7 +122,7 @@ async def refresh_templates(ctx: Context, arg: str = None):
             if not config.can_edit(ctx.message.author):
                 return await ctx.send(f"```{config.no_admin(ctx.message.author,'refresh','edit')}```")
                  
-        message = store.refresh_memes(str(ctx.message.guild.id), hard)
+        message = store.refresh_memes(ctx.message.guild, hard)
         await ctx.send(f"```{message}```")
     except:
         err = traceback.format_exc()
@@ -133,19 +134,21 @@ async def refresh_templates(ctx: Context, arg: str = None):
 async def whoami(ctx: Context):
     try:
         config = store.guild_config(ctx.message.guild)
-        if ctx.message.mentions:
-            member = ctx.guild.get_member(ctx.message.mentions[0].id)
-        else:
-            member = ctx.message.author
 
-        name = config.member_full_name(member)
-        await ctx.send(
-            textwrap.dedent(
-                f"""\
-                ```Name: {name}
-                Can use: {config.can_use(member)}, Can edit: {config.can_edit(member)}, Can admin: {config.can_admin(member)}```"""
+        if ctx.message.mentions:
+            members = mentioned_members(ctx)
+        else:
+            members = (ctx.message.author,)
+
+        for member in members:
+            name = config.member_full_name(member)
+            await ctx.send(
+                textwrap.dedent(
+                    f"""\
+                    ```Name: {name}
+                    Can use: {config.can_use(member)}, Can edit: {config.can_edit(member)}, Can admin: {config.can_admin(member)}```"""
+                )
             )
-        )
     except:
         err = traceback.format_exc()
         if testing:
@@ -184,10 +187,10 @@ async def set_edit_role(ctx: Context, roleid: str):
 async def shun(ctx: Context):
     try:
         config = store.guild_config(ctx.message.guild)
-        victim = ctx.guild.get_member(ctx.message.mentions[0].id)
-        message = config.shun(ctx.message.author, victim)
+        for subject in mentioned_members(ctx):
+            message = config.shun(ctx.message.author, subject)
+            await ctx.send(textwrap.dedent(f"```{message}```"))
         store.save_guild_config(config)
-        await ctx.send(textwrap.dedent(f"```{message}```"))
     except:
         err = traceback.format_exc()
         if testing:
@@ -198,10 +201,10 @@ async def shun(ctx: Context):
 async def endorse(ctx: Context):
     try:
         config = store.guild_config(ctx.message.guild)
-        victim = ctx.guild.get_member(ctx.message.mentions[0].id)
-        message = config.endorse(ctx.message.author, victim)
+        for subject in mentioned_members(ctx):
+            message = config.endorse(ctx.message.author, subject)
+            await ctx.send(textwrap.dedent(f"```{message}```"))
         store.save_guild_config(config)
-        await ctx.send(textwrap.dedent(f"```{message}```"))
     except:
         err = traceback.format_exc()
         if testing:
@@ -220,18 +223,12 @@ async def meme(ctx: Context, template: str, *text):
         # Log memes/minute.
         global MEMES
         MEMES += 1
-        ftemplate = _match_template_name(template, str(ctx.message.guild.id))
-        meme = store.read_meme(
-            str(ctx.message.guild.id)
-            if ctx.message.guild != None
-            else "nachomemes-default",
-            ftemplate,
-            True,
-        )
+        match = _match_template_name(template, ctx.message.guild)
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
-        key = f"{ftemplate}-{name}.png"
+        key = f"{match}-{name}.png"
 
+        meme = store.read_meme(ctx.message.guild, match, True)
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
             buffer.flush()

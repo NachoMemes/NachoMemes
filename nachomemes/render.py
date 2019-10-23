@@ -212,7 +212,7 @@ if __name__ == "__main__":
         show_boxes = True
         args.remove("--show")
     (filename, template_name, *text) = args
-    from localstore import LocalTemplateStore
+    from local_store import LocalTemplateStore
 
     store = LocalTemplateStore()
     with open(filename, "wb") as f:

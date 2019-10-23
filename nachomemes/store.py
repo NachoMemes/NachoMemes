@@ -127,35 +127,27 @@ da_config = Config(
 
 class Store(ABC):
     @abstractmethod
-    def refresh_memes(self, guild: Union[str, int, Guild], hard: bool = False) -> str:
+    def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
         pass
 
     @abstractmethod
     def read_meme(
-        self, guild: Union[str, int, Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> MemeTemplate:
         pass
 
     @abstractmethod
-    def list_memes(self, guild: Union[str, int, Guild], fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Optional[Guild], fields: List[str] = None) -> Iterable[dict]:
         "Get all the memes as dictionaries, optionally pass fields to get only those fields in the dicts"
         pass
 
     @abstractmethod
-    def guild_config(self, guild: Guild) -> GuildConfig:
+    def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
         pass
 
     @abstractmethod
     def save_guild_config(self, guild: GuildConfig):
         pass
 
-def guild_id(guild: Union[str, int, Guild]) -> str:
-    if type(guild) == str:
-        return guild
-    elif type(guild) == int:
-        return str(guild)
-    elif type(guild) == Guild:
-        return str(guild.id)
-    elif type(guild) == GuildConfig:
-        return str(guild.id)
-    raise ValueError(guild)
+def guild_id(guild: Union[Guild,GuildConfig,None]) -> str:
+    return str(guild.id) if guild else "default"

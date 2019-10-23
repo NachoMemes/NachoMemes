@@ -13,7 +13,7 @@ srcdir = os.path.join(parentdir, "nachomemes")
 sys.path.append(srcdir)
 
 from generate_samples import SAMPLES
-from localstore import LocalTemplateStore
+from local_store import LocalTemplateStore
 
 
 class TestRender(unittest.TestCase):
