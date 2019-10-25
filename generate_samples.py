@@ -3,7 +3,7 @@ SAMPLES = (("bruh.png", "bruh", '"" / bruh'),)
 
 if __name__ == "__main__":
     import shlex
-    from localstore import LocalTemplateStore
+    from nachomemes.local_store import LocalTemplateStore
 
     store = LocalTemplateStore()
     for filename, name, message in SAMPLES:
