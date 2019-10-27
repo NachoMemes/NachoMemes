@@ -308,6 +308,15 @@
             "justify": "LEFT"
         }
     ],
+    "doesnt_effect_baby_layout": [{
+        "left": 0.4,
+        "right": 0.7,
+        "top": 0.6,
+        "bottom": 0.8,
+        "face": "IMPACT",
+        "justify": "LEFT"
+    }],
+    
     "woman_yelling_at_a_cat_layout": [{
             "left": 0.02,
             "right": 0.48,
