@@ -14,7 +14,7 @@ from discord import Member, Role, Guild
 from dacite import Config
 from PIL import Image, ImageFont
 
-from guild_config import GuildConfig
+from nachomemes import GuildConfig
 
 # Monkeypatch Request to show the url in repr
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
@@ -131,8 +131,7 @@ class MemeTemplate:
             return Image.open(buffer)
 
     def render(self, message: Iterable[str], output: IO):
-        from render import render_template
-
+        from nachomemes import render_template
         render_template(self, message, output)
 
 
