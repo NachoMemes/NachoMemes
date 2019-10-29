@@ -12,7 +12,7 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
-from store import Color, Font, MemeTemplate, TextBox
+from nachomemes import Color, Font, MemeTemplate, TextBox
 
 
 def partition_on(pred, seq):
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         show_boxes = True
         args.remove("--show")
     (filename, template_name, *text) = args
-    from local_store import LocalTemplateStore
+    from nachomemes import LocalTemplateStore
 
     store = LocalTemplateStore()
     with open(filename, "wb") as f:
