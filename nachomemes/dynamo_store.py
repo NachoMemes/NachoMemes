@@ -11,8 +11,7 @@ from botocore.exceptions import ClientError
 from dacite import from_dict
 from discord import Guild
 
-from guild_config import GuildConfig
-from store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
+from nachomemes import GuildConfig, Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
 
 
 dynamo_serializers = {
@@ -195,3 +194,8 @@ class DynamoTemplateStore(Store):
             table, key
         )
         return from_dict(MemeTemplate, item, config=da_config)
+
+    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+        table = self._template_table(guild, False)
+        r = self._write(table, ("name",), item)
+        return f"meme {r}"

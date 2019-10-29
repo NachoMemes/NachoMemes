@@ -18,10 +18,7 @@ from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
 from fuzzywuzzy import process
 
-from dynamo_store import DynamoTemplateStore
-from local_store import LocalTemplateStore
-from render import MemeTemplate, TextBox
-from store import Store, TemplateError
+from nachomemes import DynamoTemplateStore, LocalTemplateStore, MemeTemplate, TextBox, Store, TemplateError
 
 description = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=description)
@@ -210,6 +207,23 @@ async def endorse(ctx: Context):
         if testing:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
+
+@bot.command(description="Make a new template.")
+async def save(ctx: Context):
+    try:
+        config = store.guild_config(ctx.message.guild)
+        if not config.can_edit(ctx.message.author):
+            raise RuntimeError("computer says no")
+        d = json.loads(ctx.message.content.lstrip("/save").strip().strip('`'))
+        message = store.save_meme(ctx.message.guild, d)
+        await ctx.send(textwrap.dedent(f"```{message}```"))
+    except Exception as e:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        else:
+            await ctx.send("```" + str(e) + "```")
+        raise e
 
 
 @bot.command(description="Make a new meme.")

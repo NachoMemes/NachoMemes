@@ -118,6 +118,13 @@
         "layout": "stonks_layout",
         "usage": 0
     },
+    "something-of-a-scientist": {
+        "description": "we are all scientists",
+        "docs": "https://knowyourmeme.com/memes/im-something-of-a-scientist-myself",
+        "source_image_url": "https://i.imgur.com/QoXbJAX.jpg",
+        "layout": "stonks_layout",
+        "usage": 0
+    },
     "woman-yelling-at-a-cat": {
         "description": "you pu--y!",
         "docs": "https://knowyourmeme.com/memes/woman-yelling-at-a-cat",
@@ -145,6 +152,14 @@
         "source_image_url": "file:source_images/rollsafe.jpg",
         "layout": "standard_layout",
         "usage": 0
+    },
+    "doesnt-effect-my-baby": {
+        "description": "side effects include low birthweight, autism, asthma, and roblox memes",
+        "docs": "https://knowyourmeme.com/memes/it-doesnt-effect-my-baby",
+        "source_image_url": "file:source_images/doesnteffectmybaby.jpg",
+        "layout": "doesnt_effect_baby_layout",
+        "usage": 0
     }
+
 
 }
