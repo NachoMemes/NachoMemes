@@ -252,17 +252,23 @@ async def endorse(ctx: Context):
 async def memebot(ctx: Context, *args):
     """ Top level administrative function for bot."""
     num_args = 0 if args == None else len(args)
-    if num_args > 0:
-        if args[0] == "refresh":
-            # Refreshes templates.
-            return await refresh_templates(ctx, args[:-1])
-        elif args[0] == "set_admin_role":
-            # Sets an admin role.
-            return await set_admin_role(ctx, args[:-1])
-        elif args[0] == "set_edit_role":
-            # Sets edit role.
-            return await set_edit_role(ctx, args[:-1])
-    await ctx.send("You used this command incorrectly. Try again.")
+    try:
+        if num_args > 0:
+            if args[0] == "refresh":
+                # Refreshes templates.
+                return await refresh_templates(ctx, args[1])
+            elif args[0] == "set_admin_role":
+                # Sets an admin role.
+                return await set_admin_role(ctx, str(args[1]))
+            elif args[0] == "set_edit_role":
+                # Sets edit role.
+                return await set_edit_role(ctx, str(args[1]))
+        await ctx.send("You used this command incorrectly. Try again.")
+    except:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        print(err, file=sys.stderr)
 
 
 @bot.command(description="Make a new meme.")
