@@ -7,13 +7,13 @@ import zlib
 from tempfile import NamedTemporaryFile
 
 
-currentdir = os.path.dirname(os.path.realpath(__file__))
-parentdir = os.path.dirname(currentdir)
-srcdir = os.path.join(parentdir, "nachomemes")
-sys.path.append(srcdir)
+# currentdir = os.path.dirname(os.path.realpath(__file__))
+# parentdir = os.path.dirname(currentdir)
+# srcdir = os.path.join(parentdir, "nachomemes")
+# sys.path.append(srcdir)
 
 from generate_samples import SAMPLES
-from local_store import LocalTemplateStore
+from nachomemes import LocalTemplateStore
 
 
 class TestRender(unittest.TestCase):
