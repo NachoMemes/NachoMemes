@@ -33,6 +33,9 @@ class LocalTemplateStore(Store):
     def save_guild_config(self, guild: GuildConfig):
         pass
 
+    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+        raise NotImplementedError("local store is read-only")
+
 
 @lru_cache(maxsize=1)
 def _load_config(guild: Optional[Guild]) -> GuildConfig:
