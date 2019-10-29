@@ -272,7 +272,7 @@ async def memebot(ctx: Context, *args):
         if num_args > 0:
             if args[0] == "refresh":
                 # Refreshes templates.
-                return await refresh_templates(ctx, args[1])
+                return await refresh_templates(ctx, args[1] if len(args) > 1 else None)
             elif args[0] == "set_admin_role":
                 # Sets an admin role.
                 return await set_admin_role(ctx, str(args[1]))

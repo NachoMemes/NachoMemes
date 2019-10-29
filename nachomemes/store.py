@@ -8,7 +8,7 @@ from sys import maxsize
 from typing import IO, Callable, Iterable, List, Optional, Union, Dict
 from urllib.request import Request, urlopen
 from tempfile import NamedTemporaryFile
-import atexit, os
+import atexit, os, re
 
 from discord import Member, Role, Guild
 from dacite import Config
@@ -33,7 +33,7 @@ def _fetch_image(url: Request) -> IO:
         return urlopen(url)
     if url.full_url not in LOCAL_FILE_CACHE:
         print(url.full_url)
-        suffix=url.full_url.split('.')[-1][:5]
+        suffix=re.sub(r'[\W]', '', url.full_url.split('.')[-1])[:5]
         with NamedTemporaryFile(suffix='.'+suffix, delete=False) as f:
             with urlopen(url) as u:
                 f.write(u.read())
