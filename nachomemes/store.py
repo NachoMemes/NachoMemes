@@ -14,7 +14,7 @@ from discord import Member, Role, Guild
 from dacite import Config
 from PIL import Image, ImageFont
 
-from nachomemes import GuildConfig
+from .guild_config import GuildConfig
 
 # Monkeypatch Request to show the url in repr
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"

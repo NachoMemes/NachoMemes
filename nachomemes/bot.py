@@ -18,7 +18,9 @@ from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
 from fuzzywuzzy import process
 
-from nachomemes import DynamoTemplateStore, LocalTemplateStore, MemeTemplate, TextBox, Store, TemplateError
+from .dynamo_store import DynamoTemplateStore
+from .local_store import LocalTemplateStore
+from .store import MemeTemplate, TextBox, Store, TemplateError
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=DESCRIPTION)

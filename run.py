@@ -16,11 +16,6 @@ import sys
 def main(branch=None, debug=False, refresh=False, local=False):
     """ Builds and runs a list of processes.
     """
-    runCommand = "python3 nachomemes/bot.py"
-    if debug:
-        runCommand = runCommand + " --debug"
-    if local:
-        runCommand = runCommand + " --local"
 
     if branch:
         for c in (
@@ -32,6 +27,13 @@ def main(branch=None, debug=False, refresh=False, local=False):
             if c == "git reset HEAD --hard" and refresh == False:
                 continue
             subprocess.call([c], shell=True)
+
+    runCommand = "python3 -m nachomemes.bot.py"
+    if debug:
+        runCommand = runCommand + " --debug"
+    if local:
+        runCommand = runCommand + " --local"
+
     subprocess.call([runCommand], shell=True)
 
 

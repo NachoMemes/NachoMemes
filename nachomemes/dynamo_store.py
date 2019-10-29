@@ -11,7 +11,8 @@ from botocore.exceptions import ClientError
 from dacite import from_dict
 from discord import Guild
 
-from nachomemes import GuildConfig, Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
+from .guild_config import GuildConfig
+from .store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
 
 
 dynamo_serializers = {

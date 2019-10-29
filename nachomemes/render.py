@@ -12,7 +12,7 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
-from nachomemes import Color, Font, MemeTemplate, TextBox
+from .store import Color, Font, MemeTemplate, TextBox
 
 
 def partition_on(pred, seq):

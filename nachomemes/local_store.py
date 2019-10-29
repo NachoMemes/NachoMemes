@@ -6,7 +6,8 @@ from typing import Any, Callable, Dict, Iterable, List, Type, Union, Optional
 from discord import Member, Role, Guild
 from dacite import Config, from_dict
 
-from nachomemes import MemeTemplate, Store, da_config, GuildConfig, guild_id
+from .guild_config import GuildConfig
+from .store import MemeTemplate, Store, da_config, guild_id
 
 
 class LocalTemplateStore(Store):
