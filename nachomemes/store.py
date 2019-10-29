@@ -168,7 +168,7 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def save_meme(self, guild: Optional[Guild], data: dict):
+    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
         pass
 
     @abstractmethod

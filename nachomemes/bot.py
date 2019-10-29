@@ -211,6 +211,23 @@ async def endorse(ctx: Context):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
+@bot.command(description="Make a new template.")
+async def save(ctx: Context):
+    try:
+        config = store.guild_config(ctx.message.guild)
+        if not config.can_edit(ctx.message.author):
+            raise RuntimeError("computer says no")
+        d = json.loads(ctx.message.content.lstrip("/save").strip().strip('`'))
+        message = store.save_meme(ctx.message.guild, d)
+        await ctx.send(textwrap.dedent(f"```{message}```"))
+    except Exception as e:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        else:
+            await ctx.send("```" + str(e) + "```")
+        raise e
+
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str, *text):

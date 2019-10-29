@@ -195,3 +195,8 @@ class DynamoTemplateStore(Store):
             table, key
         )
         return from_dict(MemeTemplate, item, config=da_config)
+
+    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+        table = self._template_table(guild, False)
+        r = self._write(table, ("name",), item)
+        return f"meme {r}"
