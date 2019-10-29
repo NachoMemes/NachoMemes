@@ -168,6 +168,10 @@ class Store(ABC):
         pass
 
     @abstractmethod
+    def save_meme(self, guild: Optional[Guild], data: dict):
+        pass
+
+    @abstractmethod
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
         pass
 
