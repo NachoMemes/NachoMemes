@@ -5,8 +5,10 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional, Union
+from typing import IO, Callable, Iterable, List, Optional, Union, Dict
 from urllib.request import Request, urlopen
+from tempfile import NamedTemporaryFile
+import atexit, os
 
 from discord import Member, Role, Guild
 from dacite import Config
@@ -16,6 +18,30 @@ from guild_config import GuildConfig
 
 # Monkeypatch Request to show the url in repr
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
+
+
+LOCAL_FILE_CACHE: Dict[str,str] = {}
+
+@atexit.register
+def _delete_cache():
+    for f in LOCAL_FILE_CACHE.values():
+        os.remove(f)
+
+
+def _fetch_image(url: Request) -> IO:
+    if url.type == 'file':
+        return urlopen(url)
+    if url.full_url not in LOCAL_FILE_CACHE:
+        print(url.full_url)
+        suffix=url.full_url.split('.')[-1][:5]
+        with NamedTemporaryFile(suffix='.'+suffix, delete=False) as f:
+            with urlopen(url) as u:
+                f.write(u.read())
+            LOCAL_FILE_CACHE[url.full_url] = f.name
+        print(f.name)
+    return open(LOCAL_FILE_CACHE[url.full_url], 'rb')
+
+    
 
 
 class TemplateError(Exception):
@@ -98,7 +124,7 @@ class MemeTemplate:
     usage: int = 0
 
     def read_source_image(self, buffer) -> Image:
-        with urlopen(self.source_image_url) as s:
+        with _fetch_image(self.source_image_url) as s:
             buffer.write(s.read())
             buffer.flush
             buffer.seek(0)

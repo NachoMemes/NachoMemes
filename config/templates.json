@@ -118,6 +118,13 @@
         "layout": "stonks_layout",
         "usage": 0
     },
+    "something-of-a-scientist": {
+        "description": "we are all scientists",
+        "docs": "https://knowyourmeme.com/memes/im-something-of-a-scientist-myself",
+        "source_image_url": "https://i.imgur.com/QoXbJAX.jpg",
+        "layout": "stonks_layout",
+        "usage": 0
+    },
     "woman-yelling-at-a-cat": {
         "description": "you pu--y!",
         "docs": "https://knowyourmeme.com/memes/woman-yelling-at-a-cat",
