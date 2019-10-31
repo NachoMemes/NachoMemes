@@ -17,12 +17,13 @@ class LocalTemplateStore(Store):
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False):
         return "Memes were not refreshed since a local store is enabled."
 
-    def read_meme(
+    def get_meme(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
-    ) -> MemeTemplate:
+    ) -> dict:
         return _load_templates(guild)[id]
 
-    def list_memes(self, guild: Optional[Guild], fields: List[str] = None) -> Iterable[dict]:
+
+    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
         result = (asdict(t) for t in _load_templates(guild).values())
         if fields:
             result = ({k: d[k] for k in fields} for d in result)
@@ -47,7 +48,7 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
     return config
 
 @lru_cache(maxsize=1)
-def _load_templates(guild: Optional[Guild]) -> Iterable[MemeTemplate]:
+def _load_templates(guild: Optional[Guild]) -> Dict[str, dict]:
 
     # load layouts
     with open("config/layouts.json", "r") as f:
@@ -63,4 +64,4 @@ def _load_templates(guild: Optional[Guild]) -> Iterable[MemeTemplate]:
         d["name"] = name
 
     # deserialize
-    return {k: from_dict(MemeTemplate, v, config=da_config) for k, v in data.items()}
+    return data

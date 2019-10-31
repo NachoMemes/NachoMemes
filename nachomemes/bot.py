@@ -21,6 +21,7 @@ from fuzzywuzzy import process
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .store import MemeTemplate, TextBox, Store, TemplateError
+from . import get_store, get_creds
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=DESCRIPTION)
@@ -311,7 +312,7 @@ async def meme(ctx: Context, template: str = None, *text):
         name = re.sub(r"\W+", "", str(text))
         key = f"{match}-{name}.png"
 
-        meme = store.read_meme(ctx.message.guild, match, True)
+        meme = store.meme(ctx.message.guild, match, True)
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
             buffer.flush()
@@ -348,26 +349,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     global testing
-    testing = args.debug
 
-    try:
-        creds_file_name = (
-            "config/creds.json" if not testing else "config/testing-creds.json"
-        )
-        with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
-            creds = json.load(f)
-    except:
-        creds = {}
-    for k in ("DISCORD_TOKEN", "ACCESS_KEY", "SECRET", "REGION"):
-        if k in os.environ:
-            creds[k.lower()] = os.environ[k]
 
-    global store
-    store = LocalTemplateStore()
-    if not args.local and "access_key" in creds:
-        store = DynamoTemplateStore(
-            creds["access_key"], creds["secret"], creds["region"], store, args.debug
-        )
 
     try:
         token = creds["discord_token"]

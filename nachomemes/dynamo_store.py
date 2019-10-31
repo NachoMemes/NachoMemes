@@ -12,16 +12,9 @@ from dacite import from_dict
 from discord import Guild
 
 from .guild_config import GuildConfig
-from .store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
+from .store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id, update_serialization
 
 
-dynamo_serializers = {
-    Request: attrgetter("full_url"),
-    float: lambda f: Decimal(str(f)),
-    Font: attrgetter("name"),
-    Color: attrgetter("name"),
-    Justify: attrgetter("name"),
-}
 
 class Result(Enum):
     ADDED = auto()
@@ -30,14 +23,7 @@ class Result(Enum):
 
 
 
-def update_serialization(value: Any, serializers: Dict[Type, Callable]):
-    if type(value) in serializers:
-        return serializers[type(value)](value)
-    if dict == type(value):
-        return {k: update_serialization(v, serializers) for k, v in value.items()}
-    if list == type(value):
-        return [update_serialization(v, serializers) for v in value]
-    return value
+
 
 
 class DynamoTemplateStore(Store):
@@ -98,7 +84,7 @@ class DynamoTemplateStore(Store):
 
 
     def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str,Any]):
-        item = update_serialization(value, dynamo_serializers)
+        item = update_serialization(value)
         key = {k:item.pop(k) for k in keys}
         prior = table.update_item(
             Key=key,
@@ -177,7 +163,7 @@ class DynamoTemplateStore(Store):
         except ClientError:
             raise TemplateError
 
-    def list_memes(self, guild: Optional[Guild], fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
         table = self._template_table(guild)
         if not fields:
             return table.scan()["Items"]
@@ -187,14 +173,13 @@ class DynamoTemplateStore(Store):
                 ExpressionAttributeNames={f"#{k}": k for k in fields},
             )["Items"]
 
-    def read_meme(
+    def get_meme(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
-    ) -> MemeTemplate:
+    ) -> dict:
         table, key = self._template_table(guild), {"name": id}
-        item = (self._increment_usage_and_fetch if increment_use else self._fetch)(
+        return (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )
-        return from_dict(MemeTemplate, item, config=da_config)
 
     def save_meme(self, guild: Optional[Guild], item: dict) -> str:
         table = self._template_table(guild, False)

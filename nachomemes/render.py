@@ -205,15 +205,4 @@ def render_template(
         img.save(output, format="PNG")
 
 
-if __name__ == "__main__":
-    args = sys.argv[1:]
-    show_boxes = False
-    if "--show" in args:
-        show_boxes = True
-        args.remove("--show")
-    (filename, template_name, *text) = args
-    from nachomemes import LocalTemplateStore
 
-    store = LocalTemplateStore()
-    with open(filename, "wb") as f:
-        store.read_meme(None, template_name).render(text, f)

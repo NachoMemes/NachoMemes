@@ -5,13 +5,16 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional, Union, Dict
+from typing import IO, Callable, Iterable, List, Optional, Union, Dict, Any, Type, Generator
+from types import GeneratorType
 from urllib.request import Request, urlopen
 from tempfile import NamedTemporaryFile
+from decimal import Decimal
+from operator import attrgetter
 import atexit, os, re
 
 from discord import Member, Role, Guild
-from dacite import Config
+from dacite import Config, from_dict
 from PIL import Image, ImageFont
 
 from .guild_config import GuildConfig
@@ -32,13 +35,11 @@ def _fetch_image(url: Request) -> IO:
     if url.type == 'file':
         return urlopen(url)
     if url.full_url not in LOCAL_FILE_CACHE:
-        print(url.full_url)
         suffix=re.sub(r'[\W]', '', url.full_url.split('.')[-1])[:5]
         with NamedTemporaryFile(suffix='.'+suffix, delete=False) as f:
             with urlopen(url) as u:
                 f.write(u.read())
             LOCAL_FILE_CACHE[url.full_url] = f.name
-        print(f.name)
     return open(LOCAL_FILE_CACHE[url.full_url], 'rb')
 
     
@@ -131,7 +132,7 @@ class MemeTemplate:
             return Image.open(buffer)
 
     def render(self, message: Iterable[str], output: IO):
-        from nachomemes import render_template
+        from .render import render_template
         render_template(self, message, output)
 
 
@@ -149,6 +150,22 @@ da_config = Config(
     }
 )
 
+serializers = {
+    Request: attrgetter("full_url"),
+    float: lambda f: Decimal(str(f)),
+    Font: attrgetter("name"),
+    Color: attrgetter("name"),
+    Justify: attrgetter("name"),
+}
+
+def update_serialization(value: Any, serializers: Dict[Type, Callable]=serializers):
+    if type(value) in serializers:
+        return serializers[type(value)](value)
+    if dict == type(value):
+        return {k: update_serialization(v, serializers) for k, v in value.items()}
+    if type(value) in (list, GeneratorType):
+        return [update_serialization(v, serializers) for v in value]
+    return value
 
 class Store(ABC):
     @abstractmethod
@@ -156,13 +173,18 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def read_meme(
+    def get_meme(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
-    ) -> MemeTemplate:
+    ) -> dict:
         pass
 
+    def meme(
+        self, guild: Optional[Guild], id: str, increment_use: bool = False
+    ) -> MemeTemplate:
+        return from_dict(MemeTemplate, self.get_meme(guild, id, increment_use), config=da_config)
+
     @abstractmethod
-    def list_memes(self, guild: Optional[Guild], fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
         "Get all the memes as dictionaries, optionally pass fields to get only those fields in the dicts"
         pass
 
@@ -178,5 +200,7 @@ class Store(ABC):
     def save_guild_config(self, guild: GuildConfig):
         pass
 
-def guild_id(guild: Union[Guild,GuildConfig,None]) -> str:
+def guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
+    if type(guild) == str:
+        return guild
     return str(guild.id) if guild else "default"
