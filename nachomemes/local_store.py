@@ -24,10 +24,10 @@ class LocalTemplateStore(Store):
 
 
     def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
-        result = (asdict(t) for t in _load_templates(guild).values())
         if fields:
-            result = ({k: d[k] for k in fields} for d in result)
-        return result
+            return ({k: d[k] for k in fields} for d in _load_templates(guild).values())
+        else:
+            return _load_templates(guild).values()
 
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
         return _load_config(guild)

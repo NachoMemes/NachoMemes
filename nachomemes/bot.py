@@ -348,9 +348,14 @@ if __name__ == "__main__":
         "--local", action="store_true", help="Force running without Dynamo."
     )
     args = parser.parse_args()
+
     global testing
+    testing = args.debug    
 
+    creds = get_creds(args.debug)
 
+    global store
+    store = get_store(args.local, args.debug)
 
     try:
         token = creds["discord_token"]

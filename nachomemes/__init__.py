@@ -1,3 +1,4 @@
+import os, json
 
 from .guild_config import GuildConfig
 from .store import Color, Font, Justify, TextBox, MemeTemplate, Store, da_config, TemplateError, guild_id
@@ -19,9 +20,9 @@ def get_store(local: bool=True, debug: bool=True) -> Store:
 def get_creds(debug: bool=True) -> dict:
     try:
         creds_file_name = (
-            "config/creds.json" if not debug else "config/testing-creds.json"
+            "/config/creds.json" if not debug else "/config/testing-creds.json"
         )
-        with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
+        with open(os.getcwd() + creds_file_name, "r") as f:
             creds = json.load(f)
     except:
         creds = {}
@@ -30,13 +31,3 @@ def get_creds(debug: bool=True) -> dict:
             creds[k.lower()] = os.environ[k]
     return creds
 
-if __name__ == "__main__":
-    args = sys.argv[1:]
-    show_boxes = False
-    if "--show" in args:
-        show_boxes = True
-        args.remove("--show")
-    (filename, template_name, *text) = args
-
-    with open(filename, "wb") as f:
-        get_store().read_meme(None, template_name).render(text, f)
