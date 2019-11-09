@@ -45,4 +45,4 @@ jobs:
       - name: Set output  
         run: terraform output > inventory.txt
       - name: Run Deploy Playbook
-        run: ansible-playbook -i inventory.txt staging-deploy.yml
+        run: ansible-playbook -i inventory.txt staging-deploy.yml --extra-vars "discord_token=${{ secrets.discord }}"
