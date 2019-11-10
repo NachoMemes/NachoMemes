@@ -1,5 +1,19 @@
-# Set AWS Provider, all options will be read from ENV
-provider "aws" {}
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+
+
+terraform {
+ backend "s3" {
+  encrypt = true
+  bucket = "nachomemes-terraform-state"
+  region = "us-east-1"
+  key = "staging/terraform_state.tfstate"
+ }
+}
+
 
 # Sets a variable input for the public key used later for ansible
 variable "public_key" {
