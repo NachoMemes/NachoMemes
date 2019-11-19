@@ -28,7 +28,7 @@ def main(branch=None, debug=False, refresh=False, local=False):
                 continue
             subprocess.call([c], shell=True)
 
-    runCommand = "python3 -m nachomemes.bot.py"
+    runCommand = "python3 -m nachomemes.bot"
     if debug:
         runCommand = runCommand + " --debug"
     if local:
