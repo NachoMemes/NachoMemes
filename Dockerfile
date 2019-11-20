@@ -1,8 +1,11 @@
+	
 FROM	python:3-slim
-RUN	apt-get update \
-	&& apt-get -yq install     git RUN mkdir -p /app
-WORKDIR	/app
+RUN	export DEBIAN_FRONTEND=noninteractive \
+	&& apt update -q < /dev/null > /dev/null \
+	&& apt install -yq --no-install-recommends build-essential git < /dev/null > /dev/null \
+	&& rm -rf /var/lib/apt/lists/*
 COPY	requirements.txt	/app/requirements.txt
-RUN	pip3 install -r requirements.txt
+WORKDIR	/app
+RUN	pip3 -q install -r requirements.txt
 COPY	.	/app
 ENTRYPOINT	["python3","run.py"]
