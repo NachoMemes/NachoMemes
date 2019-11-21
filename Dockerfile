@@ -1,5 +1,5 @@
 	
-FROM	python:3-slim
+FROM	python:3.7-slim
 RUN	export DEBIAN_FRONTEND=noninteractive \
 	&& apt update -q < /dev/null > /dev/null \
 	&& apt install -yq --no-install-recommends build-essential git < /dev/null > /dev/null \
