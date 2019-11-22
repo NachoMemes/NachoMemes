@@ -6,7 +6,6 @@ jobs:
   lint_and_test:
 
     runs-on: ubuntu-latest
-    container: python:3.8-slim
 
     steps:
     - uses: actions/checkout@v1
