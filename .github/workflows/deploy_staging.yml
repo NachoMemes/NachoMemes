@@ -24,12 +24,8 @@ jobs:
         run: mkdir ~/.ssh/ 
       - name: Change folder perms
         run:  chmod 700 ~/.ssh/ 
-      
-      - name: Set ENV
-        env: 
-          AWS_DEFAULT_REGION: "us-east-1"
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}  
+
+          
   
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
@@ -40,7 +36,11 @@ jobs:
 
       - name: Run Terraform Init
         run: terraform init /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
-      
+        env: 
+          AWS_DEFAULT_REGION: "us-east-1"
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
+          
       - name: Run Terraform Plan
         run: terraform plan -var="public_key=$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
         env: 
