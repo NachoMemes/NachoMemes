@@ -1,3 +1,4 @@
+name: Deploy Production Bot
 on: 
   push:
     branches:
@@ -5,7 +6,7 @@ on:
 
 
 jobs:
-  deploy_staging:
+  deploy_production:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
