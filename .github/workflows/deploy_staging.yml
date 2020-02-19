@@ -15,7 +15,7 @@ jobs:
       - name: Publish image to GitHub Container Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with: 
-          name: cooperpellaton/NachoMemes/nachomemes
+          name: cooperpellaton/nachomemes/nachomemes
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
