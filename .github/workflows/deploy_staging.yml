@@ -15,13 +15,13 @@ jobs:
       - name: Publish image to GitHub Container Registry
         uses: elgohr/Publish-Docker-Github-Action@2.12
         with: 
-          name: cooperpellaton/nachomemes/nachomemes
+          name: nachomemes/nachomemes/nachomemes
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
           snapshot: true
 
-          
+
       - name: Set ENV
         run: mkdir ~/.ssh/ 
       - name: Change folder perms
