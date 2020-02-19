@@ -12,19 +12,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: Publish image to GitHub Container Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with: 
+          name: cooperpellaton/nachomemes
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          snapshot: true
       - name: Set ENV
-        
         run: mkdir ~/.ssh/ 
       - name: Change folder perms
         run:  chmod 700 ~/.ssh/ 
       
+
+
 
       # Need to generate a ssh key for ansible to configure the instance oneview_logical_interconnect_group
       - name: Generate SSH Key
         run:  |
           ssh-keygen -t rsa -b 4096 -N '' -f /home/runner/.ssh/id_rsa
 
-      
+  
 
       - name: Run Terraform Init
         run: terraform init /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
