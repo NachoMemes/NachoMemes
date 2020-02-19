@@ -1,9 +1,9 @@
 name: Lint and Test
-
+# Runs the main linter and makes sure it passes all tests. 
 on:  
   push:
     branches-ignore:
-      - terraform
+
   
 
 jobs:
@@ -13,15 +13,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - uses: eshork/gitleaks-action@master
-    - name: Set up Python 3.7
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: '3.8'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
     - name: Lint with pylint
       run: |
         pip install pylint
@@ -30,3 +31,5 @@ jobs:
     - name: Test with unittest
       run: |
         python3 -m unittest
+    - name: Build Docker Image
+      run: docker buid .
