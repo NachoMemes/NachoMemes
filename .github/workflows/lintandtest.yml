@@ -19,6 +19,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Lint with pylint
-      run: pylint -E *.py
+      run: pylint -E nachomemes
     - name: Test with unittest
       run: python3 -m unittest
