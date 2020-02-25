@@ -12,7 +12,8 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
-from .store import Color, Font, MemeTemplate, TextBox
+from .store import MemeTemplate
+from .style import Color, Font, TextBox
 
 
 def partition_on(pred, seq):
@@ -112,7 +113,7 @@ def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
 
     # starting with the box size divded by the number of lines
     # OR the defined max size (whichever is smaller)
-    start = min(height // len(lines), tb.max_font_size or sys.maxsize)
+    start = min(height // len(lines), tb.max_font_size)
 
     # find the largest font size that allows all the text to fit (give up at
     # 5 pixels)
