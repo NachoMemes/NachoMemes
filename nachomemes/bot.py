@@ -335,6 +335,9 @@ async def meme(ctx: Context, template: str = None, *text):
         print(err, file=sys.stderr)
 
 def run(debug, local):
+    """
+    Starts an instance of the bot using the passed-in options.
+    """
     global testing
     testing = debug
 
@@ -366,3 +369,22 @@ def run(debug, local):
         sys.exit(1)
 
     bot.run(token)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Runs the bot with the passed in arguments."
+    )
+
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Run state::debug. True or false. Runs different credentials and logging level.",
+    )
+
+    parser.add_argument(
+        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
+    )
+
+    args = parser.parse_args()
+    run(args.debug, args.local)
