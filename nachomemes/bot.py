@@ -334,22 +334,9 @@ async def meme(ctx: Context, template: str = None, *text):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Runs the bot passed on input parameters."
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Whether or not to run the bot in debug mode.",
-    )
-    parser.add_argument(
-        "--local", action="store_true", help="Force running without Dynamo."
-    )
-    args = parser.parse_args()
+def run(debug, local):
     global testing
-    testing = args.debug
+    testing = debug
 
     try:
         creds_file_name = (
@@ -365,9 +352,9 @@ if __name__ == "__main__":
 
     global store
     store = LocalTemplateStore()
-    if not args.local and "access_key" in creds:
+    if not local and "access_key" in creds:
         store = DynamoTemplateStore(
-            creds["access_key"], creds["secret"], creds["region"], store, args.debug
+            creds["access_key"], creds["secret"], creds["region"], store, debug
         )
 
     try:
