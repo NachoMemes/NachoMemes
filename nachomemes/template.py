@@ -35,7 +35,6 @@ class Color(Enum):
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
 
-
 class Justify(Enum):
     """
     Enum representing horizontal text position.
@@ -49,7 +48,6 @@ class Justify(Enum):
 
     def __call__(self, *args, **kwargs):
         return self.value[0](*args, **kwargs)
-
 
 class Font(Enum):
     """
@@ -83,7 +81,7 @@ class TextBox:
 
     # Optional maximum font size in pixels
     # Defaults to the system's maximum size
-    max_font_size: Optional[int] = sys.maxsize
+    max_font_size: Optional[int]
 
     color: Color = Color.BLACK
 
@@ -132,7 +130,10 @@ class Template:
     # name of the layout
     layout: str
 
+    # A short description
     description: str
+
+    # Documentation for further information
     docs: str
 
     # times used

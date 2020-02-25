@@ -110,7 +110,7 @@ def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
 
     # starting with the box size divded by the number of lines
     # OR the defined max size (whichever is smaller)
-    start = min(height // len(lines), tb.max_font_size)
+    start = min(height // len(lines), tb.max_font_size or sys.maxsize)
 
     # find the largest font size that allows all the text to fit (give up at
     # 5 pixels)
