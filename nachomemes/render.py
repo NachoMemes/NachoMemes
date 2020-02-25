@@ -117,7 +117,7 @@ def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
     return next(
         size
         for size in range(start, 5, -1)
-        if all(_text_width(tb.face, size, s) < width for s in lines)
+        if all(_text_width(tb.font, size, s) < width for s in lines)
     )
 
 
@@ -134,7 +134,7 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
 
     # if this is independently sized, calculate the size
     size = base_size if not tb.ind_size else _font_size(bw, bh, tb, lines)
-    font = tb.face.load(size)
+    font = tb.font.load(size)
 
     # find the offset of the first line of text
     top = (bh - size * len(lines)) // 2

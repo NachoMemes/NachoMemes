@@ -63,7 +63,6 @@ class Font(Enum):
         """
         return ImageFont.truetype(str(self.value), font_size)
 
-
 @dataclass
 class TextBox:
     """
@@ -77,7 +76,7 @@ class TextBox:
     bottom: float
 
     # Font for the text
-    face: Font
+    font: Font
 
     # Optional maximum font size in pixels
     # Defaults to the system's maximum size
