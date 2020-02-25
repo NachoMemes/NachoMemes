@@ -343,7 +343,7 @@ def run(debug, local):
 
     try:
         creds_file_name = (
-            "config/creds.json" if not DEBUG else "config/debug-creds.json"
+            "config/creds.json" if not DEBUG else "config/testing-creds.json"
         )
         with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
             creds = json.load(f)
