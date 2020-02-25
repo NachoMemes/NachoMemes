@@ -8,4 +8,4 @@ COPY	requirements.txt	/app/requirements.txt
 WORKDIR	/app
 RUN	pip3 -q install -r requirements.txt
 COPY	.	/app
-ENTRYPOINT	["python3", "-m", "nachomemes.run"]
+ENTRYPOINT	["python3", "-m", "nachomemes.bot"]
