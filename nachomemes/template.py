@@ -24,9 +24,6 @@ def _delete_cache():
         os.remove(f)
 
 class TemplateError(Exception):
-    """
-    An error with a template.
-    """
 
 class Color(Enum):
     """
