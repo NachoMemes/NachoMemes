@@ -64,6 +64,7 @@ class Font(Enum):
 class TextBox:
     """
     Text box to be placed into a template.
+    Doesn't contain actual text, just properties of the text.
     """
 
     # Offsets from the top left corner as a percentage of the target image
@@ -72,11 +73,9 @@ class TextBox:
     top: float
     bottom: float
 
-    # Font for the text
     font: Font
 
     # Optional maximum font size in pixels
-    # Defaults to the system's maximum size
     max_font_size: Optional[int]
 
     color: Color = Color.BLACK
@@ -89,7 +88,7 @@ class TextBox:
     # Rotation in degrees
     rotation: Optional[int] = 0
 
-    # if this textbox is sized independently of the other boxes
+    # If this textbox is sized independently of the other boxes
     ind_size: Optional[bool] = False
 
 def _fetch_image(url: Request) -> IO:
@@ -111,19 +110,19 @@ def _fetch_image(url: Request) -> IO:
 @dataclass
 class Template:
     """
-    Template which represents a single meme with text.
+    Template which represents a single meme with text boxes.
+    Does not contain actual text.
     """
 
-    # Name of the template
     name: str
 
-    # URL to load the image
+    # URL to load the backround image for the meme
     image_url: Request
 
     # Where to put the text
     textboxes: List[TextBox]
 
-    # name of the layout
+    # Name of the layout
     layout: str
 
     # A short description
@@ -132,7 +131,7 @@ class Template:
     # Documentation for further information
     docs: str
 
-    # times used
+    # Times used
     usage: int = 0
 
     def read_source_image(self, buffer) -> Image:
