@@ -24,6 +24,7 @@ def _delete_cache():
         os.remove(f)
 
 class TemplateError(Exception):
+    pass
 
 class Color(Enum):
     """
