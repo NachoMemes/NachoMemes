@@ -20,7 +20,8 @@ from fuzzywuzzy import process
 
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
-from .store import MemeTemplate, TextBox, Store, TemplateError
+from .store import Store
+from .template import TemplateError
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=DESCRIPTION)

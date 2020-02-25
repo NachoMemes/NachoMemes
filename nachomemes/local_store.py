@@ -7,7 +7,8 @@ from discord import Member, Role, Guild
 from dacite import Config, from_dict
 
 from .guild_config import GuildConfig
-from .store import MemeTemplate, Store, da_config, guild_id
+from .store import Store, da_config, guild_id
+from .template import Template
 
 
 class LocalTemplateStore(Store):
@@ -19,7 +20,7 @@ class LocalTemplateStore(Store):
 
     def read_meme(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
-    ) -> MemeTemplate:
+    ) -> Template:
         return _load_templates(guild)[id]
 
     def list_memes(self, guild: Optional[Guild], fields: List[str] = None) -> Iterable[dict]:
@@ -47,7 +48,7 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
     return config
 
 @lru_cache(maxsize=1)
-def _load_templates(guild: Optional[Guild]) -> Iterable[MemeTemplate]:
+def _load_templates(guild: Optional[Guild]) -> Iterable[Template]:
 
     # load layouts
     with open("config/layouts.json", "r") as f:
@@ -63,4 +64,4 @@ def _load_templates(guild: Optional[Guild]) -> Iterable[MemeTemplate]:
         d["name"] = name
 
     # deserialize
-    return {k: from_dict(MemeTemplate, v, config=da_config) for k, v in data.items()}
+    return {k: from_dict(Template, v, config=da_config) for k, v in data.items()}

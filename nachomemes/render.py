@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import io
 import json
 import sys
@@ -12,8 +10,7 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
-from .store import MemeTemplate
-from .style import Color, Font, TextBox
+from .template import Template, Color, Font, TextBox
 
 
 def partition_on(pred, seq):
@@ -175,7 +172,7 @@ def _debug_box(img: Image, tb: TextBox):
 
 
 def render_template(
-    template: MemeTemplate, message: Iterable[str], output: IO, debug: bool = False
+    template: Template, message: Iterable[str], output: IO, debug: bool = False
 ):
     """This is the thing that does the thing"""
 
