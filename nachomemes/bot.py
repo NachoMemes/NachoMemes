@@ -98,7 +98,7 @@ async def fuzzed_templates(ctx, template, guild):
 async def single_fuzzed_template(ctx, template, guild):
     "Fuzzy match a single template"
     fmeme = _match_template_name(template, guild)
-    meme = store.read_meme(guild, fmeme)
+    meme = store.get_template(guild, fmeme)
     await ctx.send(
         textwrap.dedent(
             f"""\
