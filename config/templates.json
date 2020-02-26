@@ -166,6 +166,13 @@
         "source_image_url": "file:source_images/doesnteffectmybaby.jpg",
         "layout": "doesnt_effect_baby_layout",
         "usage": 0
+    },
+    "epic-handshake": {
+        "description": "The best agreement",
+        "docs": "https://knowyourmeme.com/memes/epic-handshake",
+        "source_image_url": "file:source_images/Epic-Handshake.jpg",
+        "layout": "epic_handshake_layout",
+        "usage": 0
     }
 
 

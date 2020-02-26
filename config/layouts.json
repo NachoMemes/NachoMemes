@@ -405,6 +405,35 @@
             "color": "WHITE",
             "outline": "BLACK"
         }
+    ],
+    "epic_handshake_layout": [{
+            "left": 0.06,
+            "right": 0.30,
+            "top": 0.38,
+            "bottom": 0.80,
+            "face": "IMPACT",
+            "justify": "LEFT",
+            "color": "WHITE"
+        },
+        {
+            "left": 0.06,
+            "right": 0.96,
+            "top": 0.38,
+            "bottom": 0.46,
+            "face": "IMPACT",
+            "justify": "RIGHT",
+            "color": "WHITE"
+        },
+        {
+            "left": 0.25,
+            "right": 0.40,
+            "top": 0.08,
+            "bottom": 0.40,
+            "face": "IMPACT",
+            "justify": "CENTER",
+            "color": "WHITE"
+        }
+
     ]
     
 }
