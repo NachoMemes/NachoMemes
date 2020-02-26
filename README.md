@@ -89,7 +89,6 @@ See below for an explanation of the files in the tree.
 │   ├── render.py → Meme rendering engine.
 │   └── store.py → Abstract implementation of a store.
 ├── requirements.txt → Python requirements.
-├── run.py → Run script.
 ├── sample-memes → Samples (for your evaluation).
 │   └── ...
 ├── source_images → Base images strings are rendered onto.
@@ -114,7 +113,7 @@ To setup local development mode you must do the following:
 2. Run the bot with either the `"discord_token"` filled in in `config/creds.json` or the `$DISCORD_TOKEN` environment variable set:
 
 ```sh
-DISCORD_TOKEN=<TOKEN> ./run.py --debug --local
+DISCORD_TOKEN=<TOKEN> python -m nachomemes.bot --debug --local
 ```
 
 The `--local` flag enforces a local template store (JSON) instead of using DynamoDB. The `--debug` flag will run the bot with verbose logging to make debugging easier.
@@ -142,7 +141,7 @@ Clone this repository and `pip install -r requirements.txt`. Generate some keys 
 
 To add custom templates and layouts (i.e. photos and the textboxes that go over them) look into [`config/templates.json`](config/templates.json) and [`config/layouts.json`](config/layouts.json) respectively. _In the future the bot will support dynamic addition without editing these files._
 
-Run `./run.py` and you're off to meme like a lord.
+Run `python -m nachomemes.bot` and you're off to meme like a lord.
 
 ## Dependencies
 

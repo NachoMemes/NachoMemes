@@ -12,8 +12,8 @@ from dacite import from_dict
 from discord import Guild
 
 from .guild_config import GuildConfig
-from .store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id
-
+from .template import Color, Font, Justify, Template, TemplateError
+from .store import Store, da_config, guild_id
 
 dynamo_serializers = {
     Request: attrgetter("full_url"),
@@ -165,11 +165,11 @@ class DynamoTemplateStore(Store):
         try:
             return table.update_item(
                 Key=key,
-                ConditionExpression="attribute_exists(#source_image_url)",
+                ConditionExpression="attribute_exists(#image_url)",
                 UpdateExpression="set #usage = if_not_exists(#usage, :zero) + :one",
                 ExpressionAttributeNames={
                     "#usage": "usage",
-                    "#source_image_url": "source_image_url",
+                    "#image_ulr": "image_url",
                 },
                 ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",
@@ -189,12 +189,12 @@ class DynamoTemplateStore(Store):
 
     def read_meme(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
-    ) -> MemeTemplate:
+    ) -> Template:
         table, key = self._template_table(guild), {"name": id}
         item = (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )
-        return from_dict(MemeTemplate, item, config=da_config)
+        return from_dict(Template, item, config=da_config)
 
     def save_meme(self, guild: Optional[Guild], item: dict) -> str:
         table = self._template_table(guild, False)

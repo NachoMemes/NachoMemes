@@ -20,19 +20,20 @@ from fuzzywuzzy import process
 
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
-from .store import MemeTemplate, TextBox, Store, TemplateError
+from .store import Store
+from .template import TemplateError
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=DESCRIPTION)
 
 # Used for calculating memes/minute.
-global MEMES
 MEMES = 0
 
 # Base directory from which paths should extend.
-global BASE_DIR
 BASE_DIR = Path(__file__).parent.parent
 
+# Debug mode (true or false)
+DEBUG = False
 
 def mentioned_members(ctx: Context):
     "Returns the id of a memeber mentioned in a message."
@@ -131,7 +132,7 @@ async def templates(ctx, template=None):
         await ctx.send(f"```Could not load '{template}'```")
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -158,7 +159,7 @@ async def refresh_templates(ctx: Context, arg: str = None):
         await ctx.send(f"```{message}```")
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -172,7 +173,7 @@ async def set_admin_role(ctx: Context, roleid: str):
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -186,7 +187,7 @@ async def set_edit_role(ctx: Context, roleid: str):
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -212,7 +213,7 @@ async def whoami(ctx: Context):
             )
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -227,7 +228,7 @@ async def shun(ctx: Context):
         store.save_guild_config(config)
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -242,7 +243,7 @@ async def endorse(ctx: Context):
         store.save_guild_config(config)
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -257,7 +258,7 @@ async def save(ctx: Context):
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as e:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         else:
             await ctx.send("```" + str(e) + "```")
@@ -282,7 +283,7 @@ async def memebot(ctx: Context, *args):
         await ctx.send("You used this command incorrectly. Try again.")
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
@@ -329,30 +330,20 @@ async def meme(ctx: Context, template: str = None, *text):
         await ctx.send(f"```Could not load '{template}'```")
     except:
         err = traceback.format_exc()
-        if testing:
+        if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Runs the bot passed on input parameters."
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Whether or not to run the bot in debug mode.",
-    )
-    parser.add_argument(
-        "--local", action="store_true", help="Force running without Dynamo."
-    )
-    args = parser.parse_args()
-    global testing
-    testing = args.debug
+def run(debug, local):
+    """
+    Starts an instance of the bot using the passed-in options.
+    """
+    global DEBUG
+    DEBUG = debug
 
     try:
         creds_file_name = (
-            "config/creds.json" if not testing else "config/testing-creds.json"
+            "config/creds.json" if not DEBUG else "config/testing-creds.json"
         )
         with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
             creds = json.load(f)
@@ -364,9 +355,9 @@ if __name__ == "__main__":
 
     global store
     store = LocalTemplateStore()
-    if not args.local and "access_key" in creds:
+    if not local and "access_key" in creds:
         store = DynamoTemplateStore(
-            creds["access_key"], creds["secret"], creds["region"], store, args.debug
+            creds["access_key"], creds["secret"], creds["region"], store, DEBUG
         )
 
     try:
@@ -378,3 +369,22 @@ if __name__ == "__main__":
         sys.exit(1)
 
     bot.run(token)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Runs the bot with the passed in arguments."
+    )
+
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Run state::debug. True or false. Runs different credentials and logging level.",
+    )
+
+    parser.add_argument(
+        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
+    )
+
+    args = parser.parse_args()
+    run(args.debug, args.local)
