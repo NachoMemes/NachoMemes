@@ -12,8 +12,8 @@ from dacite import from_dict
 from discord import Guild
 
 from .guild_config import GuildConfig
-from .store import Color, Font, Justify, MemeTemplate, Store, TemplateError, da_config, guild_id, update_serialization
-
+from .template import Color, Font, Justify, Template, TemplateError
+from .store import Store, da_config, guild_id, update_serialization
 
 
 class Result(Enum):
@@ -151,11 +151,11 @@ class DynamoTemplateStore(Store):
         try:
             return table.update_item(
                 Key=key,
-                ConditionExpression="attribute_exists(#source_image_url)",
+                ConditionExpression="attribute_exists(#image_url)",
                 UpdateExpression="set #usage = if_not_exists(#usage, :zero) + :one",
                 ExpressionAttributeNames={
                     "#usage": "usage",
-                    "#source_image_url": "source_image_url",
+                    "#image_ulr": "image_url",
                 },
                 ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",

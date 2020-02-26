@@ -7,7 +7,8 @@ from discord import Member, Role, Guild
 from dacite import Config, from_dict
 
 from .guild_config import GuildConfig
-from .store import MemeTemplate, Store, da_config, guild_id
+from .store import Store, da_config, guild_id
+from .template import Template
 
 
 class LocalTemplateStore(Store):
