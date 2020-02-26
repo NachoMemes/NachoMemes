@@ -173,15 +173,15 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def get_meme(
+    def get_template_data(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> dict:
         pass
 
-    def meme(
+    def get_template(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> MemeTemplate:
-        return from_dict(MemeTemplate, self.get_meme(guild, id, increment_use), config=da_config)
+        return from_dict(MemeTemplate, self.get_template_data(guild, id, increment_use), config=da_config)
 
     @abstractmethod
     def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:

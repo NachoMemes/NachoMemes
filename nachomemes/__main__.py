@@ -10,4 +10,4 @@ if __name__ == "__main__":
     (filename, template_name, *text) = args
 
     with open(filename, "wb") as f:
-        get_store().meme(None, template_name).render(text, f)
+        get_store().get_template(None, template_name).render(text, f)

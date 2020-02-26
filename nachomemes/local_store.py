@@ -17,7 +17,7 @@ class LocalTemplateStore(Store):
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False):
         return "Memes were not refreshed since a local store is enabled."
 
-    def get_meme(
+    def get_template_data(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> dict:
         return _load_templates(guild)[id]

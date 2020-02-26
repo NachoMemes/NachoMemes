@@ -10,6 +10,6 @@ if __name__ == "__main__":
 
     store = LocalTemplateStore()
     for filename, name, message in SAMPLES:
-        template = store.meme(None, name)
+        template = store.get_template(None, name)
         with open(f"sample-memes/{filename}", "wb") as f:
             template.render(shlex.split(message), f)

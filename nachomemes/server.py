@@ -13,12 +13,12 @@ def make_server(store: Store) -> Flask:
         return jsonify(update_serialization(store.list_memes(guild)))
 
     @app.route('/api/<guild>/memes/<id>')
-    def get_meme(guild: str, id: str):
-        return jsonify(update_serialization(store.get_meme(guild, id)))
+    def get_template_data(guild: str, id: str):
+        return jsonify(update_serialization(store.get_template_data(guild, id)))
 
     @app.route('/api/<guild>/memes/<id>/render')
     def render(guild: str, id: str):
-        meme = store.meme(guild, id)
+        meme = store.get_template(guild, id)
         text = request.args.getlist('text')
         buffer = io.BytesIO()
         meme.render(text, buffer)

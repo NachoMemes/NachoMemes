@@ -173,7 +173,7 @@ class DynamoTemplateStore(Store):
                 ExpressionAttributeNames={f"#{k}": k for k in fields},
             )["Items"]
 
-    def get_meme(
+    def get_template_data(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> dict:
         table, key = self._template_table(guild), {"name": id}
