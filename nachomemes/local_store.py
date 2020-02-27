@@ -42,6 +42,11 @@ class LocalTemplateStore(Store):
 
 @lru_cache(maxsize=1)
 def _load_config(guild: Optional[Guild]) -> GuildConfig:
+    """
+    Loads the default guild configuration as a GuildConfig object from JSON given the ID specified in the guild parameter.
+    Loads guilds from from "config/guild.json".
+    By default, the guild with a null ID is loaded as a GuildConfig with name "default" if no guild name was specified in the argument.
+    """
     with open("config/guild.json", "r") as f:
         config = from_dict(GuildConfig, json.load(f))
     config.id = guild_id(guild)
@@ -50,7 +55,9 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
 
 @lru_cache(maxsize=1)
 def _load_templates(guild: Optional[Guild]) -> Dict[str, dict]:
-
+    """
+    Loads layouts from "config/layouts.json", and uses them to populate the text box list of the templates loaded from "config/templates.json".
+    """
     # load layouts
     with open("config/layouts.json", "r") as f:
         layouts = json.load(f)
