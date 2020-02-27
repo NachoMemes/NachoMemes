@@ -3,7 +3,7 @@ name: Deploy Bot to Staging
 on: 
   push:
     branches:
-      - develop
+# Add develop here once its ready
       - terraform
 
 
