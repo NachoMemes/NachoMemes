@@ -1,0 +1,13 @@
+- name: Test
+  gather_facts: yes
+  remote_user: ubuntu
+  hosts: all
+  become: yes
+  become_method: sudo
+
+
+  tasks:
+    - name: Install Curl
+      apt:
+        name: curl
+        state: present

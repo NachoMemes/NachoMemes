@@ -40,7 +40,7 @@ jobs:
           AWS_DEFAULT_REGION: "us-east-1"
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
-          
+
       - name: Run Terraform Plan
         run: terraform plan -var="public_key=$(</home/runner/.ssh/id_rsa.pub)" /home/runner/work/NachoMemes/NachoMemes/infrastructure/staging 
         env: 
@@ -55,6 +55,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.secret }}
           AWS_ACCESS_KEY_ID: ${{ secrets.access_key }}
       - name: Set output  
-        run: terraform output > inventory.txt
+        run: terraform output public_ip > inventory.txt
       - name: Run Deploy Playbook
         run: ansible-playbook -i inventory.txt staging-deploy.yml --extra-vars "discord_token=${{ secrets.discord }}"
