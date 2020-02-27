@@ -4,7 +4,7 @@
             "right": 0.98,
             "top": 0.02,
             "bottom": 0.20,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER",
             "color": "WHITE",
             "outline": "BLACK"
@@ -14,7 +14,7 @@
             "right": 0.98,
             "top": 0.78,
             "bottom": 0.96,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER",
             "color": "WHITE",
             "outline": "BLACK"
@@ -26,7 +26,7 @@
             "right": 0.98,
             "top": 0.20,
             "bottom": 0.44,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": "BLACK"
@@ -38,7 +38,7 @@
             "right": 0.98,
             "top": 0.02,
             "bottom": 0.4,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "concat": "TOP"
         }
@@ -49,7 +49,7 @@
             "right": 0.82,
             "top": 0.58,
             "bottom": 0.8,
-            "face": "COMIC_SANS",
+            "font": "COMIC_SANS",
             "justify": "LEFT",
             "rotation": 3
         }
@@ -60,7 +60,7 @@
             "right": 0.9,
             "top": 0.005,
             "bottom": 0.085,
-            "face": "COMIC_SANS",
+            "font": "COMIC_SANS",
             "justify": "CENTER",
             "ind_size": true
         },{
@@ -68,21 +68,21 @@
             "right": 0.235,
             "top": 0.38,
             "bottom": 0.425,
-            "face": "COMIC_SANS",
+            "font": "COMIC_SANS",
             "justify": "CENTER"
         },{
             "left": 0.32,
             "right": 0.47,
             "top": 0.39,
             "bottom": 0.435,
-            "face": "COMIC_SANS",
+            "font": "COMIC_SANS",
             "justify": "CENTER"
         },{
             "left": 0.65,
             "right": 0.86,
             "top": 0.41,
             "bottom": 0.465,
-            "face": "COMIC_SANS",
+            "font": "COMIC_SANS",
             "justify": "CENTER"
             }
 
@@ -93,7 +93,7 @@
             "right": 0.98,
             "top": 0.02,
             "bottom": 0.43,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "BLACK"
         },
@@ -102,7 +102,7 @@
             "right": 0.98,
             "top": 0.47,
             "bottom": 0.98,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "BLACK"
         }
@@ -112,7 +112,7 @@
             "right": 0.8,
             "top": 0.66,
             "bottom": 0.74,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER",
             "color": "WHITE",
             "outline": null,
@@ -123,7 +123,7 @@
             "right": 0.4,
             "top": 0.755,
             "bottom": 0.825,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": null
@@ -133,7 +133,7 @@
             "right": 0.84,
             "top": 0.755,
             "bottom": 0.825,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": null
@@ -143,7 +143,7 @@
             "right": 0.4,
             "top": 0.83,
             "bottom": 0.895,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": null
@@ -153,7 +153,7 @@
             "right": 0.84,
             "top": 0.83,
             "bottom": 0.895,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": null
@@ -164,7 +164,7 @@
             "right": 0.49,
             "top": 0.05,
             "bottom": 0.25,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -172,7 +172,7 @@
             "right": 0.49,
             "top": 0.35,
             "bottom": 0.6,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -180,7 +180,7 @@
             "right": 0.49,
             "top": 0.65,
             "bottom": 0.99,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         }
     ],
@@ -189,7 +189,7 @@
             "right": 0.49,
             "top": 0.01,
             "bottom": 0.20,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -197,7 +197,7 @@
             "right": 0.49,
             "top": 0.20,
             "bottom": 0.5,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -205,7 +205,7 @@
             "right": 0.49,
             "top": 0.5,
             "bottom": 0.70,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -213,7 +213,7 @@
             "right": 0.49,
             "top": 0.75,
             "bottom": 0.95,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         }
     ],
@@ -223,7 +223,7 @@
             "right": 0.48,
             "top": 0.01,
             "bottom": 0.15,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -231,7 +231,7 @@
             "right": 0.48,
             "top": 0.15,
             "bottom": 0.32,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -239,7 +239,7 @@
             "right": 0.48,
             "top": 0.32,
             "bottom": 0.47,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -247,7 +247,7 @@
             "right": 0.48,
             "top": 0.47,
             "bottom": 0.64,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -255,7 +255,7 @@
             "right": 0.48,
             "top": 0.64,
             "bottom": 0.81,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -263,7 +263,7 @@
             "right": 0.48,
             "top": 0.81,
             "bottom": 0.99,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         }
     ],
@@ -272,7 +272,7 @@
             "right": 0.4,
             "top": 0.36,
             "bottom": 0.46,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER",
             "color": "BLACK",
             "outline": "WHITE"
@@ -282,7 +282,7 @@
             "right": 0.94,
             "top": 0.32,
             "bottom": 0.42,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER",
             "color": "BLACK",
             "outline": "WHITE"
@@ -292,7 +292,7 @@
             "right": 0.94,
             "top": 0.86,
             "bottom": 0.96,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER",
             "color": "WHITE",
             "outline": "BLACK",
@@ -304,16 +304,25 @@
             "right": 0.98,
             "top": 0.01,
             "bottom": 0.19,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT"
         }
     ],
+    "doesnt_effect_baby_layout": [{
+        "left": 0.4,
+        "right": 0.7,
+        "top": 0.6,
+        "bottom": 0.8,
+        "font": "IMPACT",
+        "justify": "LEFT"
+    }],
+    
     "woman_yelling_at_a_cat_layout": [{
             "left": 0.02,
             "right": 0.48,
             "top": 0.01,
             "bottom": 0.19,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         },
         {
@@ -321,7 +330,7 @@
             "right": 0.98,
             "top": 0.01,
             "bottom": 0.19,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "CENTER"
         }
     ],
@@ -330,7 +339,7 @@
             "right": 0.94,
             "top": 0.12,
             "bottom": 0.20,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": "BLACK"
@@ -340,7 +349,7 @@
             "right": 0.96,
             "top": 0.32,
             "bottom": 0.39,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "RIGHT",
             "color": "WHITE",
             "outline": "BLACK"
@@ -350,7 +359,7 @@
             "right": 0.94,
             "top": 0.52,
             "bottom": 0.59,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": "BLACK"
@@ -360,7 +369,7 @@
             "right": 0.96,
             "top": 0.72,
             "bottom": 0.79,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "LEFT",
             "color": "WHITE",
             "outline": "BLACK"
@@ -370,11 +379,40 @@
             "right": 0.96,
             "top": 0.92,
             "bottom": 0.99,
-            "face": "IMPACT",
+            "font": "IMPACT",
             "justify": "RIGHT",
             "color": "WHITE",
             "outline": "BLACK"
         }
+    ],
+    "epic_handshake_layout": [{
+            "left": 0.06,
+            "right": 0.30,
+            "top": 0.38,
+            "bottom": 0.80,
+            "font": "IMPACT",
+            "justify": "LEFT",
+            "color": "WHITE"
+        },
+        {
+            "left": 0.06,
+            "right": 0.96,
+            "top": 0.38,
+            "bottom": 0.46,
+            "font": "IMPACT",
+            "justify": "RIGHT",
+            "color": "WHITE"
+        },
+        {
+            "left": 0.25,
+            "right": 0.40,
+            "top": 0.08,
+            "bottom": 0.40,
+            "font": "IMPACT",
+            "justify": "CENTER",
+            "color": "WHITE"
+        }
+
     ]
     
 }

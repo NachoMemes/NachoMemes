@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import io
 import json
 import sys
@@ -12,7 +10,7 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple
 import PIL
 from PIL import Image, ImageDraw, ImageFont
 
-from store import Color, Font, MemeTemplate, TextBox
+from .template import Template, Color, Font, TextBox
 
 
 def partition_on(pred, seq):
@@ -119,7 +117,7 @@ def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
     return next(
         size
         for size in range(start, 5, -1)
-        if all(_text_width(tb.face, size, s) < width for s in lines)
+        if all(_text_width(tb.font, size, s) < width for s in lines)
     )
 
 
@@ -136,7 +134,7 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
 
     # if this is independently sized, calculate the size
     size = base_size if not tb.ind_size else _font_size(bw, bh, tb, lines)
-    font = tb.face.load(size)
+    font = tb.font.load(size)
 
     # find the offset of the first line of text
     top = (bh - size * len(lines)) // 2
@@ -174,7 +172,7 @@ def _debug_box(img: Image, tb: TextBox):
 
 
 def render_template(
-    template: MemeTemplate, message: Iterable[str], output: IO, debug: bool = False
+    template: Template, message: Iterable[str], output: IO, debug: bool = False
 ):
     """This is the thing that does the thing"""
 
@@ -212,7 +210,7 @@ if __name__ == "__main__":
         show_boxes = True
         args.remove("--show")
     (filename, template_name, *text) = args
-    from localstore import LocalTemplateStore
+    from nachomemes import LocalTemplateStore
 
     store = LocalTemplateStore()
     with open(filename, "wb") as f:
