@@ -9,7 +9,7 @@ from .render import render_template
 
 
 def get_store(local: bool=True, debug: bool=True) -> Store:
-    creds = get_creds(debug) if not local else None
+    creds = get_creds(debug) if not local else {}
     store = LocalTemplateStore()
     if not local and "access_key" in creds:
         store = DynamoTemplateStore(
