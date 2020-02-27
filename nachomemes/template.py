@@ -40,12 +40,12 @@ class Justify(Enum):
     the enclosing box.
     """
 
-    LEFT = (lambda w1, w2: 0,)
-    CENTER = (lambda w1, w2: (w1 - w2) // 2,)
-    RIGHT = (lambda w1, w2: w1 - w2,)
+    LEFT = (lambda w1, w2: 0,)[0]
+    CENTER = (lambda w1, w2: (w1 - w2) // 2,)[0]
+    RIGHT = (lambda w1, w2: w1 - w2,)[0]
 
     def __call__(self, *args, **kwargs):
-        return self.value[0](*args, **kwargs)
+        return self.value(*args, **kwargs)
 
 class Font(Enum):
     """

@@ -153,6 +153,13 @@
         "layout": "standard_layout",
         "usage": 0
     },
+    "nacho": {
+        "description": "she's got good brains",
+        "docs": "https://knowyourmeme.com/memes/roll-safe",
+        "image_url": "file:source_images/nacho2.jpg",
+        "layout": "nacho_layout",
+        "usage": 0
+    },
     "doesnt-effect-my-baby": {
         "description": "side effects include low birthweight, autism, asthma, and roblox memes",
         "docs": "https://knowyourmeme.com/memes/it-doesnt-effect-my-baby",
