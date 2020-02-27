@@ -22,10 +22,6 @@ class Result(Enum):
     UNCHANGED = auto()
 
 
-
-
-
-
 class DynamoTemplateStore(Store):
     def __init__(
         self, access_key, secret, region, default_store: Store, beta: bool = False
@@ -155,7 +151,7 @@ class DynamoTemplateStore(Store):
                 UpdateExpression="set #usage = if_not_exists(#usage, :zero) + :one",
                 ExpressionAttributeNames={
                     "#usage": "usage",
-                    "#image_ulr": "image_url",
+                    "#image_url": "image_url",
                 },
                 ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",

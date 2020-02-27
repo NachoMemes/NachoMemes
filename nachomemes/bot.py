@@ -328,7 +328,7 @@ async def meme(ctx: Context, template: str = None, *text):
         for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
             await msg.add_reaction(r)
     except TemplateError:
-        await ctx.send(f"```Could not load '{template}'```")
+        await ctx.send(f"```Could not load '{match}'```")
     except:
         err = traceback.format_exc()
         if DEBUG:
