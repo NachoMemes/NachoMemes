@@ -343,10 +343,10 @@ def run(debug, local):
     global DEBUG
     DEBUG = debug
     
-    creds = get_creds(args.debug)
+    creds = get_creds(debug)
 
     global store
-    store = get_store(args.local, args.debug)
+    store = get_store(local, debug)
 
     try:
         token = creds["discord_token"]
