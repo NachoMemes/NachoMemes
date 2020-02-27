@@ -336,27 +336,6 @@ async def meme(ctx: Context, template: str = None, *text):
         print(err, file=sys.stderr)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Runs the bot passed on input parameters."
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Whether or not to run the bot in debug mode.",
-    )
-    parser.add_argument(
-        "--local", action="store_true", help="Force running without Dynamo."
-    )
-    args = parser.parse_args()
-
-    global testing
-    testing = args.debug    
-
-    creds = get_creds(args.debug)
-
-    global store
-    store = get_store(args.local, args.debug)
 def run(debug, local):
     """
     Starts an instance of the bot using the passed-in options.
@@ -378,6 +357,7 @@ def run(debug, local):
         sys.exit(1)
 
     bot.run(token)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
