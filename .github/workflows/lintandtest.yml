@@ -26,7 +26,7 @@ jobs:
     - name: Lint with pylint
       run: |
         pip install pylint
-        pylint -E *.py
+        pylint -E nachomemes
         
     - name: Test with unittest
       run: |
