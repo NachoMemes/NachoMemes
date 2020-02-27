@@ -24,7 +24,7 @@ class TestRender(unittest.TestCase):
 
     def test_simple(self):
         for filename, name, message in SAMPLES:
-            template = self.store.read_meme(None, name)
+            template = self.store.get_template(None, name)
             with open(f"sample-memes/{filename}", "rb") as f:
                 expected = zlib.adler32(f.read())
             with io.BytesIO() as buffer:

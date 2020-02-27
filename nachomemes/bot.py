@@ -21,7 +21,8 @@ from fuzzywuzzy import process
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .store import Store
-from .template import TemplateError
+from . import get_store, get_creds
+from .template import Template, TextBox, TemplateError
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=DESCRIPTION)
@@ -98,7 +99,7 @@ async def fuzzed_templates(ctx, template, guild):
 async def single_fuzzed_template(ctx, template, guild):
     "Fuzzy match a single template"
     fmeme = _match_template_name(template, guild)
-    meme = store.read_meme(guild, fmeme)
+    meme = store.get_template(guild, fmeme)
     await ctx.send(
         textwrap.dedent(
             f"""\
@@ -312,7 +313,7 @@ async def meme(ctx: Context, template: str = None, *text):
         name = re.sub(r"\W+", "", str(text))
         key = f"{match}-{name}.png"
 
-        meme = store.read_meme(ctx.message.guild, match, True)
+        meme = store.get_template(ctx.message.guild, match, True)
         with io.BytesIO() as buffer:
             meme.render(text, buffer)
             buffer.flush()
@@ -327,12 +328,13 @@ async def meme(ctx: Context, template: str = None, *text):
         for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
             await msg.add_reaction(r)
     except TemplateError:
-        await ctx.send(f"```Could not load '{template}'```")
+        await ctx.send(f"```Could not load '{match}'```")
     except:
         err = traceback.format_exc()
         if DEBUG:
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
+
 
 def run(debug, local):
     """
@@ -340,25 +342,11 @@ def run(debug, local):
     """
     global DEBUG
     DEBUG = debug
-
-    try:
-        creds_file_name = (
-            "config/creds.json" if not DEBUG else "config/testing-creds.json"
-        )
-        with open(os.path.dirname(__file__) + "/../" + creds_file_name, "rb") as f:
-            creds = json.load(f)
-    except:
-        creds = {}
-    for k in ("DISCORD_TOKEN", "ACCESS_KEY", "SECRET", "REGION"):
-        if k in os.environ:
-            creds[k.lower()] = os.environ[k]
+    
+    creds = get_creds(debug)
 
     global store
-    store = LocalTemplateStore()
-    if not local and "access_key" in creds:
-        store = DynamoTemplateStore(
-            creds["access_key"], creds["secret"], creds["region"], store, DEBUG
-        )
+    store = get_store(local, debug)
 
     try:
         token = creds["discord_token"]
@@ -369,6 +357,7 @@ def run(debug, local):
         sys.exit(1)
 
     bot.run(token)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
