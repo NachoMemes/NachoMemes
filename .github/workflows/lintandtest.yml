@@ -32,4 +32,4 @@ jobs:
       run: |
         python3 -m unittest
     - name: Build Docker Image
-      run: docker buid . 
+      run: docker build . 
