@@ -29,6 +29,7 @@ da_config = Config(
     }
 )
 
+# Dacite serializers
 serializers = {
     Request: attrgetter("full_url"),
     float: lambda f: Decimal(str(f)),
@@ -37,6 +38,7 @@ serializers = {
     Justify: attrgetter("name"),
 }
 
+# Type coercions for serialization
 def update_serialization(value: Any, serializers: Dict[Type, Callable]=serializers):
     if type(value) in serializers:
         return serializers[type(value)](value)
@@ -55,24 +57,40 @@ class Store(ABC):
     def get_template_data(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> dict:
+        """
+        Retrieve template data (serialized template) as a dict from the store.
+        """
         pass
 
     def get_template(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> Template:
+        """
+        Retrieve a template as a Template object from the store.
+        """
         return from_dict(Template, self.get_template_data(guild, id, increment_use), config=da_config)
 
     @abstractmethod
     def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
-        "Get all the memes as dictionaries, optionally pass fields to get only those fields in the dicts"
+        """
+        List all the serialized templates in the store as dictionaries.
+        Optionally, pass fields to get only those fields in the dicts.
+        """
         pass
 
     @abstractmethod
     def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+        """
+        Saves a serialized template as a dict to the store.
+        """
         pass
 
     @abstractmethod
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
+        """
+        Retrieve the guild configuration as a GuildConfig object from the store.
+        Takes a Discord.py Guild object (https://discordpy.readthedocs.io/en/latest/api.html#guild).
+        """
         pass
 
     @abstractmethod
@@ -80,6 +98,10 @@ class Store(ABC):
         pass
 
 def guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
+    """
+    Coerces either a Guild, GuildConfig, or string guild ID into a guild ID string.
+    Returns "default" if no valid argument was provided.
+    """
     if type(guild) == str:
         return guild
     return str(guild.id) if guild else "default"
