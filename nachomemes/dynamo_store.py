@@ -15,7 +15,7 @@ from .guild_config import GuildConfig
 from .template import Color, Font, Justify, Template, TemplateError
 from .store import Store, da_config, guild_id, update_serialization
 
-
+# DynamoDB operation results
 class Result(Enum):
     ADDED = auto()
     UPDATED = auto()
@@ -23,6 +23,10 @@ class Result(Enum):
 
 
 class DynamoTemplateStore(Store):
+    """
+    Read/write DynamoDB data store.
+    A default store is used to read initial guild configuration and read templates to refresh them as memes.
+    """
     def __init__(
         self, access_key, secret, region, default_store: Store, beta: bool = False
     ):
@@ -33,15 +37,22 @@ class DynamoTemplateStore(Store):
             region_name=region,
         )
         self.default_store = default_store
+
+        # Use different tables for the beta bot
         self.table_suffix = ".templates" if not beta else ".templates-beta"
         self.config_suffix = ".config" if not beta else ".config-beta"
 
     def _template_table(self, guild: Optional[Guild], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
+        """
+        Either gets the existing table for templates if it exists, or creates a new one.
+        Can populate the table with memes from the default store if specified by the argument.
+        """
         table_name = guild_id(guild) + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
+            # Wait until the table doesn't exist (it is done being deleted, or if it doesn't exist yet)
             table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
         except ClientError:
             pass
@@ -53,11 +64,16 @@ class DynamoTemplateStore(Store):
         return table
 
     def _config_table(self, guild: Union[Guild,GuildConfig,None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
+        """
+        Either gets the existing table for guild configuration if it exists, or creates a new one.
+        Can populate the table with the guild configuration from the default store if specified by the argument.
+        """
         table_name = guild_id(guild) + self.config_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
+            # Wait until the table doesn't exist (it is done being deleted, or if it doesn't exist yet)
             table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
         except ClientError:
             pass
@@ -102,12 +118,14 @@ class DynamoTemplateStore(Store):
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 print("deleting: " + name)
                 table.delete()
+            # Wait for the table to be deleted
             table.meta.client.get_waiter("table_not_exists").wait(TableName=name)
         except ClientError:
             pass
 
 
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
+        # Drop the templates table and the guild configuration table if a hard reset is requested
         if hard:
             self._delete_table(guild_id(guild) + self.config_suffix)
             self._delete_table(guild_id(guild) + self.table_suffix)
@@ -115,6 +133,7 @@ class DynamoTemplateStore(Store):
         table = self._template_table(guild, False)
         results = {Result.ADDED: 0, Result.UPDATED: 0, Result.UNCHANGED: 0}
         for item in self.default_store.list_memes(guild):
+            # Don't change the usage values as we want to keep them between refreshes
             if "usage" in item:
                 del item["usage"]
             r = self._write(table, ("name",), item)
