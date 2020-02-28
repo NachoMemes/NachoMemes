@@ -12,6 +12,9 @@ from .template import Template
 
 
 class LocalTemplateStore(Store):
+    """
+    Local filesystem read-only data store which uses the default JSON files fron the "config/" directory. 
+    """
     def __init__(self):
         pass
 

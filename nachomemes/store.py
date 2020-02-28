@@ -49,6 +49,9 @@ def update_serialization(value: Any, serializers: Dict[Type, Callable]=serialize
     return value
 
 class Store(ABC):
+    """
+    Abstract base class for implementing data stores for template and guild data.
+    """
     @abstractmethod
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
         pass
