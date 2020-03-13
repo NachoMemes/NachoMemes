@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional, Union, Dict, Any, Type, Generator
+from typing import IO, Callable, Iterable, List, Optional, Union, Dict, Any, Type, Generator, cast
 from types import GeneratorType
 from urllib.request import Request, urlopen
 import atexit, os, re
@@ -80,6 +80,10 @@ class Store(ABC):
         pass
 
 def guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
-    if type(guild) == str:
+    if isinstance(guild, str):
         return guild
-    return str(guild.id) if guild else "default"
+    if isinstance(guild, Guild):
+        return str(guild.id)
+    if isinstance(guild, GuildConfig):
+        return guild.id
+    return "default"

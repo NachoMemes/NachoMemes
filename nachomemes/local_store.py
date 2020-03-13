@@ -12,7 +12,7 @@ from .template import Template
 
 
 class LocalTemplateStore(Store):
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False):

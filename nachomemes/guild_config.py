@@ -13,7 +13,7 @@ from dacite import Config
 class GuildConfig:
     "Stuff about the guild"
 
-    id: Optional[str]          # guild id
+    id: str                    # guild id
     name: str                  # guild name
     override: List[int]        # no bad-boy
     pariah: List[int]          # bad-boy timeout
@@ -44,7 +44,7 @@ class GuildConfig:
         return f"Members of '{role.name}' are now authorized to edit the memes."
 
 
-    def shun(self, member: Member, victim: Member):
+    def shun(self, member: Member, victim: Member) -> str:
         if not self.can_admin(member):
             return self.no_admin(member)
         elif member.id == victim.id:
@@ -59,7 +59,7 @@ class GuildConfig:
             self.pariah.append(victim.id)
             return f"{self.member_nick(victim)} is now excommunicado"
 
-    def endorse(self, member: Member, victim: Member):
+    def endorse(self, member: Member, victim: Member) -> str:
         if member.id == victim.id and victim.id in self.pariah and (member.id in self.override or member.guild_permissions.administrator):
             self.pariah.remove(victim.id)
             return f"Wait, you can do that?"

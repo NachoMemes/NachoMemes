@@ -1,0 +1,47 @@
+import discord
+import psutil
+from discord import Guild
+from discord.ext import commands
+from discord.ext.commands import Context, has_permissions, group
+from fuzzywuzzy import process
+
+
+
+def mentioned_members(ctx: Context):
+    "Returns the id of a memeber mentioned in a message."
+    return (ctx.guild.get_member(m.id) for m in ctx.message.mentions)
+
+
+class BotAdmin(commands.cog):
+    def __init__(self, bot, store: Store):
+        self.store = store
+
+    @group(pass_context=True)
+    async def memebot(self, ctx: Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("no subcommand")
+
+    @memebot.command()
+    async def whoami(ctx: Context):
+    try:
+        config = self.store.guild_config(ctx.message.guild)
+
+        if ctx.message.mentions:
+            members = mentioned_members(ctx)
+        else:
+            members = (ctx.message.author,)
+
+        for member in members:
+            name = config.member_full_name(member)
+            await ctx.send(
+                textwrap.dedent(
+                    f"""\
+                    ```Name: {name}
+                    Can use: {config.can_use(member)}, Can edit: {config.can_edit(member)}, Can admin: {config.can_admin(member)}```"""
+                )
+            )
+    except:
+        err = traceback.format_exc()
+        if testing:
+            await ctx.send("```" + err[:1990] + "```")
+        print(err, file=sys.stderr)

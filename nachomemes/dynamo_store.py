@@ -143,7 +143,7 @@ class DynamoTemplateStore(Store):
 
     def _increment_usage_and_fetch(
         self, table: "boto3.resources.factory.dynamodb.Table", key: dict
-    ):
+    ) -> dict:
         try:
             return table.update_item(
                 Key=key,
