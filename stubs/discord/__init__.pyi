@@ -6,7 +6,9 @@ class Guild:
 
 class Member:
     id: int
+    discriminator: int
     name: str
+    nick: str
 
     @property
     def guild_permissions(self) -> Permissions: ...

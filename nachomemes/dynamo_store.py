@@ -36,7 +36,7 @@ class DynamoTemplateStore(Store):
         self.table_suffix = ".templates" if not beta else ".templates-beta"
         self.config_suffix = ".config" if not beta else ".config-beta"
 
-    def _template_table(self, guild: Optional[Guild], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
+    def _template_table(self, guild: Union[Guild,GuildConfig,None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
         table_name = guild_id(guild) + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
@@ -65,11 +65,14 @@ class DynamoTemplateStore(Store):
         # create and return table
         table = self._init_table(table_name, ("id",))
         if populate:
-            self.save_guild_config(self.default_store.guild_config(guild))
+            if isinstance(guild, GuildConfig):
+                self.save_guild_config(guild)
+            else:
+                self.save_guild_config(self.default_store.guild_config(guild))
         return table
 
 
-    def guild_config(self, guild: Guild) -> GuildConfig:
+    def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
         table = self._config_table(guild)
         item = self._fetch(table, {"id": guild_id(guild)})
         return from_dict(GuildConfig, item, config=da_config)
