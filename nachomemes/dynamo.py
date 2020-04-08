@@ -99,7 +99,7 @@ class DynamoTemplateStore(Store):
             TableName=table_name,
             KeySchema=[{"AttributeName": "name", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "name", "AttributeType": "S"}],
-            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+            BillingMode='PAY_PER_REQUEST'
         )
 
         # wait for the table to be created
