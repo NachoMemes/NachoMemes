@@ -172,3 +172,4 @@ override.tf.json
 # example: *tfplan*
 /infrastructure/staging/creds.sh
 /infrastructure/staging/inventory.ini
+/infrastructure/staging/aws.env
