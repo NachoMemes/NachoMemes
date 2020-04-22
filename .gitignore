@@ -173,3 +173,5 @@ override.tf.json
 /infrastructure/staging/creds.sh
 /infrastructure/staging/inventory.ini
 /infrastructure/staging/aws.env
+/infrastructure/staging/inventory.txt
+/infrastructure/staging/terraform.tfvars
