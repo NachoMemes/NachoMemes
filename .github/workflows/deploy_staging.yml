@@ -5,6 +5,7 @@ on:
     branches:
 # Add develop here once its ready
       - terraform
+      - k8s
 
 
 jobs:
