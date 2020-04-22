@@ -52,6 +52,17 @@ resource "aws_security_group" "allow_https" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+resource "aws_security_group" "all-outbound" {
+  name       = "all-outbound"
+  vpc_id      = "${aws_vpc.staging-vpc.id}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 
 # Security group for pinging
 resource "aws_security_group" "accept_ping" {
@@ -117,6 +128,9 @@ resource "aws_security_group" "allow_ssh" {
 resource "aws_eip" "ip" {
   instance = "${aws_instance.nachomeme.id}"
   vpc      = true
+  depends_on = [
+    aws_internet_gateway.gw,
+  ]
 }
 
 # Find the right Ubuntu AMI. Default username is 'ubuntu'
@@ -137,6 +151,8 @@ data "aws_ami" "latest-ubuntu" {
 
 
 }
+
+
 resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.staging-vpc.id}"
 }
@@ -151,7 +167,7 @@ resource "aws_key_pair" "deploy-key" {
 resource "aws_instance" "nachomeme" {
   ami                    = "${data.aws_ami.latest-ubuntu.id}"
   instance_type          = "t2.micro"
-  vpc_security_group_ids = ["${aws_security_group.allow_https.id}", "${aws_security_group.allow_ssh.id}", "${aws_security_group.accept_ping.id}"]
+  vpc_security_group_ids = ["${aws_security_group.allow_https.id}", "${aws_security_group.allow_ssh.id}", "${aws_security_group.accept_ping.id}", "${aws_security_group.all-outbound.id}"]
   subnet_id              = "${aws_subnet.staging-subnet.id}"
   key_name = "${aws_key_pair.deploy-key.key_name}"
 }

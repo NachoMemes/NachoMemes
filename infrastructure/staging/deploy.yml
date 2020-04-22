@@ -1,15 +1,19 @@
 - name: Deploy Container
-  gather_facts: yes
-  remote_user: ubuntu
   hosts: all
-  become_method: sudo
 
-  tasks: 
+
+
+  tasks:
+    - name: ping the instance
+      ping:
+    
     - name: Install aptitude using apt
       apt: 
         name: aptitude 
         state: present
       become: yes
+
+
     - name: Install required system packages
       apt: name={{ item }} state=latest update_cache=yes
       loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
