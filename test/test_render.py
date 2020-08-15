@@ -37,10 +37,13 @@ class TestRender(unittest.TestCase):
             except AssertionError:
                 if not self.has_errors:
                     self.has_errors = True
-                    buffer.seek(0)
                     with NamedTemporaryFile(suffix=".png", delete=False) as f:
-                        f.write(buffer.read())
-                        print(f"wrote failed image to {f.name}", file=sys.stderr)
+                        with io.BytesIO() as buffer:
+                            template.render(shlex.split(message), buffer)
+                            buffer.flush()
+                            buffer.seek(0)
+                            f.write(buffer.read())
+                            print(f"wrote failed image to {f.name}", file=sys.stderr)
                 raise
 
 
