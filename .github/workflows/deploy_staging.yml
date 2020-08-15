@@ -43,7 +43,7 @@ jobs:
           SECRET: "{{ secrets.SECRET }}"
           REGION: "{{ secrets.REGION }}"
         with: 
-          host: {{ secret.HOST_PROD }}
+          host: "{{ secret.HOST_PROD }}"
           username: ubuntu
           key: /tmp/temp-key
           script: docker pull docker.pkg.github.com/nachomemes/nachomemes/nachomemes:latest && docker run docker.pkg.github.com/nachomemes/nachomemes/nachomemes:latest  -e DISCORD_TOKEN -e ACCESS_KEY -e SECRET -e REGION
