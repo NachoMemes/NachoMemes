@@ -38,10 +38,10 @@ jobs:
       - name: Run docker container
         uses: appleboy/ssh-action@master
         env: 
-          - DISCORD_TOKEN: {{ secrets.DISCORD_TOKEN}}
-          - ACCESS_KEY: {{ secrets.ACCESS_KEY }}
-          - SECRET: {{ secrets.SECRET }}
-          - REGION: {{ secrets.REGION }}
+          DISCORD_TOKEN: "{{ secrets.DISCORD_TOKEN}}"
+          ACCESS_KEY: "{{ secrets.ACCESS_KEY }}"
+          SECRET: "{{ secrets.SECRET }}"
+          REGION: "{{ secrets.REGION }}"
         with: 
           host: {{ secret.HOST_PROD }}
           username: ubuntu
