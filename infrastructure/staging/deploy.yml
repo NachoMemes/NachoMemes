@@ -2,7 +2,6 @@
   hosts: all
 
 
-
   tasks:
     - name: ping the instance
       ping:
