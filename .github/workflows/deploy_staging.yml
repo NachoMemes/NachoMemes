@@ -30,7 +30,7 @@ jobs:
           aws-region: ${{ secrets.REGION }}
 
       - name: Generate temp SSH keys
-        run: ssh-keygen -f /tmp/temp-key
+        run: ssh-keygen -t rsa -b 4096 -f /tmp/temp-key
 
       - name: Setup Temp SSH Key
         run: aws ec2-instance-connect send-ssh-public-key --instance-id "{{ secrets.INSTANCE_ID_PROD }}" --instance-os-user ubuntu --ssh-public-key /tmp/temp-key.pub --availability-zone "{{ secrets.AWS_AZ }}"
