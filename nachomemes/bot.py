@@ -18,11 +18,11 @@ from discord.ext import commands
 from discord.ext.commands import Context, has_permissions
 from fuzzywuzzy import process
 
-from .dynamo_store import DynamoTemplateStore
-from .local_store import LocalTemplateStore
-from .store import Store
-from . import get_store, get_creds
-from .template import Template, TextBox, TemplateError
+from nachomemes.dynamo_store import DynamoTemplateStore
+from nachomemes.local_store import LocalTemplateStore
+from nachomemes.store import Store
+from nachomemes import get_store, get_creds
+from nachomemes.template import Template, TextBox, TemplateError
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="/", description=DESCRIPTION)
@@ -35,6 +35,7 @@ BASE_DIR = Path(__file__).parent.parent
 
 # Debug mode (true or false)
 DEBUG = False
+
 
 def mentioned_members(ctx: Context):
     "Returns the id of a memeber mentioned in a message."
@@ -52,7 +53,7 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
 
 
 def _match_template_name(name, guild: Guild):
-    "Matches input fuzzily against proper names."
+    """Matches input fuzzily against proper names."""
     fuzzed = process.extractOne(name, store.list_memes(guild, ("name",)))
     if fuzzed[1] < 25:
         raise TemplateError(f"could not load a template matching {name}")
@@ -60,7 +61,7 @@ def _match_template_name(name, guild: Guild):
 
 
 def _find_close_matches(name, guild: Guild):
-    "Chooses top matches against input."
+    """Chooses top matches against input."""
     return [
         name[0]["name"]
         for name in process.extract(name, store.list_memes(guild, ("name",)))
@@ -85,7 +86,7 @@ async def status_task():
 
 
 async def fuzzed_templates(ctx, template, guild):
-    "Fuzzy match multiple templates."
+    """Fuzzy match multiple templates."""
     fuzzed_memes = _find_close_matches(template.strip("*"), guild)
     memes = [
         match
@@ -97,7 +98,7 @@ async def fuzzed_templates(ctx, template, guild):
 
 
 async def single_fuzzed_template(ctx, template, guild):
-    "Fuzzy match a single template"
+    """Fuzzy match a single template"""
     fmeme = _match_template_name(template, guild)
     meme = store.get_template(guild, fmeme)
     await ctx.send(
@@ -248,6 +249,7 @@ async def endorse(ctx: Context):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
+
 @bot.command(description="Make a new template.")
 async def save(ctx: Context):
     try:
@@ -268,7 +270,7 @@ async def save(ctx: Context):
 
 @bot.command(description="Administrative functions.")
 async def memebot(ctx: Context, *args):
-    """ Top level administrative function for bot."""
+    """Top level administrative function for bot."""
     num_args = 0 if args == None else len(args)
     try:
         if num_args > 0:
@@ -291,9 +293,8 @@ async def memebot(ctx: Context, *args):
 
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str = None, *text):
-    "Main bot command for rendering/showing memes."
+    """Main bot command for rendering/showing memes.
 
-    """
     If no template, or template but no text, then show info about
     the memes available.
     """
@@ -342,7 +343,7 @@ def run(debug, local):
     """
     global DEBUG
     DEBUG = debug
-    
+
     creds = get_creds(debug)
 
     global store
