@@ -6,7 +6,6 @@ services:
     build: .
     command: --local
     environment:
-      - PYTHONUNBUFFERED=1
       - DISCORD_TOKEN
       - ACCESS_KEY
       - SECRET
