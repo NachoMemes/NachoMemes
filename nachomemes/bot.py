@@ -25,7 +25,7 @@ from nachomemes import get_store, get_creds
 from nachomemes.template import Template, TextBox, TemplateError
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
-bot = commands.Bot(command_prefix="/", description=DESCRIPTION)
+bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
 
 # Used for calculating memes/minute.
 MEMES = 0

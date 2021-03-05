@@ -1,4 +1,5 @@
-import os, json
+import os
+import json
 
 from .guild_config import GuildConfig
 from .template import Template, TemplateError
@@ -8,17 +9,17 @@ from .local_store import LocalTemplateStore
 from .render import render_template
 
 
-def get_store(local: bool=True, debug: bool=True) -> Store:
+def get_store(local: bool = True, debug: bool = True) -> Store:
     creds = get_creds(debug) if not local else {}
     store = LocalTemplateStore()
     if not local and "access_key" in creds:
         store = DynamoTemplateStore(
             creds["access_key"], creds["secret"], creds["region"], store, debug
-        )    
+        )
     return store
 
 
-def get_creds(debug: bool=True) -> dict:
+def get_creds(debug: bool = True) -> dict:
     try:
         creds_file_name = (
             "/config/creds.json" if not debug else "/config/testing-creds.json"
@@ -31,4 +32,3 @@ def get_creds(debug: bool=True) -> dict:
         if k in os.environ:
             creds[k.lower()] = os.environ[k]
     return creds
-

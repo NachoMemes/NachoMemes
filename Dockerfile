@@ -1,6 +1,7 @@
 #syntax=docker/dockerfile:1.2
+# https://github.com/python-poetry/poetry/discussions/1879
 # `python-base` sets up all our shared environment variables
-FROM python:3.8-slim as python-base
+FROM python:3.9-slim as python-base
 
 # python
 ENV PYTHONUNBUFFERED=1 \
@@ -14,7 +15,7 @@ ENV PYTHONUNBUFFERED=1 \
 	\
 	# poetry
 	# https://python-poetry.org/docs/configuration/#using-environment-variables
-	POETRY_VERSION=1.0.3 \
+	POETRY_VERSION=1.1.5 \
 	# make poetry install to this location
 	POETRY_HOME="/opt/poetry" \
 	# make poetry create the virtual environment in the project's root
@@ -40,16 +41,23 @@ RUN apt-get update \
 	curl \
 	# deps for building python deps
 	build-essential
-
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
-
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --no-dev
+
+FROM python-base as development
+WORKDIR $PYSETUP_PATH
+# copy in our built poetry + venv
+COPY --from=builder-base $POETRY_HOME $POETRY_HOME
+COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+RUN poetry install
+WORKDIR /app
+CMD	["python", "-m", "nachomemes.bot", "-d"]
+
 
 # `production` image used for runtime
 FROM python-base as production
