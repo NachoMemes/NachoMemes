@@ -44,7 +44,7 @@ class LocalTemplateStore(Store):
 def _load_config(guild: Optional[Guild]) -> GuildConfig:
     with open("config/guild.json", "r") as f:
         config = from_dict(GuildConfig, json.load(f))
-    config.id = guild_id(guild)
+    config._id = guild_id(guild)
     config.name = guild.name if guild else "default"
     return config
 

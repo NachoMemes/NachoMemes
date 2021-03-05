@@ -11,9 +11,9 @@ from botocore.exceptions import ClientError
 from dacite import from_dict
 from discord import Guild
 
-from .guild_config import GuildConfig
-from .template import Color, Font, Justify, Template, TemplateError
-from .store import Store, da_config, guild_id, update_serialization
+from nachomemes.guild_config import GuildConfig
+from nachomemes.template import Color, Font, Justify, Template, TemplateError
+from nachomemes.store import Store, da_config, guild_id, update_serialization
 
 
 class Result(Enum):

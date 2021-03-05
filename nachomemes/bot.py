@@ -9,13 +9,13 @@ import sys
 import textwrap
 import traceback
 from pathlib import Path
-from typing import Iterable
+from typing import List, Union
 
 import discord
 import psutil
 from discord import Guild
 from discord.ext import commands
-from discord.ext.commands import Context, has_permissions
+from discord.ext.commands import Context
 from fuzzywuzzy import process
 
 from nachomemes.dynamo_store import DynamoTemplateStore
@@ -37,8 +37,9 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 
-def mentioned_members(ctx: Context):
+def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
     "Returns the id of a memeber mentioned in a message."
+    print(ctx.message.mentions)
     return (ctx.guild.get_member(m.id) for m in ctx.message.mentions)
 
 
@@ -52,7 +53,7 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-def _match_template_name(name, guild: Guild):
+def _match_template_name(name: str, guild: Guild) -> str:
     """Matches input fuzzily against proper names."""
     fuzzed = process.extractOne(name, store.list_memes(guild, ("name",)))
     if fuzzed[1] < 25:
@@ -60,7 +61,7 @@ def _match_template_name(name, guild: Guild):
     return fuzzed[0]["name"]
 
 
-def _find_close_matches(name, guild: Guild):
+def _find_close_matches(name: str, guild: Guild) -> list:
     """Chooses top matches against input."""
     return [
         name[0]["name"]
@@ -85,7 +86,7 @@ async def status_task():
         await asyncio.sleep(60)
 
 
-async def fuzzed_templates(ctx, template, guild):
+async def fuzzed_templates(ctx, template: str, guild: Guild):
     """Fuzzy match multiple templates."""
     fuzzed_memes = _find_close_matches(template.strip("*"), guild)
     memes = [
@@ -97,28 +98,28 @@ async def fuzzed_templates(ctx, template, guild):
     await ctx.send("**Potential Templates**" + "".join(lines))
 
 
-async def single_fuzzed_template(ctx, template, guild):
+async def single_fuzzed_template(ctx, template: str, guild: Guild):
     """Fuzzy match a single template"""
     fmeme = _match_template_name(template, guild)
-    meme = store.get_template(guild, fmeme)
+    _meme = store.get_template(guild, fmeme)
     await ctx.send(
         textwrap.dedent(
             f"""\
-        Name: {meme.name}
-        Description: *{meme.description}*
-        Times used: {meme.usage}
-        Expects {len(meme.textboxes)} strings
-        Read more: {meme.docs}"""
+        Name: {_meme.name}
+        Description: *{_meme.description}*
+        Times used: {_meme.usage}
+        Expects {len(_meme.textboxes)} strings
+        Read more: {_meme.docs}"""
         )
     )
 
 
-async def templates(ctx, template=None):
+async def templates(ctx: Context, template: str = None):
     try:
-        guild = ctx.message.guild
+        guild = ctx.guild
         config = store.guild_config(guild)
-        if not config.can_use(ctx.message.author):
-            return await ctx.send(f"```{config.no_memes(ctx.message.author)}```")
+        if not config.can_use(ctx.author):
+            return await ctx.send(f"```{config.no_memes(ctx.author)}```")
         if template:
             # A fuzzy multiple match
             if "*" in template:
@@ -198,12 +199,10 @@ async def set_edit_role(ctx: Context, roleid: str):
 async def whoami(ctx: Context):
     try:
         config = store.guild_config(ctx.message.guild)
-
         if ctx.message.mentions:
-            members = mentioned_members(ctx)
+            members: List[discord.Member] = ctx.message.mentions
         else:
             members = (ctx.message.author,)
-
         for member in members:
             name = config.member_full_name(member)
             await ctx.send(
