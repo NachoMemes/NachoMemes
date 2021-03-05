@@ -37,13 +37,13 @@ serializers = {
     Justify: attrgetter("name"),
 }
 
-def update_serialization(value: Any, serializers: Dict[Type, Callable]=serializers):
-    if type(value) in serializers:
-        return serializers[type(value)](value)
+def update_serialization(value: Any, _serializers: Dict[Type, Callable]=serializers):
+    if type(value) in _serializers:
+        return _serializers[type(value)](value)
     if dict == type(value):
-        return {k: update_serialization(v, serializers) for k, v in value.items()}
+        return {k: update_serialization(v, _serializers) for k, v in value.items()}
     if type(value) in (list, GeneratorType):
-        return [update_serialization(v, serializers) for v in value]
+        return [update_serialization(v, _serializers) for v in value]
     return value
 
 class Store(ABC):
@@ -53,14 +53,14 @@ class Store(ABC):
 
     @abstractmethod
     def get_template_data(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], _id: str, increment_use: bool = False
     ) -> dict:
         pass
 
     def get_template(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], _id: str, increment_use: bool = False
     ) -> Template:
-        return from_dict(Template, self.get_template_data(guild, id, increment_use), config=da_config)
+        return from_dict(Template, self.get_template_data(guild, _id, increment_use), config=da_config)
 
     @abstractmethod
     def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
