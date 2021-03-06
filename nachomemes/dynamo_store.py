@@ -20,12 +20,6 @@ class Result(Enum):
 
 
 class DynamoTemplateStore(Store):
-    """Implementation of a `Store` in DynamoDB.
-
-    Backing representation for templates + guilds in a NoSQL db and the helpers
-    needed to work with them.
-    """
-
     def __init__(
         self, access_key, secret, region, default_store: Store, beta: bool = False
     ):
@@ -80,7 +74,6 @@ class DynamoTemplateStore(Store):
 
     def save_guild_config(self, guild: GuildConfig) -> None:
         table = self._config_table(guild, False)
-        print(asdict(guild))
         self._write(table, ("id",), asdict(guild))
 
     def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str, Any]) -> Result:

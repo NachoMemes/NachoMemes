@@ -36,8 +36,7 @@ DEBUG = False
 
 def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
     "Returns the id of a memeber mentioned in a message."
-    print(ctx.message.mentions)
-    return (ctx.guild.get_member(m.id) for m in ctx.message.mentions)
+    return [m for m in ctx.message.mentions]
 
 
 @bot.event
@@ -220,7 +219,6 @@ async def whoami(ctx: Context):
 async def shun(ctx: Context):
     try:
         config = store.guild_config(ctx.guild)
-        print("ID: ", config.id)
         for subject in mentioned_members(ctx):
             message = config.shun(ctx.message.author, subject)
             await ctx.send(textwrap.dedent(f"```{message}```"))

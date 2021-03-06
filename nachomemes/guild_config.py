@@ -8,7 +8,7 @@ from discord import Member, Role
 class GuildConfig:
     """Stuff about the guild"""
 
-    id: Optional[id]          # guild id
+    id: Optional[str]          # guild id
     name: str                  # guild name
     override: List[int]        # no bad-boy
     pariah: List[int]          # bad-boy timeout
@@ -38,7 +38,6 @@ class GuildConfig:
         return f"Members of '{role.name}' are now authorized to edit the memes."
 
     def shun(self, member: Member, victim: Member) -> str:
-        print(member, victim)
         if not self.can_admin(member):
             return self.no_admin(member)
         elif member == victim:
@@ -47,7 +46,7 @@ class GuildConfig:
         elif victim in self.override:
             self.pariah.append(member.id)
             return f"{self.member_nick(member)}. Your membership to The Continental has been, by thine own hand, revoked."
-        elif not member in self.override and victim.guild_permissions.administrator:
+        elif not member.id in self.override and victim.guild_permissions.administrator:
             return "As fun as it sounds, it's probably not a good idea."
         else:
             self.pariah.append(victim.id)
