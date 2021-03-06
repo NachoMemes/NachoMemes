@@ -9,7 +9,7 @@ from dacite import from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.store import Store, da_config, guild_id, update_serialization
+from nachomemes.store import Store, da_config, get_guild_id, update_serialization
 from nachomemes.template import TemplateError
 
 # DynamoDB operation results
@@ -44,7 +44,7 @@ class DynamoTemplateStore(Store):
         Either gets the existing table for templates if it exists, or creates a new one.
         Can populate the table with memes from the default store if specified by the argument.
         """
-        table_name = guild_id(guild) + self.table_suffix
+        table_name = get_guild_id(guild) + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
@@ -65,7 +65,7 @@ class DynamoTemplateStore(Store):
         Either gets the existing table for guild configuration if it exists, or creates a new one.
         Can populate the table with the guild configuration from the default store if specified by the argument.
         """
-        table_name = guild_id(guild) + self.config_suffix
+        table_name = get_guild_id(guild) + self.config_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
@@ -83,7 +83,7 @@ class DynamoTemplateStore(Store):
 
     def guild_config(self, guild: Guild) -> GuildConfig:
         table = self._config_table(guild)
-        item = self._fetch(table, {"id": guild_id(guild)})
+        item = self._fetch(table, {"id": get_guild_id(guild)})
         return from_dict(GuildConfig, item, config=da_config)
 
     def save_guild_config(self, guild: GuildConfig) -> None:
@@ -118,11 +118,11 @@ class DynamoTemplateStore(Store):
         except ClientError:
             pass
 
-    def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
+    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False) -> str:
         # Drop the templates table and the guild configuration table if a hard reset is requested
         if hard:
-            self._delete_table(guild_id(guild) + self.config_suffix)
-            self._delete_table(guild_id(guild) + self.table_suffix)
+            self._delete_table(get_guild_id(guild) + self.config_suffix)
+            self._delete_table(get_guild_id(guild) + self.table_suffix)
 
         table = self._template_table(guild, False)
         results = {Result.ADDED: 0, Result.UPDATED: 0, Result.UNCHANGED: 0}
@@ -132,7 +132,7 @@ class DynamoTemplateStore(Store):
                 del item["usage"]
             r = self._write(table, ("name",), item)
             results[r] += 1
-        return f"{'hard ' if hard else ''}refresh on '{guild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
+        return f"{'hard ' if hard else ''}refresh on '{gget_guild_iduild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
 
     def _init_table(self, table_name: str, keys=Sequence[str]) -> "boto3.resources.factory.dynamodb.Table":
         table = self.dynamodb.create_table(
@@ -186,9 +186,9 @@ class DynamoTemplateStore(Store):
             )["Items"]
 
     def get_template_data(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
     ) -> dict:
-        table, key = self._template_table(guild), {"name": id}
+        table, key = self._template_table(guild), {"name": guild_id}
         return (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )

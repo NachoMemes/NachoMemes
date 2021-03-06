@@ -38,12 +38,18 @@ def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
     "Returns the id of a memeber mentioned in a message."
     return [m for m in ctx.message.mentions]
 
+async def report(ctx: Context, e: Exception):
+    err = traceback.format_exc()
+    if DEBUG:
+        await ctx.send("```" + err[:1990] + "```")
+    else:
+        await ctx.send("```" + str(e) + "```")
+    raise e
 
 @bot.event
 async def on_ready():
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
     bot.loop.create_task(status_task())
-
 
 with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
@@ -135,62 +141,6 @@ async def templates(ctx: Context, template: str = None):
             await ctx.send("```" + err[:1990] + "```")
         print(err, file=sys.stderr)
 
-
-async def refresh_templates(ctx: Context, arg: str = None):
-    try:
-        await ctx.trigger_typing()
-        hard = arg == "--hard"
-        if hard:
-            if not ctx.message.author.guild_permissions.administrator:
-                config = store.guild_config(ctx.guild)
-                if not config.can_admin(ctx.message.author):
-                    return await ctx.send(
-                        f"```{config.no_admin(ctx.message.author)}```"
-                    )
-        else:
-            config = store.guild_config(ctx.guild)
-            if not config.can_edit(ctx.message.author):
-                return await ctx.send(
-                    f"```{config.no_admin(ctx.message.author,'refresh','edit')}```"
-                )
-
-        message = store.refresh_memes(ctx.guild, hard)
-        await ctx.send(f"```{message}```")
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
-
-
-async def set_admin_role(ctx: Context, roleid: str):
-    try:
-        config = store.guild_config(ctx.guild)
-        role = ctx.guild.get_role(int(roleid))
-        message = config.set_admin_role(ctx.message.author, role)
-        store.save_guild_config(config)
-        await ctx.send(textwrap.dedent(f"```{message}```"))
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
-
-
-async def set_edit_role(ctx: Context, roleid: str):
-    try:
-        config = store.guild_config(ctx.guild)
-        role = ctx.guild.get_role(int(roleid))
-        message = config.set_edit_role(ctx.message.author, role)
-        store.save_guild_config(config)
-        await ctx.send(textwrap.dedent(f"```{message}```"))
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
-
-
 @bot.command(description="Who am I?!?")
 async def whoami(ctx: Context):
     try:
@@ -215,34 +165,6 @@ async def whoami(ctx: Context):
         print(err, file=sys.stderr)
 
 
-@bot.command(description="ban a user")
-async def shun(ctx: Context):
-    try:
-        config = store.guild_config(ctx.guild)
-        for subject in mentioned_members(ctx):
-            message = config.shun(ctx.message.author, subject)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
-        store.save_guild_config(config)
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
-
-
-@bot.command(description="unban a user")
-async def endorse(ctx: Context):
-    try:
-        config = store.guild_config(ctx.guild)
-        for subject in mentioned_members(ctx):
-            message = config.endorse(ctx.message.author, subject)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
-        store.save_guild_config(config)
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
 
 
 @bot.command(description="Make a new template.")
@@ -263,27 +185,78 @@ async def save(ctx: Context):
         raise e
 
 
-@bot.command(description="Administrative functions.")
+@bot.group(description="Administrative functions.")
 async def memebot(ctx: Context, *args):
     """Top level administrative function for bot."""
-    num_args = 0 if args == None else len(args)
+    if ctx.invoked_subcommand is None:
+        await ctx.send('Invalid admin command...')
+
+@memebot.command("updates the database with template data")
+async def refresh(ctx: Context, refresh_type: str=None):
     try:
-        if num_args > 0:
-            if args[0] == "refresh":
-                # Refreshes templates.
-                return await refresh_templates(ctx, args[1] if len(args) > 1 else None)
-            elif args[0] == "set_admin_role":
-                # Sets an admin role.
-                return await set_admin_role(ctx, str(args[1]))
-            elif args[0] == "set_edit_role":
-                # Sets edit role.
-                return await set_edit_role(ctx, str(args[1]))
-        await ctx.send("You used this command incorrectly. Try again.")
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
+        await ctx.trigger_typing()
+        is_hard = refresh_type == "--hard"
+        config: GuildConfig = store.guild_config(ctx.guild)
+        if is_hard:
+            if not config.can_admin(ctx.message.author):
+                return await ctx.send(
+                    f"```{config.no_admin(ctx.message.author)}```"
+                )
+        else:
+            if not config.can_edit(ctx.message.author):
+                return await ctx.send(
+                    f"```{config.no_admin(ctx.message.author,'refresh','edit')}```"
+                )
+
+        message = store.refresh_memes(ctx.guild, is_hard)
+        await ctx.send(f"```{message}```")
+    except Exception as ex:
+        await report(ctx, ex)
+
+@memebot.command("set the discord role for adminstrators")
+async def admin_role(ctx: Context, role_id: str):
+    try:
+        config = store.guild_config(ctx.guild)
+        role = ctx.guild.get_role(int(role_id))
+        message = config.set_admin_role(ctx.message.author, role)
+        store.save_guild_config(config)
+        await ctx.send(textwrap.dedent(f"```{message}```"))
+    except Exception as ex:
+        await report(ctx, ex)
+
+@memebot.command("set the discord role for editors")
+async def permit(ctx: Context, role_id: str):
+    try:
+        config = store.guild_config(ctx.guild)
+        role = ctx.guild.get_role(int(roleid))
+        message = config.set_edit_role(ctx.message.author, role)
+        store.save_guild_config(config)
+        await ctx.send(textwrap.dedent(f"```{message}```"))
+    except Exception as ex:
+        await report(ctx, ex)
+
+@memebot.command("prevent user from interacting with bot")
+async def shun(ctx: Context, user: str):
+    try:
+        config: GuildConfig = store.guild_config(ctx.guild)
+        for subject in mentioned_members(ctx):
+            message: str = config.shun(ctx.message.author, subject)
+            await ctx.send(textwrap.dedent(f"```{message}```"))
+        store.save_guild_config(config)
+    except Exception as ex:
+        await report(ctx, ex)
+    
+
+@memebot.command("permit user to interact with bot")
+async def endorse(ctx: Context, user: str):
+    try:
+        config: GuildConfig = store.guild_config(ctx.guild)
+        for subject in mentioned_members(ctx):
+            message: str = config.endorse(ctx.message.author, subject)
+            await ctx.send(textwrap.dedent(f"```{message}```"))
+        store.save_guild_config(config)
+    except Exception as ex:
+        await report(ctx, ex)
 
 
 @bot.command(description="Make a new meme.")

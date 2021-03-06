@@ -48,17 +48,17 @@ class Store(ABC):
     Abstract base class for implementing data stores for template and guild data.
     """
     @abstractmethod
-    def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
+    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False) -> str:
         pass
 
     @abstractmethod
     def get_template_data(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
     ) -> dict:
         """
         Retrieve template data (serialized template) as a dict from the store.
         """
-        pass
+        
 
     def get_template(
         self, guild: Optional[Guild], id: str, increment_use: bool = False
@@ -89,19 +89,21 @@ class Store(ABC):
         Retrieve the guild configuration as a GuildConfig object from the store.
         Takes a Discord.py Guild object (https://discordpy.readthedocs.io/en/latest/api.html#guild).
         """
-        pass
 
     @abstractmethod
     def save_guild_config(self, guild: GuildConfig) -> None:
-        pass
+        """serialize and persist the guild configuration information in the store"""
+        
 
-def guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
+def get_guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
     """
     Coerces either a Guild, GuildConfig, or string guild ID into a guild ID string.
     Returns "default" if no valid argument was provided.
     """
-    if type(guild) == str:
+    if isinstance(guild, str):
         return guild
     if isinstance(guild, Guild):
+        return str(guild.id)
+    if isinstance(guild, GuildConfig):
         return str(guild.id)
     return "default"

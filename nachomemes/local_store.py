@@ -6,7 +6,7 @@ from dacite import from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.store import Store, guild_id
+from nachomemes.store import Store, get_guild_id
 
 
 class LocalTemplateStore(Store):
@@ -16,13 +16,13 @@ class LocalTemplateStore(Store):
     def __init__(self):
         pass
 
-    def refresh_memes(self, guild: Optional[Guild], hard: bool = False):
+    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False):
         return "Memes were not refreshed since a local store is enabled."
 
     def get_template_data(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
     ) -> dict:
-        return _load_templates(guild)[id]
+        return _load_templates(guild)[guild_id]
 
     def list_memes(self, guild: Union[Guild, str, None] = None, fields: List[str] = None) -> Iterable[dict]:
         if fields:
@@ -49,7 +49,7 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
     """
     with open("config/guild.json", "r") as f:
         config = from_dict(GuildConfig, json.load(f))
-    config._id = guild_id(guild)
+    config._id = get_guild_id(guild)
     config.name = guild.name if guild else "default"
     return config
 

@@ -3,7 +3,7 @@ import json
 
 from .guild_config import GuildConfig
 from .template import Template, TemplateError
-from .store import Store, da_config, guild_id
+from .store import Store, da_config, get_guild_id
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .render import render_template
@@ -34,7 +34,7 @@ def get_creds(debug: bool=True) -> dict:
         )
         with open(os.getcwd() + creds_file_name, "r") as f:
             creds = json.load(f)
-    except:
+    except Exception as e:
         creds = {}
     for k in ("DISCORD_TOKEN", "ACCESS_KEY", "SECRET", "REGION"):
         if k in os.environ:
