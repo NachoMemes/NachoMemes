@@ -1,8 +1,9 @@
-from flask import Flask, url_for, jsonify, request, make_response, send_file
 import io
 
-from . import get_store
-from .store import Store, update_serialization
+from flask import Flask, jsonify, request, send_file
+
+from nachomemes import get_store
+from nachomemes.store import Store, update_serialization
 
 
 def make_server(store: Store) -> Flask:
@@ -29,8 +30,9 @@ def make_server(store: Store) -> Flask:
 
     return app
 
+
 if __name__ == '__main__':
     store = get_store()
     app = make_server(store)
-    app.debug=True
+    app.debug = True
     app.run()

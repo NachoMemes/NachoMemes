@@ -1,14 +1,12 @@
 import json
-from dataclasses import asdict
 from functools import lru_cache
-from typing import Any, Callable, Dict, Iterable, List, Type, Union, Optional
+from typing import Dict, Iterable, List, Optional, Union
 
-from discord import Member, Role, Guild
-from dacite import Config, from_dict
+from dacite import from_dict
+from discord import Guild
 
-from .guild_config import GuildConfig
-from .store import Store, da_config, guild_id
-from .template import Template
+from nachomemes.guild_config import GuildConfig
+from nachomemes.store import Store, guild_id
 
 
 class LocalTemplateStore(Store):
@@ -23,8 +21,7 @@ class LocalTemplateStore(Store):
     ) -> dict:
         return _load_templates(guild)[id]
 
-
-    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Union[Guild, str, None] = None, fields: List[str] = None) -> Iterable[dict]:
         if fields:
             return ({k: d[k] for k in fields} for d in _load_templates(guild).values())
         else:
@@ -44,9 +41,10 @@ class LocalTemplateStore(Store):
 def _load_config(guild: Optional[Guild]) -> GuildConfig:
     with open("config/guild.json", "r") as f:
         config = from_dict(GuildConfig, json.load(f))
-    config.id = guild_id(guild)
+    config._id = guild_id(guild)
     config.name = guild.name if guild else "default"
     return config
+
 
 @lru_cache(maxsize=1)
 def _load_templates(guild: Optional[Guild]) -> Dict[str, dict]:

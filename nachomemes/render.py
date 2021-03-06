@@ -1,20 +1,16 @@
 import io
-import json
 import sys
-from decimal import Decimal
 from itertools import chain, takewhile
 from math import cos, pi, sin
-from os import PathLike
-from typing import IO, Callable, Iterable, List, Optional, Tuple
+from typing import IO, Iterable, List, Tuple, Generator
 
-import PIL
 from PIL import Image, ImageDraw, ImageFont
 
-from .template import Template, Color, Font, TextBox
+from nachomemes.template import Color, Font, Template, TextBox
 
 
-def partition_on(pred, seq):
-    "Split a sequence into multuple sub-sequences using a provided value as the boundary"
+def partition_on(pred, seq) -> Generator:
+    """Split a sequence into multuple sub-sequences using a provided value as the boundary"""
     i = iter(seq)
     while True:
         # note that we need to do an explicit StopIteration check because
@@ -27,12 +23,12 @@ def partition_on(pred, seq):
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
-def partition_on_value(value, seq):
+def partition_on_value(value, seq) -> Generator:
     return partition_on(lambda v: v == value, seq)
 
 
 def _reflow_text(text, count) -> List[str]:
-    "Using slashes, break up the provided text into the requested number of boxes"
+    """Using slashes, break up the provided text into the requested number of boxes"""
 
     if len(text) == count:
         return text
@@ -62,18 +58,18 @@ def _reflow_text(text, count) -> List[str]:
 
 
 def _text_width(font: Font, size: int, string: str) -> int:
-    "Returns the width of the provided text at the given font size in pixels"
+    """Returns the width of the provided text at the given font size in pixels"""
     return font.load(size).getsize(string)[0]
 
 
-def _render_text(img: Image, font: ImageFont, color: Color, x, y, string):
-    "Render plain colored text with a transparent background"
+def _render_text(img: Image, font: ImageFont, color: Color, x, y, string) -> None:
+    """Render plain colored text with a transparent background"""
     ImageDraw.Draw(img).text((x, y), string, color.value, font)
 
 
 def _render_outlined(
     img: Image, font: ImageFont, color: Color, outline: Color, x, y, string: str
-):
+) -> None:
     """Render text with an outline by repeatedly rendering text in the outline
      color offset by 1/15 of the font size at 30 degree intervals"""
     offset = font.size / 15
@@ -87,7 +83,7 @@ def _render_outlined(
 
 def _render_rotated(
     img: Image, font: ImageFont, color: Color, x, y, angle, string: str
-):
+) -> None:
     """render text rotated by an angle by creating a seperate image with the 
     text, rotating it, and pasting it onto the target image"""
 
@@ -100,7 +96,7 @@ def _render_rotated(
 
 
 def _box_size(width: int, height: int, tb: TextBox) -> Tuple[int, int]:
-    "Calcutate the size of the textbox based on percent of the target image"
+    """Calcutate the size of the textbox based on percent of the target image"""
     return (int((tb.right - tb.left) * width), int((tb.bottom - tb.top) * height))
 
 
@@ -122,12 +118,12 @@ def _font_size(width, height, tb: TextBox, lines: List[str]) -> int:
 
 
 def _offset(width: int, height: int, tb: TextBox, x: int, y: int) -> Tuple[int, int]:
-    "Calculate offset position relative to a textbox on an image"
+    """Calculate offset position relative to a textbox on an image"""
     return int(tb.left * width) + x, int(tb.top * height) + y
 
 
-def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
-    "Would you kindly render some text on an image"
+def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int) -> None:
+    """Would you kindly render some text on an image"""
 
     # get the size of the bounding box in pixels
     bw, bh = _box_size(*img.size, tb)
@@ -159,8 +155,8 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int):
             _render_text(img, font, tb.color, x, y, line)
 
 
-def _debug_box(img: Image, tb: TextBox):
-    "draw an outline around the TextBox for debugging"
+def _debug_box(img: Image, tb: TextBox) -> None:
+    """draw an outline around the TextBox for debugging"""
 
     ImageDraw.Draw(img).rectangle(
         (
@@ -173,7 +169,7 @@ def _debug_box(img: Image, tb: TextBox):
 
 def render_template(
     template: Template, message: Iterable[str], output: IO, debug: bool = False
-):
+) -> None:
     """This is the thing that does the thing"""
 
     # combine the strings into the required number of textboxes
@@ -201,6 +197,3 @@ def render_template(
                 _debug_box(img, tb)
 
         img.save(output, format="PNG")
-
-
-

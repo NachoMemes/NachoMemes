@@ -1,21 +1,16 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum, auto
-from pathlib import Path
-from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional, Union, Dict, Any, Type, Generator
-from types import GeneratorType
-from urllib.request import Request, urlopen
-import atexit, os, re
 from decimal import Decimal
 from operator import attrgetter
+from types import GeneratorType
+from typing import (Any, Callable, Dict, Iterable, List,
+                    Optional, Type, Union)
+from urllib.request import Request
 
-from discord import Member, Role, Guild
 from dacite import Config, from_dict
-from PIL import Image, ImageFont
+from discord import Guild
 
-from .guild_config import GuildConfig
-from .template import Template, Font, Color, Justify
+from nachomemes.guild_config import GuildConfig
+from nachomemes.template import Color, Font, Justify, Template
 
 # additional deserializers for dacite
 da_config = Config(
@@ -37,7 +32,8 @@ serializers = {
     Justify: attrgetter("name"),
 }
 
-def update_serialization(value: Any, _serializers: Dict[Type, Callable]=serializers):
+
+def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
     if type(value) in _serializers:
         return _serializers[type(value)](value)
     if dict == type(value):
@@ -46,6 +42,7 @@ def update_serialization(value: Any, _serializers: Dict[Type, Callable]=serializ
         return [update_serialization(v, _serializers) for v in value]
     return value
 
+
 class Store(ABC):
     @abstractmethod
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
@@ -53,18 +50,18 @@ class Store(ABC):
 
     @abstractmethod
     def get_template_data(
-        self, guild: Optional[Guild], _id: str, increment_use: bool = False
+        self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> dict:
         pass
 
     def get_template(
-        self, guild: Optional[Guild], _id: str, increment_use: bool = False
+        self, guild: Optional[Guild], id: str, increment_use: bool = False
     ) -> Template:
-        return from_dict(Template, self.get_template_data(guild, _id, increment_use), config=da_config)
+        return from_dict(Template, self.get_template_data(guild, id, increment_use), config=da_config)
 
     @abstractmethod
-    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
-        "Get all the memes as dictionaries, optionally pass fields to get only those fields in the dicts"
+    def list_memes(self, guild: Union[Guild, str, None] = None, fields: List[str] = None) -> Iterable[dict]:
+        """Get all the memes as dictionaries, optionally pass fields to get only those fields in the dicts"""
         pass
 
     @abstractmethod
@@ -76,10 +73,13 @@ class Store(ABC):
         pass
 
     @abstractmethod
-    def save_guild_config(self, guild: GuildConfig):
+    def save_guild_config(self, guild: GuildConfig) -> None:
         pass
 
-def guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
-    if type(guild) == str:
+
+def guild_id(guild: Union[Guild, GuildConfig, str, None]) -> str:
+    if isinstance(guild, str):
         return guild
-    return str(guild.id) if guild else "default"
+    if isinstance(guild, Guild):
+        return str(guild.id)
+    return "default"
