@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from operator import attrgetter
-from types import GeneratorType
+from types import GeneratorType, MappingProxyType
 from typing import (Any, Callable, Dict, Iterable, List,
                     Optional, Type, Union)
 from urllib.request import Request
@@ -13,27 +13,27 @@ from nachomemes.guild_config import GuildConfig
 from nachomemes.template import Color, Font, Justify, Template
 
 # additional deserializers for dacite
-da_config = Config(
-    {
-        Font: Font.__getitem__,
-        Color: Color.__getitem__,
-        Justify: Justify.__getitem__,
-        Request: Request,
-        float: float,
-        int: int,
-    }
-)
+da_config = Config({
+    Font: Font.__getitem__,
+    Color: Color.__getitem__,
+    Justify: Justify.__getitem__,
+    Request: Request,
+    float: float,
+    int: int,
+})
 
-serializers = {
+# additional serializers for dacite
+serializers: Dict[Type, Callable] = MappingProxyType({
     Request: attrgetter("full_url"),
     float: lambda f: Decimal(str(f)),
     Font: attrgetter("name"),
     Color: attrgetter("name"),
     Justify: attrgetter("name"),
-}
+})
 
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
+    """helper function to recursivly modify the format of data prior to serialization"""
     if type(value) in _serializers:
         return _serializers[type(value)](value)
     if dict == type(value):
