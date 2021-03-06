@@ -1,23 +1,17 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum, auto
-from pathlib import Path
-from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional, Union
-from urllib.request import Request, urlopen
+from typing import IO, List, Optional
 
-from discord import Member, Role, Guild
-from dacite import Config
+from discord import Member, Role
 
 
 @dataclass
 class GuildConfig:
-    "Stuff about the guild"
+    """Stuff about the guild"""
 
-    id: Optional[str]          # guild id
+    id: Optional[id]          # guild id
     name: str                  # guild name
-    override: List[Member]        # no bad-boy
-    pariah: List[Member]          # bad-boy timeout
+    override: List[int]        # no bad-boy
+    pariah: List[int]          # bad-boy timeout
     admin_role: Optional[int]  # guild role to administer the bot
     edit_role: Optional[int]   # guild role to edit templates
 
@@ -29,7 +23,7 @@ class GuildConfig:
 
     def can_use(self, member: Member) -> bool:
         """Is the user a bad boy?"""
-        return member not in self.pariah
+        return member.id not in self.pariah
 
     def set_admin_role(self, member: Member, role: Role) -> str:
         if not self.can_admin(member):
@@ -51,17 +45,17 @@ class GuildConfig:
             self.pariah.append(victim.id)
             return "If that's what you really want to do."
         elif victim in self.override:
-            self.pariah.append(member)
+            self.pariah.append(member.id)
             return f"{self.member_nick(member)}. Your membership to The Continental has been, by thine own hand, revoked."
         elif not member in self.override and victim.guild_permissions.administrator:
             return "As fun as it sounds, it's probably not a good idea."
         else:
-            self.pariah.append(victim)
+            self.pariah.append(victim.id)
             return f"{self.member_nick(victim)} is now excommunicado"
 
     def endorse(self, member: Member, victim: Member) -> str:
         if member == victim and victim in self.pariah and (member in self.override or member.guild_permissions.administrator):
-            self.pariah.remove(victim)
+            self.pariah.remove(victim.id)
             return "Wait, you can do that?"
         elif not self.can_admin(member):
             return self.no_admin(member)

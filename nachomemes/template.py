@@ -1,15 +1,14 @@
-import sys
 import atexit
-import re
 import os
-from pathlib import Path
-from enum import Enum
+import re
 from dataclasses import dataclass
-from typing import IO, Iterable, List, Optional, Dict
+from enum import Enum
+from pathlib import Path
 from tempfile import NamedTemporaryFile
-
+from typing import IO, Dict, Iterable, List, Optional
 from urllib.request import Request, urlopen
-from PIL import ImageFont, Image
+
+from PIL import Image, ImageFont
 
 # Monkeypatch Request to show the url in repr
 Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
@@ -18,13 +17,17 @@ Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
 LOCAL_IMAGE_CACHE: Dict[str, str] = {}
 
 # Delete the local file cache when an exit is encountered
+
+
 @atexit.register
 def _delete_cache():
     for f in LOCAL_IMAGE_CACHE.values():
         os.remove(f)
 
+
 class TemplateError(Exception):
     pass
+
 
 class Color(Enum):
     """
@@ -32,6 +35,7 @@ class Color(Enum):
     """
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
+
 
 class Justify(Enum):
     """
@@ -47,6 +51,7 @@ class Justify(Enum):
     def __call__(self, *args, **kwargs):
         return self.value(*args, **kwargs)
 
+
 class Font(Enum):
     """
     Enum representing local font files available for loading.
@@ -60,6 +65,7 @@ class Font(Enum):
         Load the local font file into a font object.
         """
         return ImageFont.truetype(str(self.value), font_size)
+
 
 @dataclass
 class TextBox:
@@ -92,6 +98,7 @@ class TextBox:
     # If this textbox is sized independently of the other boxes
     ind_size: Optional[bool] = False
 
+
 def _fetch_image(url: Request) -> IO:
     """
     Fetch an image from a URL and return an IO stream.
@@ -107,6 +114,7 @@ def _fetch_image(url: Request) -> IO:
             LOCAL_IMAGE_CACHE[url.full_url] = f.name
         print(f.name)
     return open(LOCAL_IMAGE_CACHE[url.full_url], 'rb')
+
 
 @dataclass
 class Template:

@@ -1,10 +1,7 @@
-from decimal import Decimal
-from operator import attrgetter
-from typing import Any, Callable, Dict, Iterable, List, Type, Union, Sequence, Optional
-from urllib.request import Request
-from enum import Enum, auto
 from dataclasses import asdict
-
+from decimal import Decimal
+from enum import Enum, auto
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 import boto3
 from botocore.exceptions import ClientError
@@ -12,8 +9,8 @@ from dacite import from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.template import Color, Font, Justify, Template, TemplateError
 from nachomemes.store import Store, da_config, guild_id, update_serialization
+from nachomemes.template import TemplateError
 
 
 class Result(Enum):
@@ -23,6 +20,12 @@ class Result(Enum):
 
 
 class DynamoTemplateStore(Store):
+    """Implementation of a `Store` in DynamoDB.
+
+    Backing representation for templates + guilds in a NoSQL db and the helpers
+    needed to work with them.
+    """
+
     def __init__(
         self, access_key, secret, region, default_store: Store, beta: bool = False
     ):
@@ -42,7 +45,8 @@ class DynamoTemplateStore(Store):
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
-            table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
+            table.meta.client.get_waiter(
+                "table_not_exists").wait(TableName=table_name)
         except ClientError:
             pass
         print("creating table" + table_name)
@@ -52,13 +56,14 @@ class DynamoTemplateStore(Store):
             self.refresh_memes(guild)
         return table
 
-    def _config_table(self, guild: Union[Guild,GuildConfig,None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
+    def _config_table(self, guild: Union[Guild, GuildConfig, None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
         table_name = guild_id(guild) + self.config_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
-            table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
+            table.meta.client.get_waiter(
+                "table_not_exists").wait(TableName=table_name)
         except ClientError:
             pass
         print("creating table" + table_name)
@@ -68,20 +73,19 @@ class DynamoTemplateStore(Store):
             self.save_guild_config(self.default_store.guild_config(guild))
         return table
 
-
     def guild_config(self, guild: Guild) -> GuildConfig:
         table = self._config_table(guild)
         item = self._fetch(table, {"id": guild_id(guild)})
         return from_dict(GuildConfig, item, config=da_config)
 
-    def save_guild_config(self, guild: GuildConfig):
+    def save_guild_config(self, guild: GuildConfig) -> None:
         table = self._config_table(guild, False)
+        print(asdict(guild))
         self._write(table, ("id",), asdict(guild))
 
-
-    def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str,Any]):
+    def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str, Any]) -> Result:
         item = update_serialization(value)
-        key = {k:item.pop(k) for k in keys}
+        key = {k: item.pop(k) for k in keys}
         prior = table.update_item(
             Key=key,
             UpdateExpression=f"SET {','.join(f'#{k}=:{k}' for k in item)}",
@@ -96,16 +100,16 @@ class DynamoTemplateStore(Store):
         else:
             return Result.UNCHANGED
 
-    def _delete_table(self, name: str):
+    def _delete_table(self, name: str) -> None:
         try:
             table = self.dynamodb.Table(name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 print("deleting: " + name)
                 table.delete()
-            table.meta.client.get_waiter("table_not_exists").wait(TableName=name)
+            table.meta.client.get_waiter(
+                "table_not_exists").wait(TableName=name)
         except ClientError:
             pass
-
 
     def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
         if hard:
@@ -125,8 +129,10 @@ class DynamoTemplateStore(Store):
         table = self.dynamodb.create_table(
             TableName=table_name,
             KeySchema=[{"AttributeName": k, "KeyType": "HASH"} for k in keys],
-            AttributeDefinitions=[{"AttributeName": k, "AttributeType": "S"} for k in keys],
-            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+            AttributeDefinitions=[
+                {"AttributeName": k, "AttributeType": "S"} for k in keys],
+            ProvisionedThroughput={
+                "ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
         )
 
         # wait for the table to be created
@@ -137,9 +143,9 @@ class DynamoTemplateStore(Store):
         self, table: "boto3.resources.factory.dynamodb.Table", key: dict
     ) -> dict:
         try:
-            return table.get_item(Key=key)["Item"]
-        except KeyError:
-            raise TemplateError
+            return table.get_item(Key=key).get("Item")
+        except KeyError as err:
+            raise TemplateError from err
 
     def _increment_usage_and_fetch(
         self, table: "boto3.resources.factory.dynamodb.Table", key: dict
@@ -153,13 +159,14 @@ class DynamoTemplateStore(Store):
                     "#usage": "usage",
                     "#image_url": "image_url",
                 },
-                ExpressionAttributeValues={":one": Decimal(1), ":zero": Decimal(0)},
+                ExpressionAttributeValues={
+                    ":one": Decimal(1), ":zero": Decimal(0)},
                 ReturnValues="ALL_NEW",
             )["Attributes"]
-        except ClientError:
-            raise TemplateError
+        except ClientError as err:
+            raise TemplateError from err
 
-    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Union[Guild, str, None] = None, fields: List[str] = None) -> Iterable[dict]:
         table = self._template_table(guild)
         if not fields:
             return table.scan()["Items"]
