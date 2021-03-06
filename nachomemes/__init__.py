@@ -9,7 +9,11 @@ from .local_store import LocalTemplateStore
 from .render import render_template
 
 
-def get_store(local: bool = True, debug: bool = True) -> Store:
+def get_store(local: bool=True, debug: bool=True) -> Store:
+    """
+    Intializes and returns a store based on whether local is set.
+    If "access_key" doesn't exist in the JSON config file, defaults to the local store.
+    """
     creds = get_creds(debug) if not local else {}
     store = LocalTemplateStore()
     if not local and "access_key" in creds:
@@ -19,7 +23,11 @@ def get_store(local: bool = True, debug: bool = True) -> Store:
     return store
 
 
-def get_creds(debug: bool = True) -> dict:
+def get_creds(debug: bool=True) -> dict:
+    """
+    Gets credentails as a dict from JSON configuration files in the config/ directory.
+    Environment variables override JSON configuration values.
+    """
     try:
         creds_file_name = (
             "/config/creds.json" if not debug else "/config/testing-creds.json"
