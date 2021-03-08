@@ -1,3 +1,4 @@
+"""These are Nacho Memes"""
 import os
 import json
 
@@ -32,9 +33,9 @@ def get_creds(debug: bool=True) -> dict:
         creds_file_name = (
             "/config/creds.json" if not debug else "/config/testing-creds.json"
         )
-        with open(os.getcwd() + creds_file_name, "r") as f:
-            creds = json.load(f)
-    except Exception as e:
+        with open(os.getcwd() + creds_file_name, "r") as file:
+            creds = json.load(file)
+    except OSError:
         creds = {}
     for k in ("DISCORD_TOKEN", "ACCESS_KEY", "SECRET", "REGION"):
         if k in os.environ:

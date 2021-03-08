@@ -1,4 +1,5 @@
 # pylint: disable=broad-except
+"""Discord bot go brrrr"""
 import argparse
 import asyncio
 import io
@@ -40,7 +41,9 @@ def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
     return [m for m in ctx.message.mentions]
 
 async def report(ctx: Context, e: Exception, message: str="An error has occured"):
+    """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
+    # print(err, file=sys.stderr)
     if DEBUG:
         await ctx.send(message + "```" + err[:1990] + "```")
     else:
@@ -49,8 +52,9 @@ async def report(ctx: Context, e: Exception, message: str="An error has occured"
 
 @bot.event
 async def on_ready():
+    """print startup message on bot initialization"""
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
-    bot.loop.create_task(status_task())
+    # bot.loop.create_task(status_task())
 
 with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
@@ -73,20 +77,20 @@ def _find_close_matches(name: str, guild: Guild) -> list:
     ]
 
 
-@bot.event
-async def status_task():
-    while True:
-        global MEMES
-        await bot.change_presence(
-            status=discord.Status.online,
-            activity=discord.Game(
-                name=f"{MEMES} memes/minute! "
-                + "Load AVG - CPU: {0:.2f}% ".format(psutil.getloadavg()[0])
-                + "RAM: {0:.2f}% ".format(psutil.virtual_memory()._asdict()["percent"])
-            ),
-        )
-        MEMES = 0
-        await asyncio.sleep(60)
+# @bot.event
+# async def status_task():
+#     while True:
+#         global MEMES
+#         await bot.change_presence(
+#             status=discord.Status.online,
+#             activity=discord.Game(
+#                 name=f"{MEMES} memes/minute! "
+#                 + "Load AVG - CPU: {0:.2f}% ".format(psutil.getloadavg()[0])
+#                 + "RAM: {0:.2f}% ".format(psutil.virtual_memory()._asdict()["percent"])
+#             ),
+#         )
+#         MEMES = 0
+#         await asyncio.sleep(60)
 
 
 async def fuzzed_templates(ctx: Context, template: str, guild: Guild):
@@ -136,26 +140,21 @@ async def templates(ctx: Context, template: str = None):
             await ctx.send("**Templates**" + "".join(lines))
     except TemplateError:
         await ctx.send(f"```Could not load '{template}'```")
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
+    except Exception as ex:
+        await report(ctx, ex, "error listing templates")
 
 
-
-
-
-@bot.group(description="Administrative functions.")
+@bot.group(description="Administrative functions group")
 async def memebot(ctx: Context):
-    """Top level administrative function for bot."""
     if ctx.subcommand_passed:
         return
     try:
-        message = "\n".join(("**{}**: {}".format(s.name, s.description) for s in ctx.command.walk_commands()))
+        message = "\n".join((f"**{s.name}**: {s.description}"
+            for s in ctx.command.walk_commands()))
         await ctx.send("Available commands\n"+message)
     except Exception as ex:
         await report(ctx, ex, "error listing commands")
+
 
 @memebot.command(description="updates the database with template data")
 async def refresh(ctx: Context, refresh_type: str=None):
@@ -210,7 +209,7 @@ async def edit_role(ctx: Context, role_id: str=None):
         await report(ctx, ex)
 
 @memebot.command(description="prevent user from interacting with bot")
-async def shun(ctx: Context, user: str):
+async def shun(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         for subject in mentioned_members(ctx):
@@ -222,7 +221,7 @@ async def shun(ctx: Context, user: str):
     
 
 @memebot.command(description="permit user to interact with bot")
-async def endorse(ctx: Context, user: str):
+async def endorse(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         for subject in mentioned_members(ctx):
@@ -268,7 +267,7 @@ async def save(ctx: Context):
         await report(ctx, ex)
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx: Context, template: str = None, *text):
+async def meme(ctx: Context, template: str = None, /, *text):
     """Main bot command for rendering/showing memes.
 
     If no template, or template but no text, then show info about
@@ -281,7 +280,7 @@ async def meme(ctx: Context, template: str = None, *text):
         await ctx.trigger_typing()
         config = store.guild_config(ctx.guild)
         if not config.can_use(ctx.message.author):
-            return await ctx.send(f"```{config.no_memes(ctx.message.author)}```")
+            return await ctx.send(f"```No memes for you!```")
         # Log memes/minute.
         global MEMES
         MEMES += 1
@@ -300,11 +299,9 @@ async def meme(ctx: Context, template: str = None, *text):
             await msg.add_reaction(r)
     except TemplateError:
         await ctx.send(f"```Could not load '{match}'```")
-    except:
-        err = traceback.format_exc()
-        if DEBUG:
-            await ctx.send("```" + err[:1990] + "```")
-        print(err, file=sys.stderr)
+    except Exception as ex:
+        await report(ctx, ex)
+        
 
 
 def run(debug, local):
