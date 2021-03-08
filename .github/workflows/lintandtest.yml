@@ -23,20 +23,20 @@ jobs:
       - name: Run Pylint
         run: poetry run pylint -E nachomemes
 
-  lint_and_test:
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
-      - name: Install dependencies
+          python-version: ${{ env.python-version }}
+      - name: Install Dependencies
         run: |
           pip install poetry==1.1.4
           poetry install
-      - name: Test with unittest
+      - name: Test
         run: |
           poetry run python -m unittest
-      - name: Build Docker Image
-        run: docker build .
