@@ -58,9 +58,19 @@ jobs:
         run: |
           poetry run python -m unittest
 
+  hadolint:
+    name: Hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run Hadolint
+        uses: brpaz/hadolint-action@master
+
   image:
     name: Image
     runs-on: ubuntu-latest
+    needs: [pylint, test, hadolint]
     env:
       cache-path: /tmp/.buildx-cache
       container-registry: ghcr.io
