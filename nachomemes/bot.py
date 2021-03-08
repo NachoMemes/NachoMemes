@@ -67,7 +67,7 @@ def _match_template_name(name: str, guild: Guild) -> str:
     return fuzzed[0]["name"]
 
 
-def _find_close_matches(name: str, guild: Guild) -> list:
+def _find_close_matches(name: str, guild: GuildConfig) -> list:
     """Chooses top matches against input."""
     return [
         name[0]["name"]
@@ -76,7 +76,7 @@ def _find_close_matches(name: str, guild: Guild) -> list:
     ]
 
 
-async def fuzzed_templates(ctx: Context, template: str, guild: Guild):
+async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
     """Fuzzy match multiple templates."""
     fuzzed_memes = _find_close_matches(template.strip("*"), guild)
     memes = [
@@ -88,7 +88,7 @@ async def fuzzed_templates(ctx: Context, template: str, guild: Guild):
     await ctx.send("**Potential Templates**" + "".join(lines))
 
 
-async def single_fuzzed_template(ctx: Context, template: str, guild: Guild):
+async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
     """Fuzzy match a single template"""
     fmeme = _match_template_name(template, guild)
     _meme = store.get_template(guild, fmeme)
@@ -106,19 +106,18 @@ async def single_fuzzed_template(ctx: Context, template: str, guild: Guild):
 
 async def templates(ctx: Context, template: str = None):
     try:
-        guild: Guild = ctx.guild
-        config = store.guild_config(guild)
+        config: GuildConfig = store.guild_config(ctx.guild)
         if not config.can_use(ctx.author):
-            return await ctx.send(f"```{config.no_memes(ctx.author)}```")
+            return await ctx.send(f"```{config.no_memes()}```")
         if template:
             # A fuzzy multiple match
             if "*" in template:
-                return await fuzzed_templates(ctx, template, guild)
+                return await fuzzed_templates(ctx, template, config)
             # A single fuzzy match.
-            return await single_fuzzed_template(ctx, template, guild)
+            return await single_fuzzed_template(ctx, template, config)
         else:
             # The whole damn list.
-            memes = store.list_memes(guild, ("name", "description"))
+            memes = store.list_memes(config, ("name", "description"))
             lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
             await ctx.send("**Templates**" + "".join(lines))
     except TemplateError:
@@ -164,7 +163,7 @@ async def refresh(ctx: Context, refresh_type: str=None):
 @memebot.command(description="set the discord role for adminstrators")
 async def admin_role(ctx: Context, role_id: str=None):
     try:
-        config = store.guild_config(ctx.guild)
+        config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
             role = ctx.guild.get_role(config.admin_role)
             await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to administer the memes.```"))
@@ -179,7 +178,7 @@ async def admin_role(ctx: Context, role_id: str=None):
 @memebot.command(description="set the discord role for editors")
 async def edit_role(ctx: Context, role_id: str=None):
     try:
-        config = store.guild_config(ctx.guild)
+        config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
             role = ctx.guild.get_role(config.admin_role)
             await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
@@ -260,8 +259,8 @@ async def meme(ctx: Context, template: str = None, /, *text):
     try:
         await ctx.trigger_typing()
         config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_use(ctx.message.author):
-            return await ctx.send("```No memes for you!```")
+        if not config.can_use(ctx.author):
+            return await ctx.send(f"```{config.no_memes()}```")
         match = _match_template_name(template, ctx.guild)
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
