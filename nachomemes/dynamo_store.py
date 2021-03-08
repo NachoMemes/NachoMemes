@@ -132,7 +132,7 @@ class DynamoTemplateStore(Store):
                 del item["usage"]
             r = self._write(table, ("name",), item)
             results[r] += 1
-        return f"{'hard ' if hard else ''}refresh on '{gget_guild_iduild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
+        return f"{'hard ' if hard else ''}refresh on '{get_guild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
 
     def _init_table(self, table_name: str, keys=Sequence[str]) -> "boto3.resources.factory.dynamodb.Table":
         table = self.dynamodb.create_table(

@@ -4,7 +4,6 @@ import asyncio
 import io
 import json
 import os
-import random
 import re
 import sys
 import textwrap
@@ -21,6 +20,7 @@ from fuzzywuzzy import process
 
 from nachomemes import get_creds, get_store
 from nachomemes.template import TemplateError
+from nachomemes.guild_config import GuildConfig
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
