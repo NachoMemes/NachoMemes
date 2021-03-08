@@ -16,16 +16,16 @@ class GuildConfig:
     edit_role: Optional[int]   # guild role to edit templates
 
     def can_admin(self, member: Member) -> bool:
-        return member not in self.pariah and (member in self.override or member.guild_permissions.administrator or any(r for r in member.roles if r.id == self.admin_role))
+        return member.id in self.override or (member.id not in self.pariah and (member.guild_permissions.administrator or any(r for r in member.roles if r.id == self.admin_role)))
 
     def can_edit(self, member: Member) -> bool:
-        return member not in self.pariah and (member in self.override or member.guild_permissions.administrator or any(r for r in member.roles if r.id == self.edit_role))
+        return member.id in self.override or (member.id not in self.pariah and (member.guild_permissions.administrator or any(r for r in member.roles if r.id == self.edit_role)))
 
     def can_use(self, member: Member) -> bool:
         """Is the user a bad boy?"""
-        return member.id not in self.pariah
+        return member.id in self.override or member.id not in self.pariah
 
-    def set_admin_role(self, member: Member, role: Role) -> str:
+    def set_admin_role(self, member: Member, role: Role=None) -> str:
         if not self.can_admin(member):
             return self.no_admin(member)
         self.admin_role = role.id
