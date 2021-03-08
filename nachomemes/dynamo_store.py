@@ -9,10 +9,10 @@ from dacite import from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.store import Store, da_config, guild_id, update_serialization
+from nachomemes.store import Store, da_config, get_guild_id, update_serialization
 from nachomemes.template import TemplateError
 
-
+# DynamoDB operation results
 class Result(Enum):
     ADDED = auto()
     UPDATED = auto()
@@ -20,6 +20,10 @@ class Result(Enum):
 
 
 class DynamoTemplateStore(Store):
+    """
+    Read/write DynamoDB data store.
+    A default store is used to read initial guild configuration and read templates to refresh them as memes.
+    """
     def __init__(
         self, access_key, secret, region, default_store: Store, beta: bool = False
     ):
@@ -30,17 +34,23 @@ class DynamoTemplateStore(Store):
             region_name=region,
         )
         self.default_store = default_store
+
+        # Use different tables for the beta bot
         self.table_suffix = ".templates" if not beta else ".templates-beta"
         self.config_suffix = ".config" if not beta else ".config-beta"
 
     def _template_table(self, guild: Optional[Guild], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
-        table_name = guild_id(guild) + self.table_suffix
+        """
+        Either gets the existing table for templates if it exists, or creates a new one.
+        Can populate the table with memes from the default store if specified by the argument.
+        """
+        table_name = get_guild_id(guild) + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
-            table.meta.client.get_waiter(
-                "table_not_exists").wait(TableName=table_name)
+            # Wait until the table doesn't exist (it is done being deleted, or if it doesn't exist yet)
+            table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
         except ClientError:
             pass
         print("creating table" + table_name)
@@ -50,31 +60,40 @@ class DynamoTemplateStore(Store):
             self.refresh_memes(guild)
         return table
 
-    def _config_table(self, guild: Union[Guild, GuildConfig, None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
-        table_name = guild_id(guild) + self.config_suffix
+    def _config_table(self, guild: Union[Guild,GuildConfig,None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
+        """
+        Either gets the existing table for guild configuration if it exists, or creates a new one.
+        Can populate the table with the guild configuration from the default store if specified by the argument.
+        """
+        table_name = get_guild_id(guild) + self.config_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 return table
-            table.meta.client.get_waiter(
-                "table_not_exists").wait(TableName=table_name)
+            # Wait until the table doesn't exist (it is done being deleted, or if it doesn't exist yet)
+            table.meta.client.get_waiter("table_not_exists").wait(TableName=table_name)
         except ClientError:
             pass
         print("creating table" + table_name)
         # create and return table
-        table = self._init_table(table_name, ("id",))
+        table = self._init_table(table_name, ("guild_id",))
         if populate:
             self.save_guild_config(self.default_store.guild_config(guild))
         return table
 
     def guild_config(self, guild: Guild) -> GuildConfig:
         table = self._config_table(guild)
-        item = self._fetch(table, {"id": guild_id(guild)})
+        try:
+            item = self._fetch(table, {"guild_id": get_guild_id(guild)})
+        except ClientError:
+            # maybe using old key? 
+            item = self._fetch(table, {"id": get_guild_id(guild)})
+
         return from_dict(GuildConfig, item, config=da_config)
 
     def save_guild_config(self, guild: GuildConfig) -> None:
         table = self._config_table(guild, False)
-        self._write(table, ("id",), asdict(guild))
+        self._write(table, ("guild_id",), asdict(guild))
 
     def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str, Any]) -> Result:
         item = update_serialization(value)
@@ -99,24 +118,26 @@ class DynamoTemplateStore(Store):
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
                 print("deleting: " + name)
                 table.delete()
-            table.meta.client.get_waiter(
-                "table_not_exists").wait(TableName=name)
+            # Wait for the table to be deleted
+            table.meta.client.get_waiter("table_not_exists").wait(TableName=name)
         except ClientError:
             pass
 
-    def refresh_memes(self, guild: Optional[Guild], hard: bool = False) -> str:
+    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False) -> str:
+        # Drop the templates table and the guild configuration table if a hard reset is requested
         if hard:
-            self._delete_table(guild_id(guild) + self.config_suffix)
-            self._delete_table(guild_id(guild) + self.table_suffix)
+            self._delete_table(get_guild_id(guild) + self.config_suffix)
+            self._delete_table(get_guild_id(guild) + self.table_suffix)
 
         table = self._template_table(guild, False)
         results = {Result.ADDED: 0, Result.UPDATED: 0, Result.UNCHANGED: 0}
         for item in self.default_store.list_memes(guild):
+            # Don't change the usage values as we want to keep them between refreshes
             if "usage" in item:
                 del item["usage"]
             r = self._write(table, ("name",), item)
             results[r] += 1
-        return f"{'hard ' if hard else ''}refresh on '{guild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
+        return f"{'hard ' if hard else ''}refresh on '{get_guild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
 
     def _init_table(self, table_name: str, keys=Sequence[str]) -> "boto3.resources.factory.dynamodb.Table":
         table = self.dynamodb.create_table(
@@ -170,9 +191,9 @@ class DynamoTemplateStore(Store):
             )["Items"]
 
     def get_template_data(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
     ) -> dict:
-        table, key = self._template_table(guild), {"name": id}
+        table, key = self._template_table(guild), {"name": guild_id}
         return (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )

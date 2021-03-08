@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import IO, Dict, Iterable, List, Optional
 from urllib.request import Request, urlopen
+from functools import partial
 
 from PIL import Image, ImageFont
 
@@ -44,9 +45,9 @@ class Justify(Enum):
     the enclosing box.
     """
 
-    LEFT = (lambda w1, w2: 0,)[0]
-    CENTER = (lambda w1, w2: (w1 - w2) // 2,)[0]
-    RIGHT = (lambda w1, w2: w1 - w2,)[0]
+    LEFT = partial(lambda w1, w2: 0)
+    CENTER = partial(lambda w1, w2: (w1 - w2) // 2)
+    RIGHT = partial(lambda w1, w2: w1 - w2)
 
     def __call__(self, *args, **kwargs):
         return self.value(*args, **kwargs)
