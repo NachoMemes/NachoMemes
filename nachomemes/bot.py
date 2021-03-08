@@ -195,13 +195,17 @@ async def admin_role(ctx: Context, role_id: str=None):
         await report(ctx, ex)
 
 @memebot.command(description="set the discord role for editors")
-async def edit_role(ctx: Context, role_id: str):
+async def edit_role(ctx: Context, role_id: str=None):
     try:
         config = store.guild_config(ctx.guild)
-        role = ctx.guild.get_role(int(roleid))
-        message = config.set_edit_role(ctx.message.author, role)
-        store.save_guild_config(config)
-        await ctx.send(textwrap.dedent(f"```{message}```"))
+        if not role_id:
+            role = ctx.guild.get_role(config.admin_role)
+            await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
+        else:
+            role = ctx.guild.get_role(int(role_id))
+            message = config.set_edit_role(ctx.message.author, role)
+            store.save_guild_config(config)
+            await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
         await report(ctx, ex)
 
