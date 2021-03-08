@@ -3,7 +3,6 @@
 
 """Discord bot go brrrr"""
 import argparse
-import asyncio
 import io
 import json
 import os
@@ -15,7 +14,6 @@ from pathlib import Path
 from typing import List, Union
 
 import discord
-import psutil
 from discord import Guild
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -42,15 +40,15 @@ def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
     "Returns the id of a memeber mentioned in a message."
     return [m for m in ctx.message.mentions]
 
-async def report(ctx: Context, e: Exception, message: str="An error has occured"):
+async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
     if DEBUG:
         await ctx.send(message + "```" + err[:1990] + "```")
     else:
-        await ctx.send(message + "```" + str(e) + "```")
+        await ctx.send(message + "```" + str(ex) + "```")
     # re-raise the exception so it's printed to the console
-    raise e
+    raise ex
 
 @bot.event
 async def on_ready():
@@ -219,7 +217,7 @@ async def endorse(ctx: Context):
 @memebot.command(description="userinfo")
 async def whoami(ctx: Context):
     try:
-        config = store.guild_config(ctx.guild)
+        config: GuildConfig = store.guild_config(ctx.guild)
         if ctx.message.mentions:
             members: List[discord.Member] = ctx.message.mentions
         else:
@@ -239,13 +237,11 @@ async def whoami(ctx: Context):
 @memebot.command(description="Make a new template.")
 async def save(ctx: Context):
     try:
-        config = store.guild_config(ctx.guild)
+        config: GuildConfig = store.guild_config(ctx.guild)
         if not config.can_edit(ctx.message.author):
             raise RuntimeError("computer says no")
         value = ctx.message.content
-        print (value[value.index("save")+4:])
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
-        print (value)
         message = store.save_meme(ctx.guild, json.loads(value))
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
@@ -263,12 +259,9 @@ async def meme(ctx: Context, template: str = None, /, *text):
     # We have text now, so make it a meme.
     try:
         await ctx.trigger_typing()
-        config = store.guild_config(ctx.guild)
+        config: GuildConfig = store.guild_config(ctx.guild)
         if not config.can_use(ctx.message.author):
-            return await ctx.send(f"```No memes for you!```")
-        # Log memes/minute.
-        global MEMES
-        MEMES += 1
+            return await ctx.send("```No memes for you!```")
         match = _match_template_name(template, ctx.guild)
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
