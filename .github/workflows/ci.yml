@@ -7,7 +7,7 @@ env:
 
 jobs:
   yamllint:
-    name: yamllint
+    name: YAML Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,7 +20,7 @@ jobs:
         run: |
           pip install poetry==1.1.4
           poetry install
-      - name: Run yamllint
+      - name: Run YAML Lint
         run: poetry run yamllint .
 
   pylint:
