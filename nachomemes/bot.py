@@ -1,4 +1,6 @@
-# pylint: disable=broad-except
+# pylint: disable=broad-except,missing-function-docstring
+# don't need docstrings for subcommands with descriptions
+
 """Discord bot go brrrr"""
 import argparse
 import asyncio
@@ -43,18 +45,17 @@ def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
 async def report(ctx: Context, e: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
-    # print(err, file=sys.stderr)
     if DEBUG:
         await ctx.send(message + "```" + err[:1990] + "```")
     else:
         await ctx.send(message + "```" + str(e) + "```")
+    # re-raise the exception so it's printed to the console
     raise e
 
 @bot.event
 async def on_ready():
     """print startup message on bot initialization"""
     print("Only memes can melt steel beams.\n\t--Shia LaBeouf")
-    # bot.loop.create_task(status_task())
 
 with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
@@ -75,22 +76,6 @@ def _find_close_matches(name: str, guild: Guild) -> list:
         for name in process.extract(name, store.list_memes(guild, ("name",)))
         if name[1] > 40
     ]
-
-
-# @bot.event
-# async def status_task():
-#     while True:
-#         global MEMES
-#         await bot.change_presence(
-#             status=discord.Status.online,
-#             activity=discord.Game(
-#                 name=f"{MEMES} memes/minute! "
-#                 + "Load AVG - CPU: {0:.2f}% ".format(psutil.getloadavg()[0])
-#                 + "RAM: {0:.2f}% ".format(psutil.virtual_memory()._asdict()["percent"])
-#             ),
-#         )
-#         MEMES = 0
-#         await asyncio.sleep(60)
 
 
 async def fuzzed_templates(ctx: Context, template: str, guild: Guild):
