@@ -76,19 +76,24 @@ class DynamoTemplateStore(Store):
             pass
         print("creating table" + table_name)
         # create and return table
-        table = self._init_table(table_name, ("id",))
+        table = self._init_table(table_name, ("guild_id",))
         if populate:
             self.save_guild_config(self.default_store.guild_config(guild))
         return table
 
     def guild_config(self, guild: Guild) -> GuildConfig:
         table = self._config_table(guild)
-        item = self._fetch(table, {"id": get_guild_id(guild)})
+        try:
+            item = self._fetch(table, {"guild_id": get_guild_id(guild)})
+        except ClientError:
+            # maybe using old key? 
+            item = self._fetch(table, {"id": get_guild_id(guild)})
+
         return from_dict(GuildConfig, item, config=da_config)
 
     def save_guild_config(self, guild: GuildConfig) -> None:
         table = self._config_table(guild, False)
-        self._write(table, ("id",), asdict(guild))
+        self._write(table, ("guild_id",), asdict(guild))
 
     def _write(self, table: "boto3.resources.factory.dynamodb.Table", keys: Iterable[str], value: Dict[str, Any]) -> Result:
         item = update_serialization(value)

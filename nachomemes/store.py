@@ -105,5 +105,5 @@ def get_guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
     if isinstance(guild, Guild):
         return str(guild.id)
     if isinstance(guild, GuildConfig):
-        return str(guild.id)
+        return str(guild.guild_id)
     return "default"

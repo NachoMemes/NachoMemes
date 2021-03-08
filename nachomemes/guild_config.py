@@ -32,15 +32,15 @@ class GuildConfig:
         """set the role if of the role permitted to administer the bot"""
         if not self.can_admin(member):
             return self.no_admin(member)
-        self.admin_role = role.id
-        return f"Members of '{role.name}' are now authorized to administer the memes."
+        self.admin_role = role.id if role is not None else None
+        return f"Members of '{role}' are now authorized to administer the memes."
 
     def set_edit_role(self, member: Member, role: Role) -> str:
         """set the role if of the role permitted to edit memes"""
         if not self.can_admin(member):
             return self.no_admin(member)
-        self.edit_role = role.id
-        return f"Members of '{role.name}' are now authorized to edit the memes."
+        self.edit_role = role.id if role is not None else None
+        return f"Members of '{role}' are now authorized to edit the memes."
 
     def shun(self, member: Member, victim: Member) -> str:
         """make someone a bad boy"""

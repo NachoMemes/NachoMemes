@@ -180,7 +180,7 @@ async def edit_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
-            role = ctx.guild.get_role(config.admin_role)
+            role = ctx.guild.get_role(config.edit_role)
             await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
         else:
             role = ctx.guild.get_role(int(role_id))
