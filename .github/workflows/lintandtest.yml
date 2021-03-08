@@ -1,7 +1,5 @@
 name: Lint and Test
-# Runs the main linter and makes sure it passes all tests.
-on:
-  push:
+on: [push]
 
 jobs:
   lint_and_test:
