@@ -24,7 +24,7 @@ class LocalTemplateStore(Store):
     ) -> dict:
         return _load_templates(guild)[guild_id]
 
-    def list_memes(self, guild: Union[Guild, str, None] = None, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild: Union[Guild,GuildConfig,str,None] = None, fields: List[str] = None) -> Iterable[dict]:
         if fields:
             return ({k: d[k] for k in fields} for d in _load_templates(guild).values())
         else:
@@ -49,13 +49,13 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
     """
     with open("config/guild.json", "r") as f:
         config = from_dict(GuildConfig, json.load(f))
-    config._id = get_guild_id(guild)
+    config.guild_id = get_guild_id(guild)
     config.name = guild.name if guild else "default"
     return config
 
 
 @lru_cache(maxsize=1)
-def _load_templates(guild: Optional[Guild]) -> Dict[str, dict]:
+def _load_templates(guild: Union[Guild,GuildConfig,str,None]) -> Dict[str, dict]:
     """
     Loads layouts from "config/layouts.json", and uses them to populate the text box list of the templates loaded from "config/templates.json".
     """
