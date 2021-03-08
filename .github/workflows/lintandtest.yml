@@ -6,6 +6,23 @@ env:
   poetry-version: "1.1.4"
 
 jobs:
+  yamllint:
+    name: yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.python-version }}
+      - name: Install Dependencies
+        run: |
+          pip install poetry==1.1.4
+          poetry install
+      - name: Run yamllint
+        run: poetry run yamllint .
+
   pylint:
     name: Pylint
     runs-on: ubuntu-latest
