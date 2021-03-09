@@ -61,7 +61,7 @@ class Store(ABC):
 
     @abstractmethod
     def get_template_data(
-        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
+        self, guild: Optional[Guild], template_id: str, increment_use: bool = False
     ) -> dict:
         """
         Retrieve template data (serialized template) as a dict from the store.

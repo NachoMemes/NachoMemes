@@ -246,6 +246,18 @@ async def save(ctx: Context):
     except Exception as ex:
         await report(ctx, ex)
 
+@memebot.command(description="dump template json")
+async def dump(ctx: Context, template_name: str):
+    try:
+        config: GuildConfig = store.guild_config(ctx.guild)
+        if not config.can_edit(ctx.message.author):
+            raise RuntimeError("computer says no")
+        match = _match_template_name(template_name, ctx.guild)
+        message = json.dump(store.get_template_data(ctx.guild, match))
+        await ctx.send(textwrap.dedent(f"```{message}```"))
+    except Exception as ex:
+        await report(ctx, ex)
+
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, template: str = None, /, *text):
     """Main bot command for rendering/showing memes.
