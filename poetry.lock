@@ -362,7 +362,7 @@ testing = ["docopt", "pytest (<6.0.0)"]
 name = "pathspec"
 version = "0.8.1"
 description = "Utility library for gitignore style pattern matching of file paths."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -480,7 +480,7 @@ python-versions = "*"
 name = "pyyaml"
 version = "5.4.1"
 description = "YAML parser and emitter for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -578,7 +578,7 @@ python-versions = "*"
 name = "yamllint"
 version = "1.26.0"
 description = "A linter for YAML files."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5.*"
 
@@ -601,7 +601,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ba556a621caf483daedb1e1594977620dc91a6369558712824cf46b65286a2da"
+content-hash = "aeb29625f348e30c3568209689211ed93dc44b5f6fbc7eb6e385369fb310f112"
 
 [metadata.files]
 aiohttp = [
