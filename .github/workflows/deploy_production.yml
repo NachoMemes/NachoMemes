@@ -2,18 +2,23 @@ name: Deploy Production Bot
 on:
   push:
     branches:
-      - master
+      - k8s-deploy
 
 jobs:
   deploy_production:
+    name: Deploy to Production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Publish image to GitHub Container Registry
-        uses: elgohr/Publish-Docker-Github-Action@2.12
+      - name: Set K8s Context
+        uses: azure/k8s-set-context@v1
         with:
-          name: nachomemes/nachomemes/nachomemes
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          tags: "latest, ${{ github.ref}}"
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PROD_KUBE_CONFIG }}
+        id: setcontext
+      - name: Deploy to K8s
+        uses: Azure/k8s-deploy@v1.3
+        with:
+          namespace: 'nachomemes-prod'
+          manifests: deployment.yaml
+        images: ghcr.io/nachomemes/nachomemes:${{ github.sha }}
