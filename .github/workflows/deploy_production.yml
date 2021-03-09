@@ -21,4 +21,4 @@ jobs:
         with:
           namespace: 'nachomemes-prod'
           manifests: deployment.yaml
-        images: ghcr.io/nachomemes/nachomemes:${{ github.sha }}
+          images: ghcr.io/nachomemes/nachomemes:${{ github.sha }}
