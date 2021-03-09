@@ -55,7 +55,7 @@ jobs:
           pip install poetry==1.1.4
           poetry install
       - name: Run Mypy
-        run: poetry run mypy -m nachomemes
+        run: poetry run mypy -p nachomemes
 
   test:
     name: Test

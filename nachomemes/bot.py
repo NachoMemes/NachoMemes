@@ -22,9 +22,11 @@ from fuzzywuzzy import process
 from nachomemes import get_creds, get_store
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
+from nachomemes.store import Store
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
+store: Store
 
 # Used for calculating memes/minute.
 MEMES = 0
@@ -253,7 +255,7 @@ async def dump(ctx: Context, template_name: str):
         if not config.can_edit(ctx.message.author):
             raise RuntimeError("computer says no")
         match = _match_template_name(template_name, ctx.guild)
-        message = json.dump(store.get_template_data(ctx.guild, match))
+        message = json.dumps(store.get_template_data(ctx.guild, match))
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
         await report(ctx, ex)
