@@ -11,10 +11,9 @@ import sys
 import textwrap
 import traceback
 from pathlib import Path
-from typing import List, Union
+from typing import List
 
 import discord
-from discord import Guild
 from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
@@ -38,7 +37,7 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 
-def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
+def mentioned_members(ctx: Context) -> List[discord.Member]:
     "Returns the id of a memeber mentioned in a message."
     return [m for m in ctx.message.mentions]
 
@@ -61,9 +60,9 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-def _match_template_name(name: str, guild: Guild) -> str:
+def _match_template_name(name: str, guild: GuildConfig) -> str:
     """Matches input fuzzily against proper names."""
-    fuzzed = process.extractOne(name, store.list_memes(guild, ("name",)))
+    fuzzed = process.extractOne(name, store.list_memes(guild.guild_id, ("name",)))
     if fuzzed[1] < 25:
         raise TemplateError(f"could not load a template matching {name}")
     return fuzzed[0]["name"]
@@ -73,7 +72,7 @@ def _find_close_matches(name: str, guild: GuildConfig) -> list:
     """Chooses top matches against input."""
     return [
         name[0]["name"]
-        for name in process.extract(name, store.list_memes(guild, ("name",)))
+        for name in process.extract(name, store.list_memes(guild.guild_id, ("name",)))
         if name[1] > 40
     ]
 
@@ -83,7 +82,7 @@ async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
     fuzzed_memes = _find_close_matches(template.strip("*"), guild)
     memes = [
         match
-        for match in store.list_memes(guild, ("name", "description"))
+        for match in store.list_memes(guild.guild_id, ("name", "description"))
         if match["name"] in fuzzed_memes
     ]
     lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
@@ -93,7 +92,7 @@ async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
 async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
     """Fuzzy match a single template"""
     fmeme = _match_template_name(template, guild)
-    _meme = store.get_template(guild, fmeme)
+    _meme = store.get_template(guild.guild_id, fmeme)
     await ctx.send(
         textwrap.dedent(
             f"""\
@@ -119,7 +118,7 @@ async def templates(ctx: Context, template: str = None):
             return await single_fuzzed_template(ctx, template, config)
         else:
             # The whole damn list.
-            memes = store.list_memes(config, ("name", "description"))
+            memes = store.list_memes(config.guild_id, ("name", "description"))
             lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
             await ctx.send("**Templates**" + "".join(lines))
     except TemplateError:
@@ -168,7 +167,8 @@ async def admin_role(ctx: Context, role_id: str=None):
         config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
             role = ctx.guild.get_role(config.admin_role)
-            await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to administer the memes.```"))
+            await ctx.send(textwrap.dedent(
+                f"```Members of '{role}' are authorized to administer the memes.```"))
         else:
             role = ctx.guild.get_role(int(role_id))
             message = config.set_admin_role(ctx.message.author, role)
@@ -220,7 +220,7 @@ async def whoami(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         if ctx.message.mentions:
-            members: List[discord.Member] = ctx.message.mentions
+            members = ctx.message.mentions
         else:
             members = (ctx.message.author,)
         for member in members:
@@ -267,7 +267,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
     If no template, or template but no text, then show info about
     the memes available.
     """
-    if (template is None or template) and len(text) == 0:
+    if not isinstance(template, str) or len(text) == 0:
         return await templates(ctx, template)
     # We have text now, so make it a meme.
     try:
@@ -295,7 +295,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
         
 
 
-def run(debug, local):
+def run(debug: bool, local: bool) -> None:
     """
     Starts an instance of the bot using the passed-in options.
     """

@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from decimal import Decimal
 from enum import Enum, auto
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, Optional, Sequence, Union
 
 import boto3
 from botocore.exceptions import ClientError
@@ -39,12 +39,12 @@ class DynamoTemplateStore(Store):
         self.table_suffix = ".templates" if not beta else ".templates-beta"
         self.config_suffix = ".config" if not beta else ".config-beta"
 
-    def _template_table(self, guild: Union[Guild,GuildConfig,None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
+    def _template_table(self, guild_id: str, populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
         """
         Either gets the existing table for templates if it exists, or creates a new one.
         Can populate the table with memes from the default store if specified by the argument.
         """
-        table_name = get_guild_id(guild) + self.table_suffix
+        table_name = guild_id + self.table_suffix
         try:
             table = self.dynamodb.Table(table_name)
             if table.table_status in ("CREATING", "UPDATING", "ACTIVE"):
@@ -57,7 +57,7 @@ class DynamoTemplateStore(Store):
         # create and return table
         table = self._init_table(table_name, ("name",))
         if populate:
-            self.refresh_memes(guild)
+            self.refresh_memes(guild_id)
         return table
 
     def _config_table(self, guild: Union[Guild,GuildConfig,None], populate: bool = True) -> "boto3.resources.factory.dynamodb.Table":
@@ -127,21 +127,21 @@ class DynamoTemplateStore(Store):
         except ClientError:
             pass
 
-    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False) -> str:
+    def refresh_memes(self, guild_id: str, hard: bool = False) -> str:
         # Drop the templates table and the guild configuration table if a hard reset is requested
         if hard:
-            self._delete_table(get_guild_id(guild) + self.config_suffix)
-            self._delete_table(get_guild_id(guild) + self.table_suffix)
+            self._delete_table(guild_id + self.config_suffix)
+            self._delete_table(guild_id + self.table_suffix)
 
-        table = self._template_table(guild, False)
+        table = self._template_table(guild_id, False)
         results = {Result.ADDED: 0, Result.UPDATED: 0, Result.UNCHANGED: 0}
-        for item in self.default_store.list_memes(guild):
+        for item in self.default_store.list_memes(guild_id):
             # Don't change the usage values as we want to keep them between refreshes
             if "usage" in item:
                 del item["usage"]
             r = self._write(table, ("name",), item)
             results[r] += 1
-        return f"{'hard ' if hard else ''}refresh on '{get_guild_id(guild)}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
+        return f"{'hard ' if hard else ''}refresh on '{guild_id}.templates' complete: {results[Result.ADDED]} added, {results[Result.UPDATED]} updated, {results[Result.UNCHANGED]} unchanged"
 
     def _init_table(self, table_name: str, keys=Sequence[str]) -> "boto3.resources.factory.dynamodb.Table":
         table = self.dynamodb.create_table(
@@ -184,8 +184,8 @@ class DynamoTemplateStore(Store):
         except ClientError as err:
             raise TemplateError from err
 
-    def list_memes(self, guild: Union[Guild, str, None] = None, fields: List[str] = None) -> Iterable[dict]:
-        table = self._template_table(guild)
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
+        table = self._template_table(guild_id)
         if not fields:
             return table.scan()["Items"]
         else:
@@ -195,14 +195,14 @@ class DynamoTemplateStore(Store):
             )["Items"]
 
     def get_template_data(
-        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
+        self, guild_id: str, template_id: str, increment_use: bool = False
     ) -> dict:
-        table, key = self._template_table(guild), {"name": guild_id}
+        table, key = self._template_table(guild_id), {"name": template_id}
         return (self._increment_usage_and_fetch if increment_use else self._fetch)(
             table, key
         )
 
-    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
-        table = self._template_table(guild, False)
+    def save_meme(self, guild_id: str, item: dict) -> str:
+        table = self._template_table(guild_id, False)
         r = self._write(table, ("name",), item)
         return f"meme {r}"

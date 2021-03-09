@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum, auto
-from pathlib import Path
-from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional, Union, Dict, Any, Type, Generator, cast
+from enum import Enum
+from typing import Callable, Iterable, Optional, Union, Dict, Any, Type, Generator, cast
 from types import GeneratorType
-from urllib.request import Request, urlopen
+from urllib.request import Request
 import atexit, os, re
 from decimal import Decimal
 from operator import attrgetter
@@ -31,7 +28,7 @@ da_config = Config({
 })
 
 # additional serializers for dacite
-serializers: Dict[Type, Callable] = MappingProxyType({
+serializers = MappingProxyType({
     Request: attrgetter("full_url"),
     float: lambda f: Decimal(str(f)),
     Font: attrgetter("name"),
@@ -56,12 +53,12 @@ class Store(ABC):
     Abstract base class for implementing data stores for template and guild data.
     """
     @abstractmethod
-    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False) -> str:
+    def refresh_memes(self, guild_id: str, hard: bool = False) -> str:
         pass
 
     @abstractmethod
     def get_template_data(
-        self, guild: Optional[Guild], template_id: str, increment_use: bool = False
+        self, guild_id: str, template_id: str, increment_use: bool = False
     ) -> dict:
         """
         Retrieve template data (serialized template) as a dict from the store.
@@ -69,27 +66,27 @@ class Store(ABC):
         
 
     def get_template(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild_id: Optional[str], template_id: str, increment_use: bool = False
     ) -> Template:
         """
         Retrieve a template as a Template object from the store.
         """
-        return from_dict(Template, self.get_template_data(guild, id, increment_use), config=da_config)
+        return from_dict(Template, self.get_template_data(
+            guild_id if guild_id is not None else "default", 
+            template_id, increment_use), config=da_config)
 
     @abstractmethod
-    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
         """
         List all the serialized templates in the store as dictionaries.
         Optionally, pass fields to get only those fields in the dicts.
         """
-        pass
 
     @abstractmethod
-    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+    def save_meme(self, guild_id: str, item: dict) -> str:
         """
         Saves a serialized template as a dict to the store.
         """
-        pass
 
     @abstractmethod
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:

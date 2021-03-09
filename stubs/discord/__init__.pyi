@@ -1,4 +1,5 @@
-from typing import Iterable
+from io import BufferedIOBase
+from typing import Iterable, Optional, Union
 
 class Guild:
     id: int
@@ -23,3 +24,7 @@ class Role:
 class Permissions:
     @property
     def administrator(self) -> bool: ...
+
+class File:
+    def __init__(self, fp: Union[str, BufferedIOBase], filename: Optional[str], spoiler: bool=False):
+        pass

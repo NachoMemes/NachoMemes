@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, Optional, Union
 
 from dacite import from_dict
 from discord import Guild
@@ -16,19 +16,19 @@ class LocalTemplateStore(Store):
         files fron the "config/" directory. 
         """
 
-    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False):
+    def refresh_memes(self, guild_id: str, hard: bool = False):
         return "Memes were not refreshed since a local store is enabled."
 
     def get_template_data(
-        self, guild: Optional[Guild], template_id: str, increment_use: bool = False
+        self, guild_id: str, template_id: str, increment_use: bool = False
     ) -> dict:
-        return _load_templates(guild)[template_id]
+        return _load_templates(guild_id)[template_id]
 
-    def list_memes(self, guild: Union[Guild,GuildConfig,str,None] = None, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
         if fields:
-            return ({k: d[k] for k in fields} for d in _load_templates(guild).values())
+            return ({k: d[k] for k in fields} for d in _load_templates(guild_id).values())
         else:
-            return _load_templates(guild).values()
+            return _load_templates(guild_id).values()
 
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
         return _load_config(guild)
@@ -36,7 +36,7 @@ class LocalTemplateStore(Store):
     def save_guild_config(self, guild: GuildConfig):
         pass
 
-    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+    def save_meme(self, guild_id: str, item: dict) -> str:
         raise NotImplementedError("local store is read-only")
 
 
@@ -56,7 +56,7 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
 
 
 @lru_cache(maxsize=1)
-def _load_templates(guild: Union[Guild,GuildConfig,str,None]) -> Dict[str, dict]:
+def _load_templates(guild_id: str) -> Dict[str, dict]:
     """
     Loads layouts from "config/layouts.json", and uses them to populate the 
     text box list of the templates loaded from "config/templates.json".
