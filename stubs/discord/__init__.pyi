@@ -5,6 +5,10 @@ class Guild:
     id: int
     name: str
 
+class Permissions:
+    @property
+    def administrator(self) -> bool: ...
+
 class Member:
     id: int
     discriminator: int
@@ -21,10 +25,8 @@ class Role:
     id: int
     name: str
 
-class Permissions:
-    @property
-    def administrator(self) -> bool: ...
 
 class File:
-    def __init__(self, fp: Union[str, BufferedIOBase], filename: Optional[str], spoiler: bool=False):
-        pass
+    def __init__(self, fp: Union[str, BufferedIOBase],
+        filename: Optional[str], spoiler: bool=False): ...
+        
