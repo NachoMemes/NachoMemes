@@ -2,7 +2,7 @@ version: "3.8"
 services:
   bot:
     container_name: nachomemes
-    build: 
+    build:
       context: .
       target: development
       dockerfile: Dockerfile
