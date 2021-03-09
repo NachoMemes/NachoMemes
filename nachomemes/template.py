@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import IO, Iterable, List, Optional, Dict, cast
 from tempfile import NamedTemporaryFile
 from functools import partial
-from functools import partial
 
 from urllib.request import Request, urlopen
 from PIL import Image as ImageModule, ImageFont

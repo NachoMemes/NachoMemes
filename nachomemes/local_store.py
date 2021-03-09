@@ -11,10 +11,9 @@ from nachomemes.store import Store, get_guild_id
 
 class LocalTemplateStore(Store):
     def __init__(self) -> None:
-    """
-    Local filesystem read-only data store which uses the default JSON files fron the "config/" directory. 
-    """
-        pass
+        """
+        Local filesystem read-only data store which uses the default JSON files fron the "config/" directory. 
+        """
 
     def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False):
         return "Memes were not refreshed since a local store is enabled."
