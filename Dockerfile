@@ -35,12 +35,18 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
 # `builder-base` stage is used to build deps + create our virtual environment
 FROM python-base as builder-base
+
+ARG CURL_VERSION='7.64.0-4+deb10u1'
+ARG BUILD_ESSENATIAL_VERSION='12.6'
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN apt-get update \
 	&& apt-get install --no-install-recommends -y \
 	# deps for installing poetry
-	curl \
+	curl=${CURL_VERSION} \
 	# deps for building python deps
-	build-essential
+	build-essential=${BUILD_ESSENATIAL_VERSION}
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 # copy project requirement files here to ensure they will be cached.
