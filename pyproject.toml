@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "nachomemes"
+version = "0.1.0"
+description = ""
+authors = ["Cooper Pellaton <cooper@cooperpellaton.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+boto3 = "^1.17.18"
+"discord.py" = "^1.6.0"
+Pillow = "^8.1.1"
+psutil = "^5.8.0"
+argparse = "^1.4.0"
+asyncio = "^3.4.3"
+dacite = "^1.6.0"
+Flask = "^1.1.2"
+fuzzywuzzy = "^0.18.0"
+python-Levenshtein = "^0.12.2"
+yamllint = "^1.26.0"
+
+[tool.poetry.dev-dependencies]
+ipython = "^7.21.0"
+pylint = "^2.7.2"
+autopep8 = "^1.5.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

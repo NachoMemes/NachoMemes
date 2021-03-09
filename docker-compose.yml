@@ -1,12 +1,14 @@
-version: "3"
+version: "3.8"
 services:
   bot:
-    image: nachomemes
     container_name: nachomemes
-    build: .
-    command: --local
+    build:
+      context: .
+      target: development
+      dockerfile: Dockerfile
+    volumes:
+      - "./:/app"
     environment:
-      - PYTHONUNBUFFERED=1
       - DISCORD_TOKEN
       - ACCESS_KEY
       - SECRET

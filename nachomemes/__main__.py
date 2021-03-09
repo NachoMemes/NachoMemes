@@ -1,6 +1,9 @@
 import sys
 from . import get_store
 
+# Render memes by default when calling:
+# python -m nachomemes <output_filename> <template_name> <text>
+# Example: python -m nachomemes bruh.png bruh bruh top / bottom
 if __name__ == "__main__":
     args = sys.argv[1:]
     show_boxes = False
