@@ -3,7 +3,7 @@ on: [push]
 
 env:
   python-version: "3.9"
-  poetry-version: "1.1.4"
+  poetry-version: "1.1.5"
 
 jobs:
   yamllint:
@@ -18,7 +18,7 @@ jobs:
           python-version: ${{ env.python-version }}
       - name: Install Dependencies
         run: |
-          pip install poetry==1.1.4
+          pip install poetry==${{ env.poetry-version }}
           poetry install
       - name: Run YAML Lint
         run: poetry run yamllint .
@@ -35,7 +35,7 @@ jobs:
           python-version: ${{ env.python-version }}
       - name: Install Dependencies
         run: |
-          pip install poetry==1.1.4
+          pip install poetry==${{ env.poetry-version }}
           poetry install
       - name: Run Pylint
         run: poetry run pylint -E nachomemes
@@ -52,7 +52,7 @@ jobs:
           python-version: ${{ env.python-version }}
       - name: Install Dependencies
         run: |
-          pip install poetry==1.1.4
+          pip install poetry==${{ env.poetry-version }}
           poetry install
       - name: Run Mypy
         run: poetry run mypy -p nachomemes
@@ -69,7 +69,7 @@ jobs:
           python-version: ${{ env.python-version }}
       - name: Install Dependencies
         run: |
-          pip install poetry==1.1.4
+          pip install poetry==${{ env.poetry-version }}
           poetry install
       - name: Test
         run: |
