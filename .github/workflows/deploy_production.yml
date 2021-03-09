@@ -2,7 +2,7 @@ name: Deploy Production Bot
 on:
   push:
     branches:
-      - k8s-deploy
+      - feature/k8s-deploy
 
 jobs:
   deploy_production:
