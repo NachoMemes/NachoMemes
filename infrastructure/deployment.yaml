@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nachomemes-deployment
+  labels:
+    app: nachomemes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nachomemes
+  template:
+    metadata:
+      labels:
+        app: nachomemes
+    spec:
+      containers:
+      - name: nachomemes
+        image: nachomemes:latest
