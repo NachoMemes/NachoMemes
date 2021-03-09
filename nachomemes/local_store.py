@@ -50,7 +50,7 @@ def _load_config(guild: Optional[Guild]) -> GuildConfig:
     """
     with open("config/guild.json", "r") as f:
         config = from_dict(GuildConfig, json.load(f))
-    config.guild_id = get_guild_id(guild)
+    config.guild_id = guild.id if guild else "default"
     config.name = guild.name if guild else "default"
     return config
 

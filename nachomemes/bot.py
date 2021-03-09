@@ -272,10 +272,10 @@ async def meme(ctx: Context, template: str = None, /, *text):
     # We have text now, so make it a meme.
     try:
         await ctx.trigger_typing()
-        config: GuildConfig = store.guild_config(ctx.guild)
+        config = store.guild_config(ctx.guild)
         if not config.can_use(ctx.author):
             return await ctx.send(f"```{config.no_memes()}```")
-        match = _match_template_name(template, ctx.guild)
+        match = _match_template_name(template, config)
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
         key = f"{match}-{name}.png"
