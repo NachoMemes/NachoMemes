@@ -19,6 +19,5 @@ jobs:
       - name: Deploy to K8s
         uses: Azure/k8s-deploy@v1.3
         with:
-          namespace: 'nachomemes-prod'
           manifests: infrastructure/deployment.yaml
           images: ghcr.io/nachomemes/nachomemes:${{ github.sha }}
