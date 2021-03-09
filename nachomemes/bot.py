@@ -280,7 +280,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
         name = re.sub(r"\W+", "", str(text))
         key = f"{match}-{name}.png"
 
-        _meme = store.get_template(ctx.guild, match, True)
+        _meme = store.get_template(config.guild_id, match, True)
         with io.BytesIO() as buffer:
             _meme.render(text, buffer)
             buffer.flush()
