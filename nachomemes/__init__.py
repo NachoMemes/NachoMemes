@@ -1,6 +1,7 @@
 """These are Nacho Memes"""
 import os
 import json
+import argparse
 
 from .guild_config import GuildConfig
 from .template import Template, TemplateError
@@ -9,6 +10,23 @@ from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .render import render_template
 
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Runs the bot with the passed in arguments."
+    )
+
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Run state::debug. True or false. Runs different credentials and logging level.",
+    )
+
+    parser.add_argument(
+        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
+    )
+
+    return parser.parse_args()
 
 def get_store(local: bool=True, debug: bool=True) -> Store:
     """
