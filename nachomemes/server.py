@@ -1,9 +1,10 @@
 import io
+import json
 
 from flask import Flask, jsonify, request, send_file
 
 from nachomemes import get_store, get_args
-from nachomemes.store import Store, update_serialization
+from nachomemes.store import Store, update_serialization, TemplateEncoder
 
 
 def make_server(store: Store) -> Flask:
@@ -15,7 +16,8 @@ def make_server(store: Store) -> Flask:
 
     @app.route('/api/<guild_id>/memes/<template_id>')
     def get_template_data(guild_id: str, template_id: str):
-        return jsonify(update_serialization(store.get_template_data(guild_id, template_id)))
+        data = store.get_template_data(guild_id, template_id)
+        return json.dumps(data, cls=TemplateEncoder)
 
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def render(guild_id: str, template_id: str):
