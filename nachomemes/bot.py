@@ -11,10 +11,11 @@ import sys
 import textwrap
 import traceback
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional, Iterable
+from json.decoder import JSONDecodeError
 
 import discord
-from discord import Guild
+from discord import Member, Role
 from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
@@ -22,9 +23,11 @@ from fuzzywuzzy import process
 from nachomemes import get_creds, get_store
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
+from nachomemes.store import Store, TemplateEncoder
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
+store: Store
 
 # Used for calculating memes/minute.
 MEMES = 0
@@ -36,15 +39,12 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 
-def mentioned_members(ctx: Context) -> Union[List[discord.Member], None]:
-    "Returns the id of a memeber mentioned in a message."
-    return [m for m in ctx.message.mentions]
 
 async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
     if DEBUG:
-        await ctx.send(message + "```" + err[:1990] + "```")
+        await ctx.send(message + "```" + err[:1980] + "```")
     else:
         await ctx.send(message + "```" + str(ex) + "```")
     # re-raise the exception so it's printed to the console
@@ -59,9 +59,9 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-def _match_template_name(name: str, guild: Guild) -> str:
+def _match_template_name(name: str, guild: GuildConfig) -> str:
     """Matches input fuzzily against proper names."""
-    fuzzed = process.extractOne(name, store.list_memes(guild, ("name",)))
+    fuzzed = process.extractOne(name, store.list_memes(guild.guild_id, ("name",)))
     if fuzzed[1] < 25:
         raise TemplateError(f"could not load a template matching {name}")
     return fuzzed[0]["name"]
@@ -71,9 +71,21 @@ def _find_close_matches(name: str, guild: GuildConfig) -> list:
     """Chooses top matches against input."""
     return [
         name[0]["name"]
-        for name in process.extract(name, store.list_memes(guild, ("name",)))
+        for name in process.extract(name, store.list_memes(guild.guild_id, ("name",)))
         if name[1] > 40
     ]
+
+def _get_member(ctx: Context) -> Member:
+    member = ctx.author
+    assert isinstance(member, Member)
+    return member
+
+def _mentioned_members(ctx: Context) -> Iterable[Member]:
+    "Returns the id of a memeber mentioned in a message."
+    return (m for m in ctx.message.mentions if isinstance(m, Member))
+
+def _mentions_or_author(ctx: Context) -> Iterable[Member]:
+    return _mentioned_members(ctx) if ctx.message.mentions else (_get_member(ctx),)
 
 
 async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
@@ -81,7 +93,7 @@ async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
     fuzzed_memes = _find_close_matches(template.strip("*"), guild)
     memes = [
         match
-        for match in store.list_memes(guild, ("name", "description"))
+        for match in store.list_memes(guild.guild_id, ("name", "description"))
         if match["name"] in fuzzed_memes
     ]
     lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
@@ -91,7 +103,7 @@ async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
 async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
     """Fuzzy match a single template"""
     fmeme = _match_template_name(template, guild)
-    _meme = store.get_template(guild, fmeme)
+    _meme = store.get_template(guild.guild_id, fmeme)
     await ctx.send(
         textwrap.dedent(
             f"""\
@@ -107,7 +119,7 @@ async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig
 async def templates(ctx: Context, template: str = None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_use(ctx.author):
+        if not config.can_use(_get_member(ctx)):
             return await ctx.send(f"```{config.no_memes()}```")
         if template:
             # A fuzzy multiple match
@@ -117,7 +129,7 @@ async def templates(ctx: Context, template: str = None):
             return await single_fuzzed_template(ctx, template, config)
         else:
             # The whole damn list.
-            memes = store.list_memes(config, ("name", "description"))
+            memes = store.list_memes(config.guild_id, ("name", "description"))
             lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
             await ctx.send("**Templates**" + "".join(lines))
     except TemplateError:
@@ -145,17 +157,17 @@ async def refresh(ctx: Context, refresh_type: str=None):
         is_hard = refresh_type == "--hard"
         config: GuildConfig = store.guild_config(ctx.guild)
         if is_hard:
-            if not config.can_admin(ctx.message.author):
+            if not config.can_admin(_get_member(ctx)):
                 return await ctx.send(
-                    f"```{config.no_admin(ctx.message.author)}```"
+                    f"```{config.no_admin(_get_member(ctx))}```"
                 )
         else:
-            if not config.can_edit(ctx.message.author):
+            if not config.can_edit(_get_member(ctx)):
                 return await ctx.send(
-                    f"```{config.no_admin(ctx.message.author,'refresh','edit')}```"
+                    f"```{config.no_admin(_get_member(ctx),'refresh','edit')}```"
                 )
 
-        message = store.refresh_memes(ctx.guild, is_hard)
+        message = store.refresh_memes(config.guild_id, is_hard)
         await ctx.send(f"```{message}```")
     except Exception as ex:
         await report(ctx, ex)
@@ -165,11 +177,12 @@ async def admin_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
-            role = ctx.guild.get_role(config.admin_role)
-            await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to administer the memes.```"))
+            role: Optional[Role] = ctx.guild.get_role(config.admin_role) if config.admin_role else None
+            await ctx.send(textwrap.dedent(
+                f"```Members of '{role}' are authorized to administer the memes.```"))
         else:
-            role = ctx.guild.get_role(int(role_id))
-            message = config.set_admin_role(ctx.message.author, role)
+            role = ctx.guild.get_role(int(role_id)) if role_id else None
+            message = config.set_admin_role(_get_member(ctx), role)
             store.save_guild_config(config)
             await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
@@ -180,11 +193,11 @@ async def edit_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
-            role = ctx.guild.get_role(config.edit_role)
+            role: Optional[Role] = ctx.guild.get_role(config.edit_role) if config.edit_role else None
             await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
         else:
-            role = ctx.guild.get_role(int(role_id))
-            message = config.set_edit_role(ctx.message.author, role)
+            role = ctx.guild.get_role(int(role_id)) if role_id else None
+            message = config.set_edit_role(_get_member(ctx), role)
             store.save_guild_config(config)
             await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
@@ -194,8 +207,8 @@ async def edit_role(ctx: Context, role_id: str=None):
 async def shun(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        for subject in mentioned_members(ctx):
-            message: str = config.shun(ctx.message.author, subject)
+        for subject in _mentioned_members(ctx):
+            message: str = config.shun(_get_member(ctx), subject)
             await ctx.send(textwrap.dedent(f"```{message}```"))
         store.save_guild_config(config)
     except Exception as ex:
@@ -206,8 +219,8 @@ async def shun(ctx: Context):
 async def endorse(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        for subject in mentioned_members(ctx):
-            message: str = config.endorse(ctx.message.author, subject)
+        for subject in _mentioned_members(ctx):
+            message: str = config.endorse(_get_member(ctx), subject)
             await ctx.send(textwrap.dedent(f"```{message}```"))
         store.save_guild_config(config)
     except Exception as ex:
@@ -217,11 +230,7 @@ async def endorse(ctx: Context):
 async def whoami(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if ctx.message.mentions:
-            members: List[discord.Member] = ctx.message.mentions
-        else:
-            members = (ctx.message.author,)
-        for member in members:
+        for member in _mentions_or_author(ctx):
             name = config.member_full_name(member)
             await ctx.send(
                 textwrap.dedent(
@@ -237,11 +246,26 @@ async def whoami(ctx: Context):
 async def save(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_edit(ctx.message.author):
+        if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
         value = ctx.message.content
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
-        message = store.save_meme(ctx.guild, json.loads(value))
+        message = store.save_meme(config.guild_id, json.loads(value))
+        await ctx.send(textwrap.dedent(f"```{message}```"))
+    except JSONDecodeError:
+        await ctx.send(textwrap.dedent(f"```invalid JSON provided```"))
+    except Exception as ex:
+        await report(ctx, ex)
+
+@memebot.command(description="dump template json")
+async def dump(ctx: Context, template_name: str):
+    try:
+        config: GuildConfig = store.guild_config(ctx.guild)
+        if not config.can_edit(_get_member(ctx)):
+            raise RuntimeError("computer says no")
+        match = _match_template_name(template_name, config)
+        data = store.get_template_data(config.guild_id, match)
+        message = json.dumps(data, cls=TemplateEncoder)
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
         await report(ctx, ex)
@@ -253,20 +277,20 @@ async def meme(ctx: Context, template: str = None, /, *text):
     If no template, or template but no text, then show info about
     the memes available.
     """
-    if (template is None or template) and len(text) == 0:
+    if not isinstance(template, str) or len(text) == 0:
         return await templates(ctx, template)
     # We have text now, so make it a meme.
     try:
         await ctx.trigger_typing()
-        config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_use(ctx.author):
+        config = store.guild_config(ctx.guild)
+        if not config.can_use(_get_member(ctx)):
             return await ctx.send(f"```{config.no_memes()}```")
-        match = _match_template_name(template, ctx.guild)
+        match = _match_template_name(template, config)
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
         key = f"{match}-{name}.png"
 
-        _meme = store.get_template(ctx.guild, match, True)
+        _meme = store.get_template(config.guild_id, match, True)
         with io.BytesIO() as buffer:
             _meme.render(text, buffer)
             buffer.flush()
@@ -281,7 +305,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
         
 
 
-def run(debug, local):
+def run(debug: bool, local: bool) -> None:
     """
     Starts an instance of the bot using the passed-in options.
     """
