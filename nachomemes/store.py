@@ -50,7 +50,7 @@ class TemplateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
-        return super(CustomJsonEncoder, self).default(obj)
+        return super(TemplateEncoder, self).default(obj)
 
 class Store(ABC):
     """
