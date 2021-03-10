@@ -1,7 +1,7 @@
 import io
 import json
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, send_from_directory
 
 from nachomemes import get_store, get_args
 from nachomemes.store import Store, update_serialization, TemplateEncoder
@@ -35,6 +35,11 @@ def make_server(store: Store) -> Flask:
         return send_file(
             buffer,
             mimetype='image/png')
+    
+    @app.route('/update-template/<path:filename>')
+    def download_file(filename):
+        folder_path = "../frontend-templating"
+        return send_from_directory(folder_path, filename)
 
     return app
 
