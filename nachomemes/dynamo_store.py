@@ -92,7 +92,8 @@ class DynamoTemplateStore(Store):
         except ClientError:
             # maybe using old key? 
             item = self._fetch(table, {"id": get_guild_id(guild)})
-
+            item['guild_id'] = item.pop('id')
+            print("old config, need refresh")
         return from_dict(GuildConfig, item, config=da_config)
 
     def save_guild_config(self, guild: GuildConfig) -> None:
