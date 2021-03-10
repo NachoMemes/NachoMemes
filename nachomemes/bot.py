@@ -12,6 +12,7 @@ import textwrap
 import traceback
 from pathlib import Path
 from typing import List
+from json.decoder import JSONDecodeError
 
 import discord
 from discord.ext import commands
@@ -21,7 +22,7 @@ from fuzzywuzzy import process
 from nachomemes import get_creds, get_store
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
-from nachomemes.store import Store
+from nachomemes.store import Store, TemplateEncoder
 
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
@@ -45,7 +46,7 @@ async def report(ctx: Context, ex: Exception, message: str="An error has occured
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
     if DEBUG:
-        await ctx.send(message + "```" + err[:1990] + "```")
+        await ctx.send(message + "```" + err[:1980] + "```")
     else:
         await ctx.send(message + "```" + str(ex) + "```")
     # re-raise the exception so it's printed to the console
@@ -243,8 +244,10 @@ async def save(ctx: Context):
             raise RuntimeError("computer says no")
         value = ctx.message.content
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
-        message = store.save_meme(ctx.guild, json.loads(value))
+        message = store.save_meme(config.guild_id, json.loads(value))
         await ctx.send(textwrap.dedent(f"```{message}```"))
+    except JSONDecodeError:
+        await ctx.send(textwrap.dedent(f"```invalid JSON provided```"))
     except Exception as ex:
         await report(ctx, ex)
 
@@ -254,8 +257,9 @@ async def dump(ctx: Context, template_name: str):
         config: GuildConfig = store.guild_config(ctx.guild)
         if not config.can_edit(ctx.message.author):
             raise RuntimeError("computer says no")
-        match = _match_template_name(template_name, ctx.guild)
-        message = json.dumps(store.get_template_data(ctx.guild, match))
+        match = _match_template_name(template_name, config)
+        data = store.get_template_data(config.guild_id, match)
+        message = json.dumps(data, cls=TemplateEncoder)
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
         await report(ctx, ex)

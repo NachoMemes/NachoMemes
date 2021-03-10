@@ -4,6 +4,7 @@ from typing import Callable, Iterable, Optional, Union, Dict, Any, Type, Generat
 from types import GeneratorType
 from urllib.request import Request
 import atexit, os, re
+import json
 from decimal import Decimal
 from operator import attrgetter
 from types import GeneratorType, MappingProxyType
@@ -47,6 +48,11 @@ def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serial
         return [update_serialization(v, _serializers) for v in value]
     return value
 
+class TemplateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(CustomJsonEncoder, self).default(obj)
 
 class Store(ABC):
     """
