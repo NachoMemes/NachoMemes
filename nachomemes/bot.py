@@ -2,7 +2,6 @@
 # don't need docstrings for subcommands with descriptions
 
 """Discord bot go brrrr"""
-import argparse
 import io
 import json
 import os
@@ -20,7 +19,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
 
-from nachomemes import get_creds, get_store
+from nachomemes import get_creds, get_store, get_args
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder
@@ -329,20 +328,5 @@ def run(debug: bool, local: bool) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Runs the bot with the passed in arguments."
-    )
-
-    parser.add_argument(
-        "-d",
-        "--debug",
-        action="store_true",
-        help="Run state::debug. True or false. Runs different credentials and logging level.",
-    )
-
-    parser.add_argument(
-        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
-    )
-
-    args = parser.parse_args()
+    args = get_args()
     run(args.debug, args.local)
