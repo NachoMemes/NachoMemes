@@ -16,7 +16,8 @@ def make_server(store: Store) -> Flask:
 
     @app.route('/api/<guild_id>/memes')
     def list_memes(guild_id):
-        return jsonify(update_serialization(store.list_memes(guild_id)))
+        data = store.list_memes(guild_id)
+        return json.dumps(data, cls=TemplateEncoder)
 
     @app.route('/api/<guild_id>/memes/<template_id>')
     def get_template_data(guild_id: str, template_id: str):
