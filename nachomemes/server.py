@@ -9,6 +9,10 @@ from nachomemes.store import Store, update_serialization
 def make_server(store: Store) -> Flask:
     app = Flask(__name__)
 
+    @app.route('/')
+    def root_path():
+        return "NachoMemes REST Endpoint"
+
     @app.route('/api/<guild_id>/memes')
     def list_memes(guild_id):
         return jsonify(update_serialization(store.list_memes(guild_id)))
