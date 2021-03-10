@@ -4,15 +4,17 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import IO, Iterable, List, Optional, Dict, cast
 from tempfile import NamedTemporaryFile
-from typing import IO, Dict, Iterable, List, Optional
-from urllib.request import Request, urlopen
 from functools import partial
 
-from PIL import Image, ImageFont
+from urllib.request import Request, urlopen
+from PIL import Image as ImageModule, ImageFont
+from PIL.Image import Image
+from PIL.ImageFont import FreeTypeFont
 
 # Monkeypatch Request to show the url in repr
-Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
+setattr(Request, "__repr__", lambda self: f"Request(<{self.full_url}>)")
 
 # Local file cache for fetched images
 LOCAL_IMAGE_CACHE: Dict[str, str] = {}
@@ -21,7 +23,7 @@ LOCAL_IMAGE_CACHE: Dict[str, str] = {}
 
 
 @atexit.register
-def _delete_cache():
+def _delete_cache() -> None:
     for f in LOCAL_IMAGE_CACHE.values():
         os.remove(f)
 
@@ -49,7 +51,7 @@ class Justify(Enum):
     CENTER = partial(lambda w1, w2: (w1 - w2) // 2)
     RIGHT = partial(lambda w1, w2: w1 - w2)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> int:
         return self.value(*args, **kwargs)
 
 
@@ -61,7 +63,7 @@ class Font(Enum):
     XKCD = Path("fonts/xkcd-script.ttf")
     COMIC_SANS = Path("fonts/comic.ttf")
 
-    def load(self, font_size: int) -> ImageFont:
+    def load(self, font_size: int) -> FreeTypeFont:
         """
         Load the local font file into a font object.
         """
@@ -105,7 +107,7 @@ def _fetch_image(url: Request) -> IO:
     Fetch an image from a URL and return an IO stream.
     """
     if url.type == 'file':
-        return urlopen(url)
+        return cast(IO, urlopen(url))
     if url.full_url not in LOCAL_IMAGE_CACHE:
         print(f'Loading image {url.full_url} from local cache miss')
         suffix = re.sub(r'[\W]', '', url.full_url.split('.')[-1])[:5]
@@ -151,7 +153,7 @@ class Template:
         with _fetch_image(self.image_url) as s:
             buffer.write(s.read())
             buffer.seek(0)
-            return Image.open(buffer)
+            return ImageModule.open(buffer)
 
     def render(self, message: Iterable[str], output: IO):
         """

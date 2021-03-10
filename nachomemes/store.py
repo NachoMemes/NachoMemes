@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
+from enum import Enum
+from typing import Any, Callable, Dict, Iterable, Optional, Union,  Type, Generator, cast
+from types import GeneratorType
+from urllib.request import Request
+import atexit, os, re
+import json
 from decimal import Decimal
 from operator import attrgetter
 from types import GeneratorType, MappingProxyType
-from typing import (Any, Callable, Dict, Iterable, List,
-                    Optional, Type, Union)
 from urllib.request import Request
 
 from dacite import Config, from_dict
@@ -23,13 +27,13 @@ da_config = Config({
 })
 
 # additional serializers for dacite
-serializers: Dict[Type, Callable] = MappingProxyType({
+serializers = cast(dict, MappingProxyType({
     Request: attrgetter("full_url"),
     float: lambda f: Decimal(str(f)),
     Font: attrgetter("name"),
     Color: attrgetter("name"),
     Justify: attrgetter("name"),
-})
+}))
 
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
@@ -42,18 +46,23 @@ def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serial
         return [update_serialization(v, _serializers) for v in value]
     return value
 
+class TemplateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(TemplateEncoder, self).default(obj)
 
 class Store(ABC):
     """
     Abstract base class for implementing data stores for template and guild data.
     """
     @abstractmethod
-    def refresh_memes(self, guild: Optional[GuildConfig], hard: bool = False) -> str:
+    def refresh_memes(self, guild_id: str, hard: bool = False) -> str:
         pass
 
     @abstractmethod
     def get_template_data(
-        self, guild: Optional[Guild], guild_id: str, increment_use: bool = False
+        self, guild_id: str, template_id: str, increment_use: bool = False
     ) -> dict:
         """
         Retrieve template data (serialized template) as a dict from the store.
@@ -61,27 +70,27 @@ class Store(ABC):
         
 
     def get_template(
-        self, guild: Optional[Guild], id: str, increment_use: bool = False
+        self, guild_id: Optional[str], template_id: str, increment_use: bool = False
     ) -> Template:
         """
         Retrieve a template as a Template object from the store.
         """
-        return from_dict(Template, self.get_template_data(guild, id, increment_use), config=da_config)
+        return from_dict(Template, self.get_template_data(
+            guild_id if guild_id is not None else "default", 
+            template_id, increment_use), config=da_config)
 
     @abstractmethod
-    def list_memes(self, guild: Union[Guild, str, None]=None, fields: List[str] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
         """
         List all the serialized templates in the store as dictionaries.
         Optionally, pass fields to get only those fields in the dicts.
         """
-        pass
 
     @abstractmethod
-    def save_meme(self, guild: Optional[Guild], item: dict) -> str:
+    def save_meme(self, guild_id: str, item: dict) -> str:
         """
         Saves a serialized template as a dict to the store.
         """
-        pass
 
     @abstractmethod
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:

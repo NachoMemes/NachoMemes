@@ -2,15 +2,19 @@ import io
 import sys
 from itertools import chain, takewhile
 from math import cos, pi, sin
-from typing import IO, Iterable, List, Tuple, Generator
+from os import PathLike
+from typing import IO, Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image as ImageModule, ImageFont, ImageDraw, ImageFont
+from PIL.Image import Image
+from PIL.ImageFont import FreeTypeFont
 
 from nachomemes.template import Color, Font, Template, TextBox
 
+T = TypeVar('T')
 
-def partition_on(pred, seq) -> Generator:
-    """Split a sequence into multuple sub-sequences using a provided value as the boundary"""
+def partition_on(pred: Callable[[T],bool], seq: Iterable[T]) -> Iterable[Iterable[T]]:
+    "Split a sequence into multuple sub-sequences using a provided value as the boundary"
     i = iter(seq)
     while True:
         # note that we need to do an explicit StopIteration check because
@@ -23,8 +27,9 @@ def partition_on(pred, seq) -> Generator:
         yield takewhile(lambda v: not pred(v), chain([n], i))
 
 
-def partition_on_value(value, seq) -> Generator:
-    return partition_on(lambda v: v == value, seq)
+def partition_on_value(value: T, seq: Iterable[T]) -> Iterable[Iterable[T]]:
+    pred: Callable[[T],bool] = lambda v: v == value
+    return partition_on(pred, seq)
 
 
 def _reflow_text(text, count) -> List[str]:
@@ -62,13 +67,13 @@ def _text_width(font: Font, size: int, string: str) -> int:
     return font.load(size).getsize(string)[0]
 
 
-def _render_text(img: Image, font: ImageFont, color: Color, x, y, string) -> None:
+def _render_text(img: Image, font: FreeTypeFont, color: Color, x, y, string) -> None:
     """Render plain colored text with a transparent background"""
     ImageDraw.Draw(img).text((x, y), string, color.value, font)
 
 
 def _render_outlined(
-    img: Image, font: ImageFont, color: Color, outline: Color, x, y, string: str
+    img: Image, font: FreeTypeFont, color: Color, outline: Color, x, y, string: str
 ) -> None:
     """Render text with an outline by repeatedly rendering text in the outline
      color offset by 1/15 of the font size at 30 degree intervals"""
@@ -81,17 +86,16 @@ def _render_outlined(
     _render_text(img, font, color, x, y, string)
 
 
-def _render_rotated(
-    img: Image, font: ImageFont, color: Color, x, y, angle, string: str
-) -> None:
+def _render_rotated(img: Image, font: FreeTypeFont, color: Color, x, y, 
+        angle, string: str) -> None:
     """render text rotated by an angle by creating a seperate image with the 
     text, rotating it, and pasting it onto the target image"""
 
     # create a new image with a transparent alpha channel
-    txt = Image.new("RGBA", (800, 400), (255, 255, 255, 0))
-    d = ImageDraw.Draw(txt)
-    d.text((0, 0), string, (*color.value, 255), font)
-    w = txt.rotate(angle, resample=Image.BICUBIC, expand=True)
+    txt = ImageModule.new("RGBA", (800, 400), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(txt)
+    draw.text((0, 0), string, (*color.value, 255), font)
+    w = txt.rotate(angle, resample=ImageModule.BICUBIC, expand=True)
     img.paste(w, (x, y), w)
 
 
@@ -123,7 +127,7 @@ def _offset(width: int, height: int, tb: TextBox, x: int, y: int) -> Tuple[int, 
 
 
 def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int) -> None:
-    """Would you kindly render some text on an image"""
+    "Would you kindly render some text on an image"
 
     # get the size of the bounding box in pixels
     bw, bh = _box_size(*img.size, tb)
@@ -158,13 +162,9 @@ def _render_box(img: Image, tb: TextBox, lines: List[str], base_size: int) -> No
 def _debug_box(img: Image, tb: TextBox) -> None:
     """draw an outline around the TextBox for debugging"""
 
-    ImageDraw.Draw(img).rectangle(
-        (
-            (img.image_width * tb.left, img.image_height * tb.top),
-            (img.image_width * tb.right, img.image_height * tb.bottom),
-        ),
-        outline=(0, 0, 0),
-    )
+    coords = ((img.width * tb.left, img.height * tb.top),
+              (img.width * tb.right, img.height * tb.bottom))
+    ImageDraw.Draw(img).rectangle(coords, outline=(0, 0, 0))
 
 
 def render_template(

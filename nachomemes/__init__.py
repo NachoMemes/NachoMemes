@@ -16,7 +16,7 @@ def get_store(local: bool=True, debug: bool=True) -> Store:
     If "access_key" doesn't exist in the JSON config file, defaults to the local store.
     """
     creds = get_creds(debug) if not local else {}
-    store = LocalTemplateStore()
+    store: Store = LocalTemplateStore()
     if not local and "access_key" in creds:
         store = DynamoTemplateStore(
             creds["access_key"], creds["secret"], creds["region"], store, debug

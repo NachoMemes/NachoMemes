@@ -433,7 +433,25 @@
             "justify": "CENTER",
             "color": "WHITE"
         }
-
+    ],
+    "2pane_bottom": [{
+            "left": 0.02,
+            "right": 0.98,
+            "top": 0.4,
+            "bottom": 0.45,
+            "font": "IMPACT",
+            "justify": "CENTER",
+            "color": "WHITE",
+            "outline": "BLACK"
+        },{
+            "left": 0.02,
+            "right": 0.98,
+            "top": 0.88,
+            "bottom": 0.96,
+            "font": "IMPACT",
+            "justify": "CENTER",
+            "color": "WHITE",
+            "outline": "BLACK"
+        }
     ]
-    
 }

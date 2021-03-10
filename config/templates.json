@@ -173,6 +173,13 @@
         "image_url": "file:source_images/Epic-Handshake.jpg",
         "layout": "epic_handshake_layout",
         "usage": 0
+    },
+    "2fast-2weasley": {
+        "description": "2 Harry 2 Potter",
+        "docs": "https://9gag.com/gag/aQ3pD97/too-fast-too-weasley",
+        "image_url": "file:source_images/2fast2weasley.jpg",
+        "layout": "2pane_bottom",
+        "usage": 0
     }
 
 
