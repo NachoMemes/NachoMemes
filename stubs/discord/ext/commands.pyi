@@ -1,13 +1,18 @@
-from typing import Callable, Any, Optional, Union
+from typing import Callable, Any, Optional, Union, Iterable
 
 from discord import Guild, Member
 from discord.message import Message
 from discord.abc import User
 
 
-class Command: ...
+class Command: 
+    name: str
+    description: str
 
-class Group: ...
+    def walk_commands(self) -> Iterable[Union[Command, Group]]: ...
+
+class Group(Command): 
+    def command(*args, **kwargs) -> Callable[..., Command]: ...
 
 
 class Bot:
@@ -17,8 +22,10 @@ class Bot:
 
     def command(self, *args, **kwargs) -> Callable[..., Command]: ...
 
-    def group(self, *args, **kwargs) -> Callable[..., Group]: 
-        def command(self, *args, **kwargs) -> Callable[..., Command]: ...
+    def group(self, *args, **kwargs) -> Callable[..., Group]: ...
+
+    def run(self, *args, **kwargs) -> None: ...
+
 
 class Context: 
     message: Message
@@ -32,6 +39,8 @@ class Context:
 
     @property
     def author(self) -> Union[User, Member]: ...
+
+    async def trigger_typing(self) -> None: ...
 
     async def send(self, content: Any=None, *, tts: bool=False, embed: Any=None, file: Any=None,
                                           files: Any=None, delete_after: Any=None, nonce: Any=None,

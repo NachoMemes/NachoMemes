@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Callable, Iterable, Optional, Union, Dict, Any, Type, Generator, cast
+from typing import Any, Callable, Dict, Iterable, Optional, Union,  Type, Generator, cast
 from types import GeneratorType
 from urllib.request import Request
 import atexit, os, re
@@ -8,8 +8,6 @@ import json
 from decimal import Decimal
 from operator import attrgetter
 from types import GeneratorType, MappingProxyType
-from typing import (Any, Callable, Dict, Iterable, List,
-                    Optional, Type, Union)
 from urllib.request import Request
 
 from dacite import Config, from_dict
@@ -29,13 +27,13 @@ da_config = Config({
 })
 
 # additional serializers for dacite
-serializers = MappingProxyType({
+serializers = cast(dict, MappingProxyType({
     Request: attrgetter("full_url"),
     float: lambda f: Decimal(str(f)),
     Font: attrgetter("name"),
     Color: attrgetter("name"),
     Justify: attrgetter("name"),
-})
+}))
 
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):

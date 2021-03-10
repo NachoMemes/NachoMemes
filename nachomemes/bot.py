@@ -11,10 +11,11 @@ import sys
 import textwrap
 import traceback
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Iterable
 from json.decoder import JSONDecodeError
 
 import discord
+from discord import Member, Role
 from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
@@ -38,9 +39,6 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 
-def mentioned_members(ctx: Context) -> List[discord.Member]:
-    "Returns the id of a memeber mentioned in a message."
-    return [m for m in ctx.message.mentions]
 
 async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
@@ -77,6 +75,18 @@ def _find_close_matches(name: str, guild: GuildConfig) -> list:
         if name[1] > 40
     ]
 
+def _get_member(ctx: Context) -> Member:
+    member = ctx.author
+    assert isinstance(member, Member)
+    return member
+
+def _mentioned_members(ctx: Context) -> Iterable[Member]:
+    "Returns the id of a memeber mentioned in a message."
+    return (m for m in ctx.message.mentions if isinstance(m, Member))
+
+def _mentions_or_author(ctx: Context) -> Iterable[Member]:
+    return _mentioned_members(ctx) if ctx.message.mentions else (_get_member(ctx),)
+
 
 async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
     """Fuzzy match multiple templates."""
@@ -109,7 +119,7 @@ async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig
 async def templates(ctx: Context, template: str = None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_use(ctx.author):
+        if not config.can_use(_get_member(ctx)):
             return await ctx.send(f"```{config.no_memes()}```")
         if template:
             # A fuzzy multiple match
@@ -147,17 +157,17 @@ async def refresh(ctx: Context, refresh_type: str=None):
         is_hard = refresh_type == "--hard"
         config: GuildConfig = store.guild_config(ctx.guild)
         if is_hard:
-            if not config.can_admin(ctx.message.author):
+            if not config.can_admin(_get_member(ctx)):
                 return await ctx.send(
-                    f"```{config.no_admin(ctx.message.author)}```"
+                    f"```{config.no_admin(_get_member(ctx))}```"
                 )
         else:
-            if not config.can_edit(ctx.message.author):
+            if not config.can_edit(_get_member(ctx)):
                 return await ctx.send(
-                    f"```{config.no_admin(ctx.message.author,'refresh','edit')}```"
+                    f"```{config.no_admin(_get_member(ctx),'refresh','edit')}```"
                 )
 
-        message = store.refresh_memes(ctx.guild, is_hard)
+        message = store.refresh_memes(config.guild_id, is_hard)
         await ctx.send(f"```{message}```")
     except Exception as ex:
         await report(ctx, ex)
@@ -167,12 +177,12 @@ async def admin_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
-            role = ctx.guild.get_role(config.admin_role)
+            role: Optional[Role] = ctx.guild.get_role(config.admin_role) if config.admin_role else None
             await ctx.send(textwrap.dedent(
                 f"```Members of '{role}' are authorized to administer the memes.```"))
         else:
-            role = ctx.guild.get_role(int(role_id))
-            message = config.set_admin_role(ctx.message.author, role)
+            role = ctx.guild.get_role(int(role_id)) if role_id else None
+            message = config.set_admin_role(_get_member(ctx), role)
             store.save_guild_config(config)
             await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
@@ -183,11 +193,11 @@ async def edit_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
         if not role_id:
-            role = ctx.guild.get_role(config.edit_role)
+            role: Optional[Role] = ctx.guild.get_role(config.edit_role) if config.edit_role else None
             await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
         else:
-            role = ctx.guild.get_role(int(role_id))
-            message = config.set_edit_role(ctx.message.author, role)
+            role = ctx.guild.get_role(int(role_id)) if role_id else None
+            message = config.set_edit_role(_get_member(ctx), role)
             store.save_guild_config(config)
             await ctx.send(textwrap.dedent(f"```{message}```"))
     except Exception as ex:
@@ -197,8 +207,8 @@ async def edit_role(ctx: Context, role_id: str=None):
 async def shun(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        for subject in mentioned_members(ctx):
-            message: str = config.shun(ctx.message.author, subject)
+        for subject in _mentioned_members(ctx):
+            message: str = config.shun(_get_member(ctx), subject)
             await ctx.send(textwrap.dedent(f"```{message}```"))
         store.save_guild_config(config)
     except Exception as ex:
@@ -209,8 +219,8 @@ async def shun(ctx: Context):
 async def endorse(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        for subject in mentioned_members(ctx):
-            message: str = config.endorse(ctx.message.author, subject)
+        for subject in _mentioned_members(ctx):
+            message: str = config.endorse(_get_member(ctx), subject)
             await ctx.send(textwrap.dedent(f"```{message}```"))
         store.save_guild_config(config)
     except Exception as ex:
@@ -220,11 +230,7 @@ async def endorse(ctx: Context):
 async def whoami(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if ctx.message.mentions:
-            members = ctx.message.mentions
-        else:
-            members = (ctx.message.author,)
-        for member in members:
+        for member in _mentions_or_author(ctx):
             name = config.member_full_name(member)
             await ctx.send(
                 textwrap.dedent(
@@ -240,7 +246,7 @@ async def whoami(ctx: Context):
 async def save(ctx: Context):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_edit(ctx.message.author):
+        if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
         value = ctx.message.content
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
@@ -255,7 +261,7 @@ async def save(ctx: Context):
 async def dump(ctx: Context, template_name: str):
     try:
         config: GuildConfig = store.guild_config(ctx.guild)
-        if not config.can_edit(ctx.message.author):
+        if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
         match = _match_template_name(template_name, config)
         data = store.get_template_data(config.guild_id, match)
@@ -277,7 +283,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
     try:
         await ctx.trigger_typing()
         config = store.guild_config(ctx.guild)
-        if not config.can_use(ctx.author):
+        if not config.can_use(_get_member(ctx)):
             return await ctx.send(f"```{config.no_memes()}```")
         match = _match_template_name(template, config)
         # Have the meme name be reflective of the contents.

@@ -5,6 +5,11 @@ class Guild:
     id: int
     name: str
 
+
+    def get_role(self, role_id: int) -> Optional[Role]: ...
+
+
+
 class Permissions:
     @property
     def administrator(self) -> bool: ...
