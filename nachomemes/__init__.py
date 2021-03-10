@@ -2,6 +2,7 @@
 import os
 import json
 import argparse
+from typing import Any
 
 from .guild_config import GuildConfig
 from .template import Template, TemplateError
