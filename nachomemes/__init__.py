@@ -10,11 +10,9 @@ from .store import Store, da_config, get_guild_id
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .render import render_template
+from argpase import Namespace
 
-def get_args() -> Any:
-    """
-    Chris gave up on typing.
-    """
+def get_args() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(
         description="Runs the bot with the passed in arguments."
