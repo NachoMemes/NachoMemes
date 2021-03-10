@@ -15,7 +15,7 @@ def make_server(store: Store) -> Flask:
         return "NachoMemes REST Endpoint"
 
     @app.route('/api/<guild_id>/memes')
-    def list_memes(guild_id):
+    def list_memes(guild_id: str):
         data = store.list_memes(guild_id)
         return json.dumps(data, cls=TemplateEncoder)
 
@@ -37,7 +37,7 @@ def make_server(store: Store) -> Flask:
             mimetype='image/png')
     
     @app.route('/update-template/<path:filename>')
-    def download_file(filename):
+    def download_file(filename: str):
         folder_path = "../frontend-templating"
         return send_from_directory(folder_path, filename)
 
