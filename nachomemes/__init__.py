@@ -2,6 +2,7 @@
 import os
 import json
 import argparse
+from typing import Any
 
 from .guild_config import GuildConfig
 from .template import Template, TemplateError
@@ -9,6 +10,9 @@ from .store import Store, da_config, get_guild_id
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .render import render_template
+from argpase import Namespace
+
+def get_args() -> argparse.Namespace:
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

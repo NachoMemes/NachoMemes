@@ -1,7 +1,7 @@
 import io
 import json
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, send_from_directory
 
 from nachomemes import get_store, get_args
 from nachomemes.store import Store, update_serialization, TemplateEncoder
@@ -15,8 +15,9 @@ def make_server(store: Store) -> Flask:
         return "NachoMemes REST Endpoint"
 
     @app.route('/api/<guild_id>/memes')
-    def list_memes(guild_id):
-        return jsonify(update_serialization(store.list_memes(guild_id)))
+    def list_memes(guild_id: str):
+        data = store.list_memes(guild_id)
+        return json.dumps(data, cls=TemplateEncoder)
 
     @app.route('/api/<guild_id>/memes/<template_id>')
     def get_template_data(guild_id: str, template_id: str):
@@ -34,6 +35,11 @@ def make_server(store: Store) -> Flask:
         return send_file(
             buffer,
             mimetype='image/png')
+    
+    @app.route('/update-template/<path:filename>')
+    def download_file(filename: str):
+        folder_path = "../frontend-templating"
+        return send_from_directory(folder_path, filename)
 
     return app
 
