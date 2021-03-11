@@ -312,7 +312,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
             buffer.seek(0)
             msg = await ctx.send(file=discord.File(buffer, key))
 
-        # same the message for later deletion
+        # save the message for later modification
         RECENT[ctx.message.id] = msg
         if len(RECENT) > MAX_RECENT:
             RECENT.popitem(last=False)
