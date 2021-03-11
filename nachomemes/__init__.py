@@ -13,8 +13,6 @@ from .render import render_template
 from argpase import Namespace
 
 def get_args() -> argparse.Namespace:
-
-def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Runs the bot with the passed in arguments."
     )
