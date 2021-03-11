@@ -15,16 +15,11 @@ def get_args() -> argparse.Namespace:
         description="Runs the bot with the passed in arguments."
     )
 
-    parser.add_argument(
-        "-d",
-        "--debug",
-        action="store_true",
-        help="Run state::debug. True or false. Runs different credentials and logging level.",
-    )
+    parser.add_argument("-d", "--debug", action="store_true",
+        help="Run state::debug. True or false. Runs different credentials and logging level.")
 
     parser.add_argument(
-        "-l", "--local", action="store_true", help="Run locally without DynamoDB."
-    )
+        "-l", "--local", action="store_true", help="Run locally without DynamoDB.")
 
     return parser.parse_args()
 
