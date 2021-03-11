@@ -4,7 +4,8 @@ from discord import Member
 from discord.abc import User
 
 class Message: 
-
+    id: int
+    
     @property
     def mentions(self) -> List[User]: ...
 

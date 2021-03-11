@@ -16,7 +16,8 @@ from json.decoder import JSONDecodeError
 
 
 import discord
-from discord import Member, Role, Message
+from discord import Member, Role
+from discord.message import Message
 from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
@@ -42,7 +43,7 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 # recent meme requests (and the resulting meme message)
-RECENT = OrderedDict()
+RECENT: OrderedDict = OrderedDict()
 
 MAX_RECENT = 200
 
