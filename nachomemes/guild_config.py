@@ -44,14 +44,14 @@ class GuildConfig:
 
     def shun(self, member: Member, victim: Member) -> str:
         """make someone a bad boy"""
-        if victim.id in self.override:
+        if member == victim:
+            self.pariah.append(victim.id)
+            return "If that's what you really want to do."
+        elif victim.id in self.override:
             self.pariah.append(member.id)
             return f"{self.member_nick(member)}. Your membership to The Continental has been, by thine own hand, revoked."
         elif not self.can_admin(member):
             return self.no_admin(member)
-        elif member == victim:
-            self.pariah.append(victim.id)
-            return "If that's what you really want to do."
         elif not member.id in self.override and victim.guild_permissions.administrator:
             return "As fun as it sounds, it's probably not a good idea."
         else:
