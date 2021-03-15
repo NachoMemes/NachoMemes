@@ -274,7 +274,9 @@ async def save(ctx: Context):
         await report(ctx, ex)
 
 @memebot.command(description="dump template json")
-async def dump(ctx: Context, template_name: str):
+async def dump(ctx: Context, template_name: str=None):
+    if not template_name:
+        return await ctx.send(textwrap.dedent(f"```No template name provided```"))
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not config.can_edit(_get_member(ctx)):
@@ -283,6 +285,8 @@ async def dump(ctx: Context, template_name: str):
         data = STORE.get_template_data(config.guild_id, match)
         message = json.dumps(data, cls=TemplateEncoder)
         await ctx.send(textwrap.dedent(f"```{message}```"))
+    except TemplateError as ex:
+        await ctx.send(textwrap.dedent(f'```No template matching "{template_name}" found```'))
     except Exception as ex:
         await report(ctx, ex)
 
