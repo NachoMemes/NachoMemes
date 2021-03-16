@@ -124,6 +124,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
       - name: Build and Push to GitHub Container Registry
+        id: docker-build
         uses: docker/build-push-action@v2
         with:
           push: ${{ github.event_name != 'pull_request' }}
@@ -131,3 +132,17 @@ jobs:
           labels: ${{ steps.image-metadata.outpus.labels }}
           cache-from: type=local,src=${{ env.cache-path }}
           cache-to: type=local,dest=${{ env.cache-path }},mode=max
+      - name: Deploy
+        uses: jswny/sad@v3.0.1
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/feature/cd' }}
+        env:
+          SAD_REGISTRY: ${{ env.container-registry }}
+          SAD_IMAGE: ${{ github.repository }}
+          SAD_SERVER: ${{ secrets.SERVER }}
+          SAD_USERNAME: ${{ secrets.USERNAME }}
+          SAD_PRIVATE_KEY: ${{ secrets.SAD_PRIVATE_KEY }}
+          SAD_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          SAD_DEPLOY_DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN_BETA }}
+          SAD_DEPLOY_ACCESS_TOKEN: ${{ secrets.ACCESS_KEY }}
+          SAD_DEPLOY_SECRET: ${{ secrets.ACCESS_KEY }}
+          SAD_DEPLOY_REGION: ${{ secrets.REGION }}
