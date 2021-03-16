@@ -158,3 +158,11 @@ jobs:
           SAD_DEPLOY_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SAD_DEPLOY_SECRET: ${{ secrets.ACCESS_KEY }}
           SAD_DEPLOY_REGION: ${{ secrets.REGION }}
+      - name: Notify Discord Success
+        if: ${{ success() }}
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` SUCCESS!"}' "${{ secrets.DISCORD_WEBHOOK }} "
+      - name: Notify Discord Failure
+        if: ${{ !success() }}
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` FAILED!"}' "${{ secrets.DISCORD_WEBHOOK }} "
