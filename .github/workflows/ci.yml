@@ -141,6 +141,7 @@ jobs:
           SAD_SERVER: ${{ secrets.SERVER }}
           SAD_USERNAME: ${{ secrets.USERNAME }}
           SAD_PRIVATE_KEY: ${{ secrets.SAD_PRIVATE_KEY }}
+          SAD_ROOT_DIR: ${{ secrets.SAD_ROOT_DIR }}
           SAD_DIGEST: ${{ steps.docker-build.outputs.digest }}
           SAD_DEPLOY_DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN_BETA }}
           SAD_DEPLOY_ACCESS_TOKEN: ${{ secrets.ACCESS_KEY }}
