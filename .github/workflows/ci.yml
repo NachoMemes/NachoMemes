@@ -155,6 +155,6 @@ jobs:
           SAD_DIGEST: ${{ needs.image.outputs.digest }}
           SAD_ENV_VARS: ${{ secrets.SAD_ENV_VARS }}
           SAD_DEPLOY_DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN_BETA }}
-          SAD_DEPLOY_ACCESS_TOKEN: ${{ secrets.ACCESS_KEY }}
+          SAD_DEPLOY_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SAD_DEPLOY_SECRET: ${{ secrets.ACCESS_KEY }}
           SAD_DEPLOY_REGION: ${{ secrets.REGION }}
