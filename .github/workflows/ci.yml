@@ -133,7 +133,7 @@ jobs:
           cache-from: type=local,src=${{ env.cache-path }}
           cache-to: type=local,dest=${{ env.cache-path }},mode=max
       - name: Deploy
-        uses: jswny/sad@v3.0.1
+        uses: jswny/sad@v3.0.2
         if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/feature/cd' }}
         env:
           SAD_REGISTRY: ${{ env.container-registry }}
