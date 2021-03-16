@@ -143,11 +143,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Format Image Name
+        id: format-image-name
+        uses: actions/github-script@v3
+        with:
+          result-encoding: string
+          script: return "${{ github.repository }}".toLowerCase()
       - name: Deploy
         uses: jswny/sad@v3.0.2
         env:
           SAD_REGISTRY: ${{ env.container-registry }}
-          SAD_IMAGE: ${{ github.repository }}
+          SAD_IMAGE: ${{ steps.format-image-name.outputs.result }}
           SAD_SERVER: ${{ secrets.SERVER }}
           SAD_USERNAME: ${{ secrets.USERNAME }}
           SAD_PRIVATE_KEY: ${{ secrets.SAD_PRIVATE_KEY }}
@@ -161,8 +167,8 @@ jobs:
       - name: Notify Discord Success
         if: ${{ success() }}
         run: |
-          curl -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` SUCCESS!"}' "${{ secrets.DISCORD_WEBHOOK }} "
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` SUCCESS!"}' "${{ secrets.DISCORD_WEBHOOK }}"
       - name: Notify Discord Failure
         if: ${{ !success() }}
         run: |
-          curl -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` FAILED!"}' "${{ secrets.DISCORD_WEBHOOK }} "
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` FAILED!"}' "${{ secrets.DISCORD_WEBHOOK }}"
