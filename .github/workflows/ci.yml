@@ -139,7 +139,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     needs: [image]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/feature/cd' }}
+    if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', secrets.DEPLOY_BRANCH) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -167,8 +167,8 @@ jobs:
       - name: Notify Discord Success
         if: ${{ success() }}
         run: |
-          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` SUCCESS!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` **SUCCESS**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
       - name: Notify Discord Failure
         if: ${{ !success() }}
         run: |
-          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` FAILED!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` **FAILED**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
