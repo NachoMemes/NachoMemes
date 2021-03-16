@@ -158,7 +158,8 @@ jobs:
           SAD_USERNAME: ${{ secrets.USERNAME }}
           SAD_PRIVATE_KEY: ${{ secrets.SAD_PRIVATE_KEY }}
           SAD_ROOT_DIR: ${{ secrets.SAD_ROOT_DIR }}
-          SAD_DIGEST: ${{ needs.image.outputs.digest }}
+          SAD_DIGEST: ${{ needs.image.outputs.digest }
+          SAD_CHANNEL: 'production'
           SAD_ENV_VARS: ${{ secrets.SAD_ENV_VARS }}
           SAD_DEPLOY_DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           SAD_DEPLOY_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
@@ -167,8 +168,8 @@ jobs:
       - name: Notify Discord Success
         if: ${{ success() }}
         run: |
-          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` **SUCCESS**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` to channel `${{ secrets.SAD_CHANNEL }}` **SUCCESS**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
       - name: Notify Discord Failure
         if: ${{ !success() }}
         run: |
-          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` **FAILED**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` to channel `${{ secrets.SAD_CHANNEL }}` **FAILED**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
