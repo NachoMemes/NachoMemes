@@ -139,12 +139,12 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     needs: [image]
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/feature/cd' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Deploy
         uses: jswny/sad@v3.0.2
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/feature/cd' }}
         env:
           SAD_REGISTRY: ${{ env.container-registry }}
           SAD_IMAGE: ${{ github.repository }}
