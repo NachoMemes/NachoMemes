@@ -131,7 +131,7 @@ jobs:
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image-metadata.outputs.tags }}
-          labels: ${{ steps.image-metadata.outpus.labels }}
+          labels: ${{ steps.image-metadata.outputs.labels }}
           cache-from: type=local,src=${{ env.cache-path }}
           cache-to: type=local,dest=${{ env.cache-path }},mode=max
 
