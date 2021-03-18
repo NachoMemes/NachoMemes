@@ -4,6 +4,7 @@ on: [push]
 env:
   python-version: "3.9"
   poetry-version: "1.1.5"
+  container-registry: ghcr.io
 
 jobs:
   yamllint:
@@ -87,10 +88,11 @@ jobs:
   image:
     name: Image
     runs-on: ubuntu-latest
-    needs: [pylint, test, hadolint]
+    needs: [pylint, mypy, test, hadolint]
     env:
       cache-path: /tmp/.buildx-cache
-      container-registry: ghcr.io
+    outputs:
+      digest: ${{ steps.docker-build.outputs.digest }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -124,10 +126,50 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
       - name: Build and Push to GitHub Container Registry
+        id: docker-build
         uses: docker/build-push-action@v2
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image-metadata.outputs.tags }}
-          labels: ${{ steps.image-metadata.outpus.labels }}
+          labels: ${{ steps.image-metadata.outputs.labels }}
           cache-from: type=local,src=${{ env.cache-path }}
           cache-to: type=local,dest=${{ env.cache-path }},mode=max
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [image]
+    if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', 'develop') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Format Image Name
+        id: format-image-name
+        uses: actions/github-script@v3
+        with:
+          result-encoding: string
+          script: return "${{ github.repository }}".toLowerCase()
+      - name: Deploy
+        uses: jswny/sad@v3.0.2
+        env:
+          SAD_REGISTRY: ${{ env.container-registry }}
+          SAD_IMAGE: ${{ steps.format-image-name.outputs.result }}
+          SAD_SERVER: ${{ secrets.SERVER }}
+          SAD_USERNAME: ${{ secrets.USERNAME }}
+          SAD_PRIVATE_KEY: ${{ secrets.SAD_PRIVATE_KEY }}
+          SAD_ROOT_DIR: ${{ secrets.SAD_ROOT_DIR }}
+          SAD_DIGEST: ${{ needs.image.outputs.digest }}
+          SAD_CHANNEL: 'production'
+          SAD_ENV_VARS: ${{ secrets.SAD_ENV_VARS }}
+          SAD_DEPLOY_DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          SAD_DEPLOY_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+          SAD_DEPLOY_SECRET: ${{ secrets.ACCESS_KEY }}
+          SAD_DEPLOY_REGION: ${{ secrets.REGION }}
+      - name: Notify Discord Success
+        if: ${{ success() }}
+        run: |
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` to channel `${{ secrets.SAD_CHANNEL }}` **SUCCESS**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+      - name: Notify Discord Failure
+        if: ${{ !success() }}
+        run: |
+          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` to channel `${{ secrets.SAD_CHANNEL }}` **FAILED**!"}' "${{ secrets.DISCORD_WEBHOOK }}"

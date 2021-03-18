@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  bot:
+    image: "${IMAGE}"
+    container_name: "${CONTAINER_NAME}"
+    environment:
+      - DISCORD_TOKEN
+      - ACCESS_KEY
+      - SECRET
+      - REGION
