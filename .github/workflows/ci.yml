@@ -169,9 +169,15 @@ jobs:
           SAD_DEPLOY_REGION: ${{ secrets.REGION }}
       - name: Notify Discord Success
         if: ${{ success() }}
+        env:
+          status: "SUCCESS"
+          color: 65315
         run: |
-          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` to channel `${{ env.SAD_CHANNEL }}` **SUCCESS**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+          curl -H "Content-Type: application/json" -X POST -d '{"embeds": [{"title": "Bot Deployment", "color": ${{ env.color }}, "fields": [{"name": "Result", "value": "**${{ env.status }}**"}, {"name": "Channel", "value": "`${{ env.SAD_CHANNEL }}`"}, {"name": "Actions Run", "value": "[`${{ github.run_id }}`](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"}, {"name": "Commit", "value": "[`${{ github.sha }}`](https://github.com/NachoMemes/NachoMemes/commit/${{ github.sha }})"}]}]}' "${{ secrets.DISCORD_WEBHOOK }}"
       - name: Notify Discord Failure
         if: ${{ !success() }}
+        env:
+          status: "FAILURE"
+          color: 16723200
         run: |
-          curl -s -H "Content-Type: application/json" -X POST -d '{"content": "Deployment of `${{ github.sha }}` to channel `${{ env.SAD_CHANNEL }}` **FAILED**!"}' "${{ secrets.DISCORD_WEBHOOK }}"
+          curl -H "Content-Type: application/json" -X POST -d '{"embeds": [{"title": "Bot Deployment", "color": ${{ env.color }}, "fields": [{"name": "Result", "value": "**${{ env.status }}**"}, {"name": "Channel", "value": "`${{ env.SAD_CHANNEL }}`"}, {"name": "Actions Run", "value": "[`${{ github.run_id }}`](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"}, {"name": "Commit", "value": "[`${{ github.sha }}`](https://github.com/NachoMemes/NachoMemes/commit/${{ github.sha }})"}]}]}' "${{ secrets.DISCORD_WEBHOOK }}"
