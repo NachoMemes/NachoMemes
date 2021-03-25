@@ -11,10 +11,6 @@ ENV PIP_NO_CACHE_DIR=off
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PIP_DEFAULT_TIMEOUT=100
 
-RUN apt-get update \
-	&& apt-get install --no-install-recommends -y \
-	build-essential=${BUILD_ESSENATIAL_VERSION}
-
 RUN pip3 install "poetry==${POETRY_VERSION}"
 
 FROM poetry as build-dev
