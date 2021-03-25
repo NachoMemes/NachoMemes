@@ -27,10 +27,10 @@ FROM build-dev as dev
 COPY --from=build-dev /app /app
 COPY . /app/
 WORKDIR /app
-ENTRYPOINT	["python", "-m", "nachomemes.bot", "-d"]
+ENTRYPOINT ["python", "-m", "nachomemes.bot", "-d"]
 
 FROM build-prod as prod
 COPY --from=build-prod /app /app
 COPY . /app/
 WORKDIR /app
-ENTRYPOINT	["python", "-m", "nachomemes.bot"]
+ENTRYPOINT ["python", "-m", "nachomemes.bot"]
