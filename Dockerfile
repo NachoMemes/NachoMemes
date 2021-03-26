@@ -22,13 +22,13 @@ COPY poetry.lock pyproject.toml /app/
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
-FROM build-dev as dev
+FROM python:3.9-slim as dev
 COPY --from=build-dev /app /app
 COPY . /app/
 WORKDIR /app
 ENTRYPOINT ["python", "-m", "nachomemes.bot", "-d"]
 
-FROM build-prod as prod
+FROM python:3.9-slim as prod
 COPY --from=build-prod /app /app
 COPY . /app/
 WORKDIR /app
