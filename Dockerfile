@@ -1,4 +1,3 @@
-#syntax=docker/dockerfile:1.2
 FROM python:3.9-slim as poetry
 
 ARG POETRY_VERSION='1.1.5'
