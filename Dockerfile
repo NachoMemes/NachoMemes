@@ -1,7 +1,7 @@
+#syntax=docker/dockerfile:1.2
 FROM python:3.9-slim as poetry
 
 ARG POETRY_VERSION='1.1.5'
-ARG SITE_PACKAGES_PATH='/usr/local/lib/python3.9/site-packages'
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,12 +24,14 @@ RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
 FROM python:3.9-slim as dev
+ARG SITE_PACKAGES_PATH='/usr/local/lib/python3.9/site-packages'
 COPY --from=build-dev ${SITE_PACKAGES_PATH} ${SITE_PACKAGES_PATH}
 COPY . /app/
 WORKDIR /app
 ENTRYPOINT ["python", "-m", "nachomemes.bot", "-d"]
 
 FROM python:3.9-slim as prod
+ARG SITE_PACKAGES_PATH='/usr/local/lib/python3.9/site-packages'
 COPY --from=build-prod ${SITE_PACKAGES_PATH} ${SITE_PACKAGES_PATH}
 COPY . /app/
 WORKDIR /app
