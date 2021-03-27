@@ -20,7 +20,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
 
-from nachomemes import get_creds, get_store, get_args, SimpleCache
+from nachomemes import Configuration, SimpleCache
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder
@@ -323,29 +323,18 @@ async def meme(ctx: Context, template: str = None, /, *text):
         
 
 
-def run(debug: bool, local: bool) -> None:
+def run(config: Configuration) -> None:
     """
     Starts an instance of the bot using the passed-in options.
     """
     global DEBUG
-    DEBUG = debug
-
-    creds = get_creds(debug)
-
+    DEBUG = config.debug
+    
     global STORE
-    STORE = get_store(local, debug)
+    STORE = config.store
 
-    try:
-        token = creds["discord_token"]
-    except NameError:
-        print(
-            "Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!"
-        )
-        sys.exit(1)
-
-    bot.run(token)
+    bot.run(config.discord_token)
 
 
 if __name__ == "__main__":
-    args = get_args()
-    run(args.debug, args.local)
+    run(Configuration())

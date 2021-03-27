@@ -1,7 +1,7 @@
 import sys
 from typing import cast
 from io import BufferedIOBase
-from . import get_store
+from nachomemes import Configuration
 
 # Render memes by default when calling:
 # python -m nachomemes <output_filename> <template_name> <text>
@@ -14,5 +14,6 @@ if __name__ == "__main__":
         args.remove("--show")
     (filename, template_name, *text) = args
 
+    config = Configuration(["--local"])
     with cast(BufferedIOBase, open(filename, "wb")) as f:
-        get_store().get_template(None, template_name).render(text, f)
+        config.store.get_template(None, template_name).render(text, f)
