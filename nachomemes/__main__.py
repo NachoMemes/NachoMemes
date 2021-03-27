@@ -1,4 +1,6 @@
 import sys
+from typing import cast
+from io import BufferedIOBase
 from . import get_store
 
 # Render memes by default when calling:
@@ -12,5 +14,5 @@ if __name__ == "__main__":
         args.remove("--show")
     (filename, template_name, *text) = args
 
-    with open(filename, "wb") as f:
+    with cast(BufferedIOBase, open(filename, "wb")) as f:
         get_store().get_template(None, template_name).render(text, f)

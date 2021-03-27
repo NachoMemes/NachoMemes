@@ -10,10 +10,8 @@ import sys
 import textwrap
 import traceback
 from pathlib import Path
-from collections import OrderedDict
 from typing import List, Optional, Iterable
 from json.decoder import JSONDecodeError
-
 
 import discord
 from discord import Member, Role
@@ -22,7 +20,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from fuzzywuzzy import process
 
-from nachomemes import get_creds, get_store, get_args
+from nachomemes import get_creds, get_store, get_args, SimpleCache
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder
@@ -43,10 +41,7 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 # recent meme requests (and the resulting meme message)
-RECENT: OrderedDict = OrderedDict()
-
-MAX_RECENT = 200
-
+RECENT = SimpleCache(200)
 
 async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
@@ -318,8 +313,6 @@ async def meme(ctx: Context, template: str = None, /, *text):
 
         # save the message for later modification
         RECENT[ctx.message.id] = msg
-        if len(RECENT) > MAX_RECENT:
-            RECENT.popitem(last=False)
 
         for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
             await msg.add_reaction(r)

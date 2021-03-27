@@ -2,6 +2,7 @@
 import os
 import json
 import argparse
+from collections import OrderedDict
 
 from .guild_config import GuildConfig
 from .template import Template, TemplateError
@@ -9,6 +10,7 @@ from .store import Store, da_config, get_guild_id
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .render import render_template
+from .uploader import Uploader
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -54,3 +56,13 @@ def get_creds(debug: bool=True) -> dict:
         if k in os.environ:
             creds[k.lower()] = os.environ[k]
     return creds
+
+class SimpleCache(OrderedDict):
+    def __init__(self, max_items:int):
+        self.max_items = max_items;
+
+    def __setitem__ (self, key, new_value):
+        if len(self) > self.max_items:
+            self.popitem(last=False)
+        super().__setitem__(key, new_value)
+   

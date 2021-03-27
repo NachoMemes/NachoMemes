@@ -1,9 +1,9 @@
-import io
 import sys
+from io import BufferedIOBase, BytesIO
 from itertools import chain, takewhile
 from math import cos, pi, sin
 from os import PathLike
-from typing import IO, Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
+from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
 
 from PIL import Image as ImageModule, ImageFont, ImageDraw, ImageFont
 from PIL.Image import Image
@@ -168,7 +168,7 @@ def _debug_box(img: Image, tb: TextBox) -> None:
 
 
 def render_template(
-    template: Template, message: Iterable[str], output: IO, debug: bool = False
+    template: Template, message: Iterable[str], output: BufferedIOBase, debug: bool = False
 ) -> None:
     """This is the thing that does the thing"""
 
@@ -180,7 +180,7 @@ def render_template(
         zip(template.textboxes, [s.split("\n") for s in strings])
     )
 
-    with io.BytesIO() as buffer:
+    with BytesIO() as buffer:
 
         img = template.read_source_image(buffer)
 

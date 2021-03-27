@@ -4,9 +4,10 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import IO, Iterable, List, Optional, Dict, cast
+from typing import Iterable, List, Optional, Dict, cast
 from tempfile import NamedTemporaryFile
 from functools import partial
+from io import BufferedIOBase
 
 from urllib.request import Request, urlopen
 from PIL import Image as ImageModule, ImageFont
@@ -102,12 +103,12 @@ class TextBox:
     ind_size: Optional[bool] = False
 
 
-def _fetch_image(url: Request) -> IO:
+def _fetch_image(url: Request) -> BufferedIOBase:
     """
     Fetch an image from a URL and return an IO stream.
     """
     if url.type == 'file':
-        return cast(IO, urlopen(url))
+        return urlopen(url)
     if url.full_url not in LOCAL_IMAGE_CACHE:
         print(f'Loading image {url.full_url} from local cache miss')
         suffix = re.sub(r'[\W]', '', url.full_url.split('.')[-1])[:5]
@@ -116,7 +117,7 @@ def _fetch_image(url: Request) -> IO:
                 f.write(u.read())
             LOCAL_IMAGE_CACHE[url.full_url] = f.name
         print(f.name)
-    return open(LOCAL_IMAGE_CACHE[url.full_url], 'rb')
+    return cast(BufferedIOBase, open(LOCAL_IMAGE_CACHE[url.full_url], 'rb'))
 
 
 @dataclass
@@ -155,7 +156,7 @@ class Template:
             buffer.seek(0)
             return ImageModule.open(buffer)
 
-    def render(self, message: Iterable[str], output: IO):
+    def render(self, message: Iterable[str], output: BufferedIOBase):
         """
         Renders the image into the local filesystem.
         """

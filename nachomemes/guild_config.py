@@ -44,7 +44,9 @@ class GuildConfig:
 
     def shun(self, member: Member, victim: Member) -> str:
         """make someone a bad boy"""
-        if member == victim:
+        if not self.can_use(member):
+            return "Computer says no."
+        elif member == victim:
             self.pariah.append(victim.id)
             return "If that's what you really want to do."
         elif victim.id in self.override:
