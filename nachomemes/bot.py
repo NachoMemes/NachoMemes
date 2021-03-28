@@ -44,19 +44,23 @@ BASE_DIR = Path(__file__).parent.parent
 # Debug mode (true or false)
 DEBUG = False
 
+UPLOAD_ALL = True
+
 # recent meme requests (and the resulting meme message)
 RECENT: SimpleCache[int,Message] = SimpleCache(200)
 
 async def report(ctx: Union[Context,Message], ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
+    print(err, file=sys.stderr)
+
     response = {"content": message + "```" + err[:1980] if DEBUG else str(ex) + "```"}
     if isinstance(ctx, Context):
-        await ctx.send(**response)
+        return await ctx.send(**response)
     else:
         await ctx.edit(**response)
+        return ctx
     # re-raise the exception so it's printed to the console
-    raise ex
 
 @bot.event
 async def on_ready():
@@ -79,27 +83,27 @@ async def on_message_edit(before: Message, after: Message):
         data = after.content.split();
         if not data or data.pop(0) != "!meme":
             return
-        with generate(config, _get_member(after), data) as response:
 
-            if "buffer" in response:
-                url = await UPLOADER.upload(response.pop("buffer", None), response.pop("key"))
-                response["content"] = url
-            react = response.pop("react", False)
+        response = await generate(config, _get_member(after), data)
 
-            # await msg.edit(**response)
+        if "buffer" in response:
+            url = await UPLOADER.upload(response.pop("buffer", None), response.pop("key"))
+            response["content"] = url
+        react = response.pop("react", False)
+
+        await msg.edit(**response)
 
 
-            # save the message for later modification
-            RECENT[after.id] = msg
-
-            if react:
-                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
-                    await msg.add_reaction(r)
+        if react:
+            for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                await msg.add_reaction(r)
 
     except TemplateError as err:
         await msg.edit(content=f"```{err}```")
     except Exception as ex:
         await report(msg, ex)
+    # save the message for later modification
+    RECENT[after.id] = msg
 
         
 
@@ -285,22 +289,18 @@ async def dump(ctx: Context, template_name: str=None):
         await report(ctx, ex)
 
 
-@contextmanager
-def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> Generator[dict, None, None]:
+async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
     buffer: Optional[BufferedIOBase] = None
     try:
         if not config.can_use(member):
-            yield {"content": no_memes(config, member)}
-            return 
+            return {"content": no_memes(config, member)}
 
         if not data:
-            yield {"content": list_templates(config)}
-            return 
+            return {"content": list_templates(config)}
 
         (template_name, *text) = data
         if not text:
-            yield {"content": print_template(config, template_name)}
-            return 
+            return {"content": print_template(config, template_name)}
 
         template = STORE.best_match(config.guild_id, template_name, True)
         name = re.sub(r"\W+", "", str(text))
@@ -309,7 +309,8 @@ def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> Genera
         template.render(text, buffer)
         buffer.flush()
         buffer.seek(0)
-        yield {"buffer": buffer, "key": key, "react": True}
+        url = await UPLOADER.upload(buffer, key)
+        return {"content": url, "react": True}
     finally:
         if buffer:
             buffer.close()
@@ -325,25 +326,24 @@ async def meme(ctx: Context, *data):
     try:
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
-        with generate(config, _get_member(ctx), data) as response:
+        response = await generate(config, _get_member(ctx), data)
 
-            if "buffer" in response:
-                response["file"] = discord.File(response.pop("buffer", None), response.pop("key"))
-            react = response.pop("react", False)
+        react = response.pop("react", False)
 
-            msg = await ctx.send(**response)
+        msg = await ctx.send(**response)
 
-            # save the message for later modification
-            RECENT[ctx.message.id] = msg
+        # save the message for later modification
+        RECENT[ctx.message.id] = msg
 
-            if react:
-                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
-                    await msg.add_reaction(r)
+        if react:
+            for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                await msg.add_reaction(r)
 
     except TemplateError as err:
-        await ctx.send(f"```{err}```")
+        RECENT[ctx.message.id] = await ctx.send(f"```{err}```")
     except Exception as ex:
-        await report(ctx, ex)
+        RECENT[ctx.message.id] = await report(ctx, ex)
+        
 
 def run(config: Configuration) -> None:
     """Starts an instance of the bot using the provided configuration."""
