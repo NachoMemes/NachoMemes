@@ -1,5 +1,5 @@
 from io import BufferedIOBase
-from typing import Optional
+from typing import cast, Optional
 
 import discord
 from discord import TextChannel, Client, Message
@@ -17,7 +17,7 @@ class DiscordChannelUploader(Uploader):
     async def upload(self, buffer: BufferedIOBase, key: str=None) -> str: 
         if not  self.channel:
             self.channel = self.client.get_channel(self.channel_id)
-        msg = await self.channel.send(file=discord.File(buffer, key))
+        msg = await cast(TextChannel, self.channel).send(file=discord.File(buffer, key))
         url = msg.attachments[0].url
         self.recent[url] = msg
         return url

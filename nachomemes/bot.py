@@ -54,9 +54,10 @@ async def report(ctx: Union[Context,Message], ex: Exception, message: str="An er
     err = traceback.format_exc()
     print(err, file=sys.stderr)
 
-    response = {"content": message + "```" + err[:1980] if DEBUG else str(ex) + "```"}
+    response: dict = {"content": message + "```" + err[:1980] if DEBUG else str(ex) + "```"}
     if isinstance(ctx, Context):
-        return await ctx.send(**response)
+        msg = await ctx.send(**response)
+        return msg
     else:
         await ctx.edit(**response)
         return ctx

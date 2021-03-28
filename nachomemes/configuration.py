@@ -6,11 +6,11 @@ from typing import Any, List, Optional
 
 from discord import Client
 
-from nachomemes import *
+from nachomemes import Store, LocalTemplateStore, DynamoTemplateStore, Uploader, DiscordChannelUploader
 
 class Configuration:
     _uploader: Uploader
-
+    _store: Store
 
     def __init__(self, args: Optional[List[str]] = None):
         parser = ArgumentParser(
@@ -39,7 +39,7 @@ class Configuration:
     @property
     def store(self) -> Store:
         if not self._store:
-            self._store: Store = LocalTemplateStore()
+            self._store = LocalTemplateStore()
             if not self.local and self.access_key:
                 self._store = DynamoTemplateStore(
                     self.access_key, self.secret, self.region, self._store, self.debug
