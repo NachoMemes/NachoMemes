@@ -11,7 +11,7 @@ import textwrap
 import traceback
 from io import BufferedIOBase
 from pathlib import Path
-from typing import List, Optional, Iterable, Generator
+from typing import cast, List, Optional, Iterable, Generator, Union
 from json.decoder import JSONDecodeError
 from contextlib import AbstractContextManager
 
@@ -45,15 +45,16 @@ BASE_DIR = Path(__file__).parent.parent
 DEBUG = False
 
 # recent meme requests (and the resulting meme message)
-RECENT = SimpleCache(200)
+RECENT: SimpleCache[int,Message] = SimpleCache(200)
 
-async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
+async def report(ctx: Union[Context,Message], ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
-    if DEBUG:
-        await ctx.send(message + "```" + err[:1980] + "```")
+    response = {"content": message + "```" + err[:1980] if DEBUG else str(ex) + "```"}
+    if isinstance(ctx, Context):
+        await ctx.send(**response)
     else:
-        await ctx.send(message + "```" + str(ex) + "```")
+        await ctx.edit(**response)
     # re-raise the exception so it's printed to the console
     raise ex
 
@@ -69,33 +70,44 @@ async def on_message_delete(message: Message):
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
-    if before.id in RECENT:
-        pass
+    msg = RECENT.pop(before.id, None)
+    if not msg:
+        return
+    try:
+        config = STORE.guild_config(after.guild)
+        # await msg.clear_reactions()
+        data = after.content.split();
+        if not data or data.pop(0) != "!meme":
+            return
+        with generate(config, _get_member(after), data) as response:
+
+            if "buffer" in response:
+                url = await UPLOADER.upload(response.pop("buffer", None), response.pop("key"))
+                response["content"] = url
+            react = response.pop("react", False)
+
+            # await msg.edit(**response)
+
+
+            # save the message for later modification
+            RECENT[after.id] = msg
+
+            if react:
+                for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                    await msg.add_reaction(r)
+
+    except TemplateError as err:
+        await msg.edit(content=f"```{err}```")
+    except Exception as ex:
+        await report(msg, ex)
+
         
-
-
 
 with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-# def _match_template_name(name: str, guild: GuildConfig) -> str:
-#     """Matches input fuzzily against proper names."""
-#     fuzzed = process.extractOne(name, STORE.list_memes(guild.guild_id, ("name",)))
-#     if fuzzed[1] < 25:
-#         raise TemplateError(f"could not load a template matching {name}")
-#     return fuzzed[0]["name"]
-
-
-# def _find_close_matches(name: str, guild: GuildConfig) -> list:
-#     """Chooses top matches against input."""
-#     return [
-#         name[0]["name"]
-#         for name in process.extract(name, STORE.list_memes(guild.guild_id, ("name",)))
-#         if name[1] > 40
-#     ]
-
-def _get_member(ctx: Context) -> Member:
+def _get_member(ctx: Union[Message,Context]) -> Member:
     member = ctx.author
     assert isinstance(member, Member)
     return member
@@ -310,9 +322,9 @@ async def meme(ctx: Context, *data):
     If no template, or template but no text, then show info about
     the memes available.
     """
-    await ctx.trigger_typing()
-    config = STORE.guild_config(ctx.guild)
     try:
+        await ctx.trigger_typing()
+        config = STORE.guild_config(ctx.guild)
         with generate(config, _get_member(ctx), data) as response:
 
             if "buffer" in response:

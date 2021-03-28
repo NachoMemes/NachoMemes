@@ -1,17 +1,18 @@
 from io import BufferedIOBase
+from typing import Optional
 
 import discord
-from discord import TextChannel, Client
+from discord import TextChannel, Client, Message
 
 from nachomemes import Uploader, SimpleCache
 
 class DiscordChannelUploader(Uploader):
-    channel: TextChannel
+    channel: Optional[TextChannel] = None
 
     def __init__(self, client: Client, channel_id: int):
         self.client = client
         self.channel_id = channel_id
-        self.recent = SimpleCache(200)
+        self.recent: SimpleCache[int,Message] = SimpleCache(200)
 
     async def upload(self, buffer: BufferedIOBase, key: str=None) -> str: 
         if not  self.channel:

@@ -2,8 +2,9 @@ import contextlib
 from collections import OrderedDict
 from typing import Callable, Iterator, TypeVar
 
-
-class SimpleCache(OrderedDict):
+_KT = TypeVar('_KT')
+_VT = TypeVar('_VT')
+class SimpleCache(OrderedDict[_KT, _VT]):
     def __init__(self, max_items:int):
         self.max_items = max_items;
 

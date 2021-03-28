@@ -3,6 +3,7 @@ from typing import Iterable, Optional, Union
 
 from .channel import *
 from .client import *
+from .message import *
 
 class Guild:
     id: int
