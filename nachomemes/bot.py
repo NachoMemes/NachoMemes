@@ -1,6 +1,3 @@
-# pylint: disable=broad-except,missing-function-docstring
-# don't need docstrings for subcommands with descriptions
-
 """Discord bot go brrrr"""
 import io
 import json
@@ -9,32 +6,34 @@ import re
 import sys
 import textwrap
 import traceback
+from io import BufferedIOBase
 from pathlib import Path
-from collections import OrderedDict
-from typing import List, Optional, Iterable
+from typing import cast, List, Optional, Iterable, Generator, Union
 from json.decoder import JSONDecodeError
-
+from contextlib import AbstractContextManager
 
 import discord
 from discord import Member, Role
 from discord.message import Message
 from discord.ext import commands
-from discord.ext.commands import Context
-from fuzzywuzzy import process
+from discord.ext.commands import Bot, Context
 
-from nachomemes import get_creds, get_store, get_args
+from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder
+
 
 # this description describes
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 
 # this is the bot
-bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
+bot = Bot(command_prefix="!", description=DESCRIPTION)
 
 # this is where we keep the memes
 STORE: Store
+
+UPLOADER: Uploader
 
 # Base directory from which paths should extend.
 BASE_DIR = Path(__file__).parent.parent
@@ -42,21 +41,23 @@ BASE_DIR = Path(__file__).parent.parent
 # Debug mode (true or false)
 DEBUG = False
 
+UPLOAD_ALL = True
+
 # recent meme requests (and the resulting meme message)
-RECENT: OrderedDict = OrderedDict()
+RECENT: SimpleCache[int,Message] = SimpleCache(200)
 
-MAX_RECENT = 200
-
-
-async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
+async def report(ctx: Union[Context,Message], ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
-    if DEBUG:
-        await ctx.send(message + "```" + err[:1980] + "```")
+    print(err, file=sys.stderr)
+
+    response: dict = {"content": message + "```" + (err[:1980] if DEBUG else str(ex)) + "```"}
+    if isinstance(ctx, Context):
+        msg = await ctx.send(**response)
+        return msg
     else:
-        await ctx.send(message + "```" + str(ex) + "```")
-    # re-raise the exception so it's printed to the console
-    raise ex
+        await ctx.edit(**response)
+        return ctx
 
 @bot.event
 async def on_ready():
@@ -68,30 +69,49 @@ async def on_message_delete(message: Message):
     if message.id in RECENT:
         await RECENT.pop(message.id).delete()
 
+@bot.event
+async def on_message_edit(before: Message, after: Message):
+    msg = RECENT.pop(before.id, None)
+    if not msg:
+        return
+    try:
+        config = STORE.guild_config(after.guild)
+        try:
+            await msg.clear_reactions()
+        except:
+            pass
+
+        data = after.content.split();
+        if not data or data.pop(0) != "!meme":
+            return
+
+        response = await generate(config, _get_member(after), data)
+
+        if "buffer" in response:
+            url = await UPLOADER.upload(response.pop("buffer", None), response.pop("key"))
+            response["content"] = url
+        react = response.pop("react", False)
+
+        await msg.edit(**response)
 
 
+        if react:
+            for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                await msg.add_reaction(r)
+
+    except TemplateError as err:
+        await msg.edit(content=f"```{err}```")
+    except Exception as ex:
+        await report(msg, ex)
+    # save the message for later modification
+    RECENT[after.id] = msg
+        
 
 with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-def _match_template_name(name: str, guild: GuildConfig) -> str:
-    """Matches input fuzzily against proper names."""
-    fuzzed = process.extractOne(name, STORE.list_memes(guild.guild_id, ("name",)))
-    if fuzzed[1] < 25:
-        raise TemplateError(f"could not load a template matching {name}")
-    return fuzzed[0]["name"]
-
-
-def _find_close_matches(name: str, guild: GuildConfig) -> list:
-    """Chooses top matches against input."""
-    return [
-        name[0]["name"]
-        for name in process.extract(name, STORE.list_memes(guild.guild_id, ("name",)))
-        if name[1] > 40
-    ]
-
-def _get_member(ctx: Context) -> Member:
+def _get_member(ctx: Union[Message,Context]) -> Member:
     member = ctx.author
     assert isinstance(member, Member)
     return member
@@ -104,54 +124,33 @@ def _mentions_or_author(ctx: Context) -> Iterable[Member]:
     return _mentioned_members(ctx) if ctx.message.mentions else (_get_member(ctx),)
 
 
-async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
-    """Fuzzy match multiple templates."""
-    fuzzed_memes = _find_close_matches(template.strip("*"), guild)
-    memes = [
-        match
-        for match in STORE.list_memes(guild.guild_id, ("name", "description"))
-        if match["name"] in fuzzed_memes
-    ]
-    lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
-    await ctx.send("**Potential Templates**" + "".join(lines))
+def no_memes(config: GuildConfig, member: Member) -> str:
+    return "```You get nothing! Good day sir!```"
 
 
-async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
-    """Fuzzy match a single template"""
-    fmeme = _match_template_name(template, guild)
-    _meme = STORE.get_template(guild.guild_id, fmeme)
-    await ctx.send(
-        textwrap.dedent(
-            f"""\
-        Name: {_meme.name}
-        Description: *{_meme.description}*
-        Times used: {_meme.usage}
-        Expects {len(_meme.textboxes)} strings
-        Read more: {_meme.docs}"""
+def print_template(config: GuildConfig, template_name: str) -> str:
+    if "*" not in template_name:
+        # try to find the best match
+        template = STORE.best_match(config.guild_id, template_name)
+        return textwrap.dedent(f"""\
+            Name: {template.name}
+            Description: *{template.description}*
+            Times used: {template.usage}
+            Expects {len(template.textboxes)} strings
+            Read more: {template.docs}"""
         )
-    )
+    # otherwise list possible options
+    memes = STORE.close_matches(config.guild_id, template_name, ("name", "description"))
+    lines = (f"\n{m['name']}: *{m['description']}*" for m in memes)
+    return "**Potential Templates**" + "".join(lines)
 
 
-async def templates(ctx: Context, template: str = None):
-    try:
-        config: GuildConfig = STORE.guild_config(ctx.guild)
-        if not config.can_use(_get_member(ctx)):
-            return await ctx.send(f"```{config.no_memes()}```")
-        if template:
-            # A fuzzy multiple match
-            if "*" in template:
-                return await fuzzed_templates(ctx, template, config)
-            # A single fuzzy match.
-            return await single_fuzzed_template(ctx, template, config)
-        else:
-            # The whole damn list.
-            memes = STORE.list_memes(config.guild_id, ("name", "description"))
-            lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
-            await ctx.send("**Templates**" + "".join(lines))
-    except TemplateError:
-        await ctx.send(f"```Could not load '{template}'```")
-    except Exception as ex:
-        await report(ctx, ex, "error listing templates")
+
+
+def list_templates(config: GuildConfig) -> str:
+    memes = STORE.list_memes(config.guild_id, ("name", "description"))
+    lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
+    return "**Templates**" + "".join(lines)
 
 
 @bot.group(description="Administrative functions group")
@@ -281,78 +280,85 @@ async def dump(ctx: Context, template_name: str=None):
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
-        match = _match_template_name(template_name, config)
-        data = STORE.get_template_data(config.guild_id, match)
-        message = json.dumps(data, cls=TemplateEncoder)
+        template = STORE.best_match(template_name, config.guild_id)
+        message = json.dumps(template, cls=TemplateEncoder)
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except TemplateError as ex:
         await ctx.send(textwrap.dedent(f'```No template matching "{template_name}" found```'))
     except Exception as ex:
         await report(ctx, ex)
 
+
+async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
+    buffer: Optional[BufferedIOBase] = None
+    try:
+        if not config.can_use(member):
+            return {"content": no_memes(config, member)}
+
+        if not data:
+            return {"content": list_templates(config)}
+
+        (template_name, *text) = data
+        if not text:
+            return {"content": print_template(config, template_name)}
+
+        template = STORE.best_match(config.guild_id, template_name, True)
+        name = re.sub(r"\W+", "", str(text))
+        key = f"{template.name}-{name}.png"
+        buffer = io.BytesIO()
+        template.render(text, buffer)
+        buffer.flush()
+        buffer.seek(0)
+        url = await UPLOADER.upload(buffer, key)
+        return {"content": url, "react": True}
+    finally:
+        if buffer:
+            buffer.close()
+
+
 @bot.command(description="Make a new meme.")
-async def meme(ctx: Context, template: str = None, /, *text):
+async def meme(ctx: Context, *data):
     """Main bot command for rendering/showing memes.
 
     If no template, or template but no text, then show info about
     the memes available.
     """
-    if not isinstance(template, str) or len(text) == 0:
-        return await templates(ctx, template)
-    # We have text now, so make it a meme.
     try:
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
-        if not config.can_use(_get_member(ctx)):
-            return await ctx.send(f"```{config.no_memes()}```")
-        match = _match_template_name(template, config)
-        # Have the meme name be reflective of the contents.
-        name = re.sub(r"\W+", "", str(text))
-        key = f"{match}-{name}.png"
-        _meme = STORE.get_template(config.guild_id, match, True)
-        with io.BytesIO() as buffer:
-            _meme.render(text, buffer)
-            buffer.flush()
-            buffer.seek(0)
-            msg = await ctx.send(file=discord.File(buffer, key))
+        response = await generate(config, _get_member(ctx), data)
+
+        react = response.pop("react", False)
+
+        msg = await ctx.send(**response)
 
         # save the message for later modification
         RECENT[ctx.message.id] = msg
-        if len(RECENT) > MAX_RECENT:
-            RECENT.popitem(last=False)
 
-        for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
-            await msg.add_reaction(r)
-    except TemplateError:
-        await ctx.send(f"```Could not load '{match}'```")
+        if react:
+            for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                await msg.add_reaction(r)
+
+    except TemplateError as err:
+        RECENT[ctx.message.id] = await ctx.send(f"```{err}```")
     except Exception as ex:
-        await report(ctx, ex)
+        RECENT[ctx.message.id] = await report(ctx, ex)
         
 
+def run(config: Configuration) -> None:
+    """Starts an instance of the bot using the provided configuration."""
+    config.discord_client = bot
 
-def run(debug: bool, local: bool) -> None:
-    """
-    Starts an instance of the bot using the passed-in options.
-    """
     global DEBUG
-    DEBUG = debug
-
-    creds = get_creds(debug)
-
+    DEBUG = config.debug
+    
     global STORE
-    STORE = get_store(local, debug)
+    STORE = config.store
 
-    try:
-        token = creds["discord_token"]
-    except NameError:
-        print(
-            "Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!"
-        )
-        sys.exit(1)
+    global UPLOADER
+    UPLOADER = config.uploader
 
-    bot.run(token)
-
+    config.start_discord_client()
 
 if __name__ == "__main__":
-    args = get_args()
-    run(args.debug, args.local)
+    run(Configuration())

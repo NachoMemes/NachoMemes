@@ -3,7 +3,7 @@ import json
 
 from flask import Flask, jsonify, request, send_file
 
-from nachomemes import get_store, get_args
+from nachomemes import Configuration
 from nachomemes.store import Store, update_serialization, TemplateEncoder
 
 
@@ -39,7 +39,7 @@ def make_server(store: Store) -> Flask:
 
 
 if __name__ == '__main__':
-    args = get_args()
-    app = make_server(get_store(args.local, args.debug))
-    app.debug = True
+    config = Configuration()
+    app = make_server(config.store)
+    app.debug = config.debug
     app.run()

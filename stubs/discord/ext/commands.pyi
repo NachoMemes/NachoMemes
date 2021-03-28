@@ -1,6 +1,6 @@
 from typing import Callable, Any, Optional, Union, Iterable
 
-from discord import Guild, Member
+from discord import Guild, Member, Client
 from discord.message import Message
 from discord.abc import User
 
@@ -15,7 +15,7 @@ class Group(Command):
     def command(*args, **kwargs) -> Callable[..., Command]: ...
 
 
-class Bot:
+class Bot(Client):
     def __init__(self, command_prefix: str, help_command:str = None, description:str=None, **options): ...
 
     def event(self, coro): ...

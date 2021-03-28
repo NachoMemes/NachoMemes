@@ -1,6 +1,10 @@
 from io import BufferedIOBase
 from typing import Iterable, Optional, Union
 
+from .channel import *
+from .client import *
+from .message import *
+
 class Guild:
     id: int
     name: str
@@ -34,4 +38,5 @@ class Role:
 class File:
     def __init__(self, fp: Union[str, BufferedIOBase],
         filename: Optional[str], spoiler: bool=False): ...
-        
+
+
