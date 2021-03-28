@@ -2,6 +2,7 @@ from io import BufferedIOBase
 from typing import Iterable, Optional, Union
 
 from .channel import *
+from .client import *
 
 class Guild:
     id: int

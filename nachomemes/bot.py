@@ -17,10 +17,10 @@ import discord
 from discord import Member, Role
 from discord.message import Message
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Bot, Context
 from fuzzywuzzy import process
 
-from nachomemes import Configuration, SimpleCache
+from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder
@@ -29,10 +29,12 @@ from nachomemes.store import Store, TemplateEncoder
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 
 # this is the bot
-bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
+bot = Bot(command_prefix="!", description=DESCRIPTION)
 
 # this is where we keep the memes
 STORE: Store
+
+UPLOADER: Uploader
 
 # Base directory from which paths should extend.
 BASE_DIR = Path(__file__).parent.parent
@@ -320,21 +322,21 @@ async def meme(ctx: Context, template: str = None, /, *text):
         await ctx.send(f"```Could not load '{match}'```")
     except Exception as ex:
         await report(ctx, ex)
-        
-
 
 def run(config: Configuration) -> None:
-    """
-    Starts an instance of the bot using the passed-in options.
-    """
+    """Starts an instance of the bot using the provided configuration."""
+    config.discord_client = bot
+
     global DEBUG
     DEBUG = config.debug
     
     global STORE
     STORE = config.store
 
-    bot.run(config.discord_token)
+    global UPLOADER
+    UPLOADER = config.uploader
 
+    config.start_discord_client()
 
 if __name__ == "__main__":
     run(Configuration())
