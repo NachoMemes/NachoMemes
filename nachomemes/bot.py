@@ -80,7 +80,11 @@ async def on_message_edit(before: Message, after: Message):
         return
     try:
         config = STORE.guild_config(after.guild)
-        # await msg.clear_reactions()
+        try:
+            await msg.clear_reactions()
+        except:
+            pass
+
         data = after.content.split();
         if not data or data.pop(0) != "!meme":
             return
