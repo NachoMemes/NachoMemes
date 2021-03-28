@@ -105,7 +105,6 @@ async def on_message_edit(before: Message, after: Message):
         await report(msg, ex)
     # save the message for later modification
     RECENT[after.id] = msg
-
         
 
 with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
@@ -113,7 +112,7 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
 
 
 def _get_member(ctx: Union[Message,Context]) -> Member:
-    return ctx.author
+    member = ctx.author
     assert isinstance(member, Member)
     return member
 
