@@ -18,7 +18,6 @@ from discord import Member, Role
 from discord.message import Message
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
-from fuzzywuzzy import process
 
 from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
@@ -72,21 +71,21 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
     statuses = json.load(c)["credits"]
 
 
-def _match_template_name(name: str, guild: GuildConfig) -> str:
-    """Matches input fuzzily against proper names."""
-    fuzzed = process.extractOne(name, STORE.list_memes(guild.guild_id, ("name",)))
-    if fuzzed[1] < 25:
-        raise TemplateError(f"could not load a template matching {name}")
-    return fuzzed[0]["name"]
+# def _match_template_name(name: str, guild: GuildConfig) -> str:
+#     """Matches input fuzzily against proper names."""
+#     fuzzed = process.extractOne(name, STORE.list_memes(guild.guild_id, ("name",)))
+#     if fuzzed[1] < 25:
+#         raise TemplateError(f"could not load a template matching {name}")
+#     return fuzzed[0]["name"]
 
 
-def _find_close_matches(name: str, guild: GuildConfig) -> list:
-    """Chooses top matches against input."""
-    return [
-        name[0]["name"]
-        for name in process.extract(name, STORE.list_memes(guild.guild_id, ("name",)))
-        if name[1] > 40
-    ]
+# def _find_close_matches(name: str, guild: GuildConfig) -> list:
+#     """Chooses top matches against input."""
+#     return [
+#         name[0]["name"]
+#         for name in process.extract(name, STORE.list_memes(guild.guild_id, ("name",)))
+#         if name[1] > 40
+#     ]
 
 def _get_member(ctx: Context) -> Member:
     member = ctx.author
@@ -101,30 +100,24 @@ def _mentions_or_author(ctx: Context) -> Iterable[Member]:
     return _mentioned_members(ctx) if ctx.message.mentions else (_get_member(ctx),)
 
 
-async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
-    """Fuzzy match multiple templates."""
-    fuzzed_memes = _find_close_matches(template.strip("*"), guild)
-    memes = [
-        match
-        for match in STORE.list_memes(guild.guild_id, ("name", "description"))
-        if match["name"] in fuzzed_memes
-    ]
-    lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
+async def list_possible_templates(ctx: Context, name: str, guild: GuildConfig):
+    """Print the result of matching potential templates"""
+    memes = STORE.close_matches(guild.guild_id, name, ("name", "description"))
+    lines = (f"\n{m['name']}: *{m['description']}*" for m in memes)
     await ctx.send("**Potential Templates**" + "".join(lines))
 
 
-async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
-    """Fuzzy match a single template"""
-    fmeme = _match_template_name(template, guild)
-    _meme = STORE.get_template(guild.guild_id, fmeme)
+async def print_best_match(ctx: Context, name: str, guild: GuildConfig):
+    """Print the closest template match"""
+    meme = STORE.best_match(guild.guild_id, name)
     await ctx.send(
         textwrap.dedent(
             f"""\
-        Name: {_meme.name}
-        Description: *{_meme.description}*
-        Times used: {_meme.usage}
-        Expects {len(_meme.textboxes)} strings
-        Read more: {_meme.docs}"""
+        Name: {meme.name}
+        Description: *{meme.description}*
+        Times used: {meme.usage}
+        Expects {len(meme.textboxes)} strings
+        Read more: {meme.docs}"""
         )
     )
 
@@ -135,11 +128,11 @@ async def templates(ctx: Context, template: str = None):
         if not config.can_use(_get_member(ctx)):
             return await ctx.send(f"```{config.no_memes()}```")
         if template:
-            # A fuzzy multiple match
-            if "*" in template:
-                return await fuzzed_templates(ctx, template, config)
-            # A single fuzzy match.
-            return await single_fuzzed_template(ctx, template, config)
+            if "*" not in template:
+                # try to find the best match
+                return await print_best_match(ctx, template, config)
+            # otherwise list possible options
+            return await list_possible_templates(ctx, template, config)
         else:
             # The whole damn list.
             memes = STORE.list_memes(config.guild_id, ("name", "description"))
@@ -278,9 +271,8 @@ async def dump(ctx: Context, template_name: str=None):
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
-        match = _match_template_name(template_name, config)
-        data = STORE.get_template_data(config.guild_id, match)
-        message = json.dumps(data, cls=TemplateEncoder)
+        template = STORE.best_match(template_name, config.guild_id)
+        message = json.dumps(template, cls=TemplateEncoder)
         await ctx.send(textwrap.dedent(f"```{message}```"))
     except TemplateError as ex:
         await ctx.send(textwrap.dedent(f'```No template matching "{template_name}" found```'))
@@ -288,27 +280,27 @@ async def dump(ctx: Context, template_name: str=None):
         await report(ctx, ex)
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx: Context, template: str = None, /, *text):
+async def meme(ctx: Context, template_name: str = None, /, *text):
     """Main bot command for rendering/showing memes.
 
     If no template, or template but no text, then show info about
     the memes available.
     """
-    if not isinstance(template, str) or len(text) == 0:
-        return await templates(ctx, template)
+    if not isinstance(template_name, str) or len(text) == 0:
+        return await templates(ctx, template_name)
     # We have text now, so make it a meme.
     try:
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
         if not config.can_use(_get_member(ctx)):
             return await ctx.send(f"```{config.no_memes()}```")
-        match = _match_template_name(template, config)
+        template = STORE.best_match(config.guild_id, template_name, True)
+
         # Have the meme name be reflective of the contents.
         name = re.sub(r"\W+", "", str(text))
-        key = f"{match}-{name}.png"
-        _meme = STORE.get_template(config.guild_id, match, True)
+        key = f"{template.name}-{name}.png"
         with io.BytesIO() as buffer:
-            _meme.render(text, buffer)
+            template.render(text, buffer)
             buffer.flush()
             buffer.seek(0)
             msg = await ctx.send(file=discord.File(buffer, key))
@@ -319,7 +311,7 @@ async def meme(ctx: Context, template: str = None, /, *text):
         for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
             await msg.add_reaction(r)
     except TemplateError:
-        await ctx.send(f"```Could not load '{match}'```")
+        await ctx.send(f"```Could not load '{template_name}'```")
     except Exception as ex:
         await report(ctx, ex)
 
