@@ -1,6 +1,3 @@
-# pylint: disable=broad-except,missing-function-docstring
-# don't need docstrings for subcommands with descriptions
-
 """Discord bot go brrrr"""
 import io
 import json
@@ -25,7 +22,7 @@ from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder
-from .util import contextmanager
+
 
 # this description describes
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
@@ -54,14 +51,13 @@ async def report(ctx: Union[Context,Message], ex: Exception, message: str="An er
     err = traceback.format_exc()
     print(err, file=sys.stderr)
 
-    response: dict = {"content": message + "```" + err[:1980] if DEBUG else str(ex) + "```"}
+    response: dict = {"content": message + "```" + (err[:1980] if DEBUG else str(ex)) + "```"}
     if isinstance(ctx, Context):
         msg = await ctx.send(**response)
         return msg
     else:
         await ctx.edit(**response)
         return ctx
-    # re-raise the exception so it's printed to the console
 
 @bot.event
 async def on_ready():
@@ -117,7 +113,7 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
 
 
 def _get_member(ctx: Union[Message,Context]) -> Member:
-    member = ctx.author
+    return ctx.author
     assert isinstance(member, Member)
     return member
 
