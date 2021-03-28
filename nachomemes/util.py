@@ -1,4 +1,7 @@
+import contextlib
 from collections import OrderedDict
+from typing import Callable, Iterator, TypeVar
+
 
 class SimpleCache(OrderedDict):
     def __init__(self, max_items:int):
@@ -10,3 +13,10 @@ class SimpleCache(OrderedDict):
         super().__setitem__(key, new_value)
 
 
+T = TypeVar("T")
+def contextmanager(
+    func: Callable[..., Iterator[T]]
+) -> Callable[..., contextlib.AbstractContextManager[T]]:
+    result = contextlib.contextmanager(func)
+    result.__annotations__ = {**func.__annotations__, "return": contextlib.AbstractContextManager[T]}
+    return result

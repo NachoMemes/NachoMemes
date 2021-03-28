@@ -85,9 +85,6 @@ class GuildConfig:
         """format an error for failing to admin the bot"""
         return f"Therapist: What do we do when we feel powerless and depressed?\n\n{self.member_nick(member)}: Try to {action} the bot without {permission} rights.\n\nTherapist: No."
 
-    def no_memes(self) -> str:
-        return "No memes for you!"
-
     def __hash__(self):
         return hash(self.guild_id)
 

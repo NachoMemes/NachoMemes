@@ -102,24 +102,15 @@ class Store(ABC):
     @abstractmethod
     def save_guild_config(self, guild: GuildConfig) -> None:
         """serialize and persist the guild configuration information in the store"""
+
         
     def best_match(self, guild_id: str, name: str, increment_use: bool = False
     ) -> Template:
         """Matches input fuzzily against proper names."""
         fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)))
-        if fuzzed[1] < 25:
+        if fuzzed[1] < 50:
             raise TemplateError(f"could not load a template matching {name}")
         return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
-
-
-    # def _find_close_matches(name: str, guild: GuildConfig) -> list:
-    #     """Chooses top matches against input."""
-    #     return [
-    #         name[0]["name"]
-    #         for name in process.extract(name, STORE.list_memes(guild.guild_id, ("name",)))
-    #         if name[1] > 40
-    #     ]
-
 
 
     def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
@@ -130,21 +121,6 @@ class Store(ABC):
             if  match[1] > 40
         ]
 
-
-    # async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
-    #     """Fuzzy match a single template"""
-    #     fmeme = _match_template_name(template, guild)
-    #     _meme = STORE.get_template(guild.guild_id, fmeme)
-    #     await ctx.send(
-    #         textwrap.dedent(
-    #             f"""\
-    #         Name: {_meme.name}
-    #         Description: *{_meme.description}*
-    #         Times used: {_meme.usage}
-    #         Expects {len(_meme.textboxes)} strings
-    #         Read more: {_meme.docs}"""
-    #         )
-    #     )
 
 def get_guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
     """
