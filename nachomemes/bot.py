@@ -52,8 +52,10 @@ async def report(ctx: Union[Context,Message], ex: Exception, message: str="An er
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
     print(err, file=sys.stderr)
-
-    response: dict = {"content": message + "```" + (err[:1980] if DEBUG else str(ex)) + "```"}
+    response = {"embed": Embed(
+        title = getattr(ex, "title", message),
+        description = f"```{err[:1980]}```" if DEBUG else str(ex)
+    )}
     if isinstance(ctx, Context):
         msg = await ctx.send(**response)
         return msg
@@ -354,8 +356,6 @@ async def meme(ctx: Context, *data):
             for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
                 await msg.add_reaction(r)
 
-    except TemplateError as err:
-        RECENT[ctx.message.id] = await ctx.send(f"```{err}```")
     except Exception as ex:
         RECENT[ctx.message.id] = await report(ctx, ex)
         
@@ -366,7 +366,7 @@ def run(config: Configuration) -> None:
 
     global DEBUG
     DEBUG = config.debug
-    
+
     global STORE
     STORE = config.store
 

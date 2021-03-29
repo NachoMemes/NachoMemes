@@ -5,11 +5,12 @@ from math import cos, pi, sin
 from os import PathLike
 from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
 
+
 from PIL import Image as ImageModule, ImageFont, ImageDraw, ImageFont
 from PIL.Image import Image
 from PIL.ImageFont import FreeTypeFont
 
-from nachomemes.template import Color, Font, Template, TextBox
+from nachomemes.template import Color, Font, Template, TextBox, TemplateError
 
 T = TypeVar('T')
 
@@ -50,7 +51,8 @@ def _reflow_text(text, count) -> List[str]:
             "\n".join(" ".join(l) for l in partition_on_value("/", b))
             for b in partition_on_value("//", text)
         ]
-        assert len(result) == count
+        if len(result) != count:
+            raise TemplateError(f"unable to fit provided text into {count} boxes")
         return result
 
     # if we just see a single slash, use that as the text box boundary
