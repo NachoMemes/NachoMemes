@@ -13,7 +13,7 @@ from json.decoder import JSONDecodeError
 from contextlib import AbstractContextManager
 
 import discord
-from discord import Member, Role
+from discord import Member, Role, Embed
 from discord.message import Message
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
@@ -45,6 +45,8 @@ UPLOAD_ALL = True
 
 # recent meme requests (and the resulting meme message)
 RECENT: SimpleCache[int,Message] = SimpleCache(200)
+
+# def 
 
 async def report(ctx: Union[Context,Message], ex: Exception, message: str="An error has occured"):
     """helper function to summarize or print the traceback of an error"""
@@ -125,7 +127,7 @@ def _mentions_or_author(ctx: Context) -> Iterable[Member]:
 
 
 def no_memes(config: GuildConfig, member: Member) -> str:
-    return "```You get nothing! Good day sir!```"
+    return "You get nothing! Good day sir!"
 
 
 def print_template(config: GuildConfig, template_name: str) -> str:
@@ -167,23 +169,24 @@ async def memebot(ctx: Context):
 
 @memebot.command(description="updates the database with template data")
 async def refresh(ctx: Context, refresh_type: str=None):
+    is_hard = refresh_type == "--hard"
+    title = "Executinfg hard refresh" if is_hard else "Executing refresh"
     try:
         await ctx.trigger_typing()
-        is_hard = refresh_type == "--hard"
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if is_hard:
             if not config.can_admin(_get_member(ctx)):
                 return await ctx.send(
-                    f"```{config.no_admin(_get_member(ctx))}```"
+                    embed=Embed(title = title, description = config.no_admin(_get_member(ctx)))
                 )
         else:
             if not config.can_edit(_get_member(ctx)):
                 return await ctx.send(
-                    f"```{config.no_admin(_get_member(ctx),'refresh','edit')}```"
+                    embed=Embed(title = title, description = config.no_admin(_get_member(ctx),'refresh','edit'))
                 )
-
-        message = STORE.refresh_memes(config.guild_id, is_hard)
-        await ctx.send(f"```{message}```")
+        return await ctx.send(
+            embed=Embed(title = title, description = STORE.refresh_memes(config.guild_id, is_hard))
+        )
     except Exception as ex:
         await report(ctx, ex)
 
@@ -193,13 +196,17 @@ async def admin_role(ctx: Context, role_id: str=None):
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
             role: Optional[Role] = ctx.guild.get_role(config.admin_role) if config.admin_role else None
-            await ctx.send(textwrap.dedent(
-                f"```Members of '{role}' are authorized to administer the memes.```"))
+            return await ctx.send(embed=Embed(
+                title = "Getting current discord admin role",
+                description = f"Members of '{role}' are authorized to administer the memes."
+            ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
-            message = config.set_admin_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            return await ctx.send(embed=Embed(
+                title = "Setting discord admin role to " + role_id,
+                description = config.set_admin_role(_get_member(ctx), role)
+            ))
     except Exception as ex:
         await report(ctx, ex)
 
@@ -209,12 +216,17 @@ async def edit_role(ctx: Context, role_id: str=None):
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
             role: Optional[Role] = ctx.guild.get_role(config.edit_role) if config.edit_role else None
-            await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
+            return await ctx.send(embed=Embed(
+                title = "Getting current discord edit role",
+                description = f"Members of '{role}' are authorized to edit the memes."
+            ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
-            message = config.set_edit_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            return await ctx.send(embed=Embed(
+                title = "Setting discord edit role to " + role_id,
+                description = config.set_edit_role(_get_member(ctx), role)
+            ))
     except Exception as ex:
         await report(ctx, ex)
 
@@ -223,8 +235,10 @@ async def shun(ctx: Context):
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         for subject in _mentioned_members(ctx):
-            message: str = config.shun(_get_member(ctx), subject)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            await ctx.send(embed=Embed(
+                title = "Shunning " + subject.display_name,
+                description = config.shun(_get_member(ctx), subject)
+            ))
         STORE.save_guild_config(config)
     except Exception as ex:
         await report(ctx, ex)
@@ -293,7 +307,8 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
     buffer: Optional[BufferedIOBase] = None
     try:
         if not config.can_use(member):
-            return {"content": no_memes(config, member)}
+            embed = Embed(description = no_memes(config, member), title="no")
+            return {"embed": embed}
 
         if not data:
             return {"content": list_templates(config)}
