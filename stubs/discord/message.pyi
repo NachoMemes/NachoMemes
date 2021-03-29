@@ -1,7 +1,7 @@
 from typing import Any, List, Optional, Union
 
 from .mixins import Hashable
-from discord import Member, Guild
+from discord import Member, Guild, role
 from discord.abc import User
 
 class Attachment:

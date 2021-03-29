@@ -3,7 +3,10 @@ from typing import Iterable, Optional, Union
 
 from .channel import *
 from .client import *
+from .embeds import *
+from .member import *
 from .message import *
+from .role import *
 
 class Guild:
     id: int
@@ -18,21 +21,7 @@ class Permissions:
     @property
     def administrator(self) -> bool: ...
 
-class Member:
-    id: int
-    discriminator: int
-    name: str
-    nick: str
 
-    @property
-    def guild_permissions(self) -> Permissions: ...
-
-    @property
-    def roles(self) -> Iterable[Role]: ...
-
-class Role:
-    id: int
-    name: str
 
 
 class File:

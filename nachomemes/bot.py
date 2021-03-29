@@ -52,7 +52,7 @@ async def report(ctx: Union[Context,Message], ex: Exception, message: str="An er
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
     print(err, file=sys.stderr)
-    response = {"embed": Embed(
+    response: dict = {"embed": Embed(
         title = getattr(ex, "title", message),
         description = f"```{err[:1980]}```" if DEBUG else str(ex)
     )}
