@@ -104,12 +104,14 @@ class Store(ABC):
         """serialize and persist the guild configuration information in the store"""
 
         
-    def best_match(self, guild_id: str, name: str, increment_use: bool = False
+    def best_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
     ) -> Template:
         """Matches input fuzzily against proper names."""
+        if name is None:
+            raise TemplateError(f"No template name provided")
         fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)))
         if fuzzed[1] < 50:
-            raise TemplateError(f"could not load a template matching {name}")
+            raise TemplateError(f"No template matching '{name}'")
         return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
 
 
