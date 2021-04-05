@@ -10,7 +10,7 @@ from .store import Store, da_config, get_guild_id
 from .dynamo_store import DynamoTemplateStore
 from .local_store import LocalTemplateStore
 from .render import render_template
-from argpase import Namespace
+from argparse import Namespace
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
