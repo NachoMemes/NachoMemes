@@ -15,7 +15,7 @@ from dacite import Config, from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.template import Color, Font, Justify, Template, TemplateError
+from nachomemes.template import Color, Font, Justify, Template, TemplateError, TextBox
 
 # additional deserializers for dacite
 da_config = Config({
@@ -39,6 +39,8 @@ serializers = cast(dict, MappingProxyType({
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
     """helper function to recursivly modify the format of data prior to serialization"""
+    if isinstance(value, TextBox):
+        return update_serialization(value.__dict__)
     if type(value) in _serializers:
         return _serializers[type(value)](value)
     if dict == type(value):
@@ -104,12 +106,14 @@ class Store(ABC):
         """serialize and persist the guild configuration information in the store"""
 
         
-    def best_match(self, guild_id: str, name: str, increment_use: bool = False
+    def best_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
     ) -> Template:
         """Matches input fuzzily against proper names."""
+        if name is None:
+            raise TemplateError(f"No template name provided")
         fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)))
         if fuzzed[1] < 50:
-            raise TemplateError(f"could not load a template matching {name}")
+            raise TemplateError(f"No template matching '{name}'")
         return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
 
 

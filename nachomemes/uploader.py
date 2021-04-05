@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from io import BufferedIOBase
+from typing import BinaryIO
 
 class Uploader(ABC):
 
     @abstractmethod
-    async def upload(self, buffer: BufferedIOBase, key: str=None) -> str: 
+    async def upload(self, buffer: BinaryIO, key: str=None) -> str: 
         pass
 
     def expire(self, url: str) -> None:
