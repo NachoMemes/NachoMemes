@@ -17,7 +17,6 @@ from discord import Member, Role, Embed
 from discord.message import Message
 from discord.ext import commands
 from discord.ext.commands import Bot, Context, Group
-from discord.ext import typed_commands
 
 from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
