@@ -92,7 +92,7 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
                 return print_template(config, template_name)
 
         template = STORE.best_match(config.guild_id, template_name, True)
-        name = re.sub(r"\W+", "", str(text))
+        name = re.sub(r"\W+", "-", str(text))
         key = f"{template.name}-{name}.png"
         buffer = io.BytesIO()
         template.render(text, buffer)
