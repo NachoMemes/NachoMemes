@@ -21,7 +21,7 @@ from discord.ext.commands import Bot, Context
 from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
-from nachomemes.store import Store, TemplateEncoder
+from nachomemes.store import Store, TemplateEncoder, update_serialization
 
 
 # this description describes
@@ -210,7 +210,7 @@ async def memebot(ctx: Context):
 @memebot.command(description="updates the database with template data")
 async def refresh(ctx: Context, refresh_type: str=None):
     is_hard = refresh_type == "--hard"
-    title = "Executinfg hard refresh" if is_hard else "Executing refresh"
+    title = "Executing hard refresh" if is_hard else "Executing refresh"
     try:
         await ctx.trigger_typing()
         config: GuildConfig = STORE.guild_config(ctx.guild)
@@ -239,10 +239,11 @@ async def admin_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
-            role: Optional[Role] = ctx.guild.get_role(config.admin_role) if config.admin_role else None
             return await ctx.send(embed=Embed(
                 title = "Getting current discord admin role",
-                description = f"Members of '{role}' are authorized to administer the memes."
+                description = f"Members of '{ctx.guild.get_role(config.admin_role)}' are authorized to administer the memes." 
+                    if config.admin_role else 
+                    "Nobody is authorized to administer the memes."
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
@@ -260,10 +261,11 @@ async def edit_role(ctx: Context, role_id: str=None):
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
-            role: Optional[Role] = ctx.guild.get_role(config.edit_role) if config.edit_role else None
             return await ctx.send(embed=Embed(
                 title = "Getting current discord edit role",
-                description = f"Members of '{role}' are authorized to edit the memes."
+                description = f"Members of '{ctx.guild.get_role(config.edit_role)}' are authorized to edit the memes." 
+                    if config.edit_role else 
+                    "Nobody is authorized to administer the memes."
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
@@ -344,9 +346,10 @@ async def dump(ctx: Context, template_name: str=None):
         if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
         template = STORE.best_match(config.guild_id, template_name, )
+        result = json.dumps(update_serialization(template.__dict__), indent=2, cls=TemplateEncoder)
         await ctx.send(embed=Embed(
             title = "Exporting meme",
-            description = json.dumps(template, cls=TemplateEncoder)
+            description = f"```{result}```"
         ))
     except Exception as ex:
         await report(ctx, ex)

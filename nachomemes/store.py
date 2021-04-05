@@ -15,7 +15,7 @@ from dacite import Config, from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.template import Color, Font, Justify, Template, TemplateError
+from nachomemes.template import Color, Font, Justify, Template, TemplateError, TextBox
 
 # additional deserializers for dacite
 da_config = Config({
@@ -39,6 +39,8 @@ serializers = cast(dict, MappingProxyType({
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
     """helper function to recursivly modify the format of data prior to serialization"""
+    if isinstance(value, TextBox):
+        return update_serialization(value.__dict__)
     if type(value) in _serializers:
         return _serializers[type(value)](value)
     if dict == type(value):
