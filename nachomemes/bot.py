@@ -16,7 +16,8 @@ import discord
 from discord import Member, Role, Embed
 from discord.message import Message
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot, Context, Group
+from discord.ext import typed_commands
 
 from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
@@ -128,9 +129,10 @@ with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
 
 
 def _get_member(ctx: Union[Message,Context]) -> Member:
-    member = ctx.author
-    assert isinstance(member, Member)
-    return member
+    if isinstance(ctx, Context):
+        return cast(Member, ctx.author)
+    elif isinstance(ctx, Message):
+        return cast(Member, ctx.author)
 
 def _mentioned_members(ctx: Context) -> Iterable[Member]:
     "Returns the id of a memeber mentioned in a message."
@@ -198,7 +200,7 @@ async def memebot(ctx: Context):
         return
     try:
         message = "\n".join((f"**`{s.name}`**: {s.description}"
-            for s in ctx.command.walk_commands()))
+            for s in cast(Group, ctx.command).walk_commands()))
         return await ctx.send(embed=Embed(
             title = "Available commands", 
             description = message
@@ -237,6 +239,8 @@ async def refresh(ctx: Context, refresh_type: str=None):
 @memebot.command(description="set the discord role for adminstrators")
 async def admin_role(ctx: Context, role_id: str=None):
     try:
+        if ctx.guild is None:
+            raise ValueError ("no guild") 
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
             return await ctx.send(embed=Embed(
@@ -259,6 +263,8 @@ async def admin_role(ctx: Context, role_id: str=None):
 @memebot.command(description="set the discord role for editors")
 async def edit_role(ctx: Context, role_id: str=None):
     try:
+        if ctx.guild is None:
+            raise ValueError ("no guild") 
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
             return await ctx.send(embed=Embed(
