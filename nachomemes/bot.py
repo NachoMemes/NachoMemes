@@ -61,20 +61,36 @@ def print_matching_templates(config: GuildConfig, template_name: str) -> dict:
     )}
 
 def print_template(config: GuildConfig, template_name: str) -> dict:
-    template = STORE.best_match(config.guild_id, template_name)
-    return {"embed": Embed(
-        title="Template info",
-        description = dedent(f"""\
-        Name: {template.name}
-        Description: *{template.description}*
-        Times used: {template.usage}
-        Expects {len(template.textboxes)} strings
-        Read more: {template.docs}""")
-        ).set_image(
-            url=template.image_url.full_url
-        )
-    }
-
+    match = STORE.get_match(config.guild_id, template_name)
+    if match:
+        template = match[0]
+        if  match[1] >= 90:
+            custom_title="Template Info"
+        else:
+            custom_title="Exact template not found, see best match"
+        return {"embed": Embed(
+            title = custom_title,
+            description = dedent(f"""\
+            Name: {template.name}
+            Description: *{template.description}*
+            Times used: {template.usage}
+            Expects {len(template.textboxes)} strings
+            Read more: {template.docs}""")
+            ).set_image(
+                url=template.image_url.full_url
+            )
+        }
+    else:
+        memes = STORE.close_matches(config.guild_id, template_name, ("name", "description"))
+        if not memes:
+            return {"embed": Embed(
+                title="No good matches found"
+            )} 
+        else:
+            return {"embed": Embed(
+                title="Closest Matches",
+                description = "".join(f"\n{m[0]['name']}: *{m[0]['description']}*" for m in memes)
+            )}        
 
 async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
     buffer: Optional[BufferedIOBase] = None
@@ -89,10 +105,7 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
 
         (template_name, *text) = data
         if not text:
-            if "*" in template_name:
-                return print_matching_templates(config, template_name)
-            else:
-                return print_template(config, template_name)
+            return print_template(config, template_name)
 
         template = STORE.best_match(config.guild_id, template_name, True)
         name = re.sub(r"\W+", "-", str(text))

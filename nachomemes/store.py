@@ -105,22 +105,24 @@ class Store(ABC):
     def save_guild_config(self, guild: GuildConfig) -> None:
         """serialize and persist the guild configuration information in the store"""
 
-        
-    def best_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
+
+    def get_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
     ) -> Template:
-        """Matches input fuzzily against proper names."""
+        """Matches input exactly against name. 
+        If exact not available, provide best with a warning.
+        If there are no good options (fuzz > 10) then provide a list"""
         if name is None:
             raise TemplateError(f"No template name provided")
-        fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)))
-        if fuzzed[1] < 50:
-            raise TemplateError(f"No template matching '{name}'")
-        return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
-
+        fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)), score_cutoff=75)
+        if fuzzed is None:
+            return None
+            #raise TemplateError(f"No templates found that are close enough")
+        return [self.get_template(guild_id, fuzzed[0]["name"], increment_use), fuzzed[1]]
 
     def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
         """Fuzzy match multiple templates."""
         return [
-            match[0]
+            match
             for match in process.extract(name, self.list_memes(guild_id, fields))
             if  match[1] > 40
         ]
