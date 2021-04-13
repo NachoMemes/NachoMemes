@@ -156,7 +156,7 @@ class Template:
             buffer.seek(0)
             return ImageModule.open(buffer)
 
-    def render(self, message: Iterable[str], output: BufferedIOBase):
+    def render(self, message: List[str], output: BufferedIOBase):
         """
         Renders the image into the local filesystem.
         """

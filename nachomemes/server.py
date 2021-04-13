@@ -29,7 +29,7 @@ def make_server(store: Store) -> Flask:
         text = " ".join(request.args.getlist('text'))
         print(text)
         buffer = io.BytesIO()
-        meme.render(text, buffer)
+        meme.render([text], buffer)
         buffer.seek(0)
         return send_file(
             buffer,

@@ -361,13 +361,17 @@ async def dump(ctx: Context, template_name: str=None):
 
 
 @bot.command(description="Make a new meme.")
-async def meme(ctx: Context, *data):
+async def meme(ctx: Context):
     """Main bot command for rendering/showing memes.
 
     If no template, or template but no text, then show info about
     the memes available.
     """
     try:
+        data = ctx.message.content.split()
+        if not data or data.pop(0) != "!meme":
+            return
+            
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
         response = await generate(config, _get_member(ctx), data)

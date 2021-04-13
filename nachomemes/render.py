@@ -33,7 +33,7 @@ def partition_on_value(value: T, seq: Iterable[T]) -> Iterable[Iterable[T]]:
     return partition_on(pred, seq)
 
 
-def _reflow_text(text, count) -> List[str]:
+def _reflow_text(text: List[str], count: int) -> List[str]:
     """Using slashes, break up the provided text into the requested number of boxes"""
 
     if len(text) == count:
@@ -170,7 +170,7 @@ def _debug_box(img: Image, tb: TextBox) -> None:
 
 
 def render_template(
-    template: Template, message: Iterable[str], output: BufferedIOBase, debug: bool = False
+    template: Template, message: List[str], output: BufferedIOBase, debug: bool = False
 ) -> None:
     """This is the thing that does the thing"""
 
