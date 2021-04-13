@@ -69,8 +69,11 @@ def print_template(config: GuildConfig, template_name: str) -> dict:
         Description: *{template.description}*
         Times used: {template.usage}
         Expects {len(template.textboxes)} strings
-        Read more: {template.docs}""")
-    )}
+        Read more: {template.docs}"""),
+        ).set_image(
+            url=template.image_url.full_url
+        )
+    }
 
 
 async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
