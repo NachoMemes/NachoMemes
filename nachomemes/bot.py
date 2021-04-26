@@ -250,10 +250,11 @@ async def admin_role(ctx: Context, role_id: str=None):
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
+            description = config.set_admin_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
             return await ctx.send(embed=Embed(
                 title = "Setting discord admin role to " + role_id,
-                description = config.set_admin_role(_get_member(ctx), role)
+                description = description
             ))
     except Exception as ex:
         await report(ctx, ex)
@@ -274,10 +275,11 @@ async def edit_role(ctx: Context, role_id: str=None):
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
+            description = config.set_edit_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
             return await ctx.send(embed=Embed(
                 title = "Setting discord edit role to " + role_id,
-                description = config.set_edit_role(_get_member(ctx), role)
+                description = description
             ))
     except Exception as ex:
         await report(ctx, ex)
