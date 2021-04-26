@@ -1,40 +1,39 @@
-# pylint: disable=broad-except,missing-function-docstring
-# don't need docstrings for subcommands with descriptions
-
 """Discord bot go brrrr"""
 import io
 import json
 import os
 import re
 import sys
-import textwrap
 import traceback
+from io import BufferedIOBase
+from textwrap import dedent
 from pathlib import Path
-from collections import OrderedDict
-from typing import List, Optional, Iterable
+from typing import cast, List, Optional, Iterable, Generator, Union
 from json.decoder import JSONDecodeError
-
+from contextlib import AbstractContextManager
 
 import discord
-from discord import Member, Role
+from discord import Member, Role, Embed
 from discord.message import Message
 from discord.ext import commands
-from discord.ext.commands import Context
-from fuzzywuzzy import process
+from discord.ext.commands import Bot, Context, Group
 
-from nachomemes import get_creds, get_store, get_args
+from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
-from nachomemes.store import Store, TemplateEncoder
+from nachomemes.store import Store, TemplateEncoder, update_serialization
+
 
 # this description describes
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
 
 # this is the bot
-bot = commands.Bot(command_prefix="!", description=DESCRIPTION)
+bot = Bot(command_prefix="!", description=DESCRIPTION)
 
 # this is where we keep the memes
 STORE: Store
+
+UPLOADER: Uploader
 
 # Base directory from which paths should extend.
 BASE_DIR = Path(__file__).parent.parent
@@ -42,21 +41,109 @@ BASE_DIR = Path(__file__).parent.parent
 # Debug mode (true or false)
 DEBUG = False
 
+UPLOAD_ALL = True
+
 # recent meme requests (and the resulting meme message)
-RECENT: OrderedDict = OrderedDict()
+RECENT: SimpleCache[int,Message] = SimpleCache(200)
 
-MAX_RECENT = 200
+def print_all_templates(config: GuildConfig) -> dict:
+    memes = STORE.list_memes(config.guild_id, ("name", "description"))
+    return {"embed": Embed(
+        title="Available Templates",
+        description = "".join((f"\n{m['name']}: *{m['description']}*" for m in memes))
+    )}
+
+def print_matching_templates(config: GuildConfig, template_name: str) -> dict:
+    memes = STORE.close_matches(config.guild_id, template_name, ("name", "description"))
+    return {"embed": Embed(
+        title="Matching templates",
+        description = "".join(f"\n{m['name']}: *{m['description']}*" for m in memes)
+    )}
+
+def print_template(config: GuildConfig, template_name: str) -> dict:
+    template = STORE.best_match(config.guild_id, template_name)
+    return {"embed": Embed(
+        title="Template info",
+        description = dedent(f"""\
+        Name: {template.name}
+        Description: *{template.description}*
+        Times used: {template.usage}
+        Expects {len(template.textboxes)} strings
+        Read more: {template.docs}""")
+    )}
 
 
-async def report(ctx: Context, ex: Exception, message: str="An error has occured"):
+async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
+    buffer: Optional[BufferedIOBase] = None
+    try:
+        if not config.can_use(member):
+            return {"embed": Embed(
+                title="NO",
+                description = no_memes(config, member)
+            )}
+        if not data:
+            return print_all_templates(config)
+
+        (template_name, *text) = data
+        if not text:
+            if "*" in template_name:
+                return print_matching_templates(config, template_name)
+            else:
+                return print_template(config, template_name)
+
+        template = STORE.best_match(config.guild_id, template_name, True)
+        name = re.sub(r"\W+", "-", str(text))
+        key = f"{template.name}-{name}.png"
+        buffer = io.BytesIO()
+        template.render(text, buffer)
+        buffer.flush()
+        buffer.seek(0)
+        url = await UPLOADER.upload(buffer, key)
+
+        return {
+            "embed": Embed(type="image").set_image(url=url),
+            "react": True
+         }
+    finally:
+        if buffer:
+            buffer.close()
+
+async def report(ctx: Union[Context,Message], ex: Exception, message: str="An error has occured") -> Union[Context,Message]:
     """helper function to summarize or print the traceback of an error"""
     err = traceback.format_exc()
-    if DEBUG:
-        await ctx.send(message + "```" + err[:1980] + "```")
+    print(err, file=sys.stderr)
+    response: dict = {"embed": Embed(
+        title = getattr(ex, "title", message),
+        description = f"```{err[:1980]}```" if DEBUG else str(ex)
+    )}
+    if isinstance(ctx, Context):
+        msg = await ctx.send(**response)
+        return msg
     else:
-        await ctx.send(message + "```" + str(ex) + "```")
-    # re-raise the exception so it's printed to the console
-    raise ex
+        await ctx.edit(**response)
+        return ctx
+
+with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
+    statuses = json.load(c)["credits"]
+
+
+def _get_member(ctx: Union[Message,Context]) -> Member:
+    if isinstance(ctx, Context):
+        return cast(Member, ctx.author)
+    elif isinstance(ctx, Message):
+        return cast(Member, ctx.author)
+
+def _mentioned_members(ctx: Context) -> Iterable[Member]:
+    "Returns the id of a memeber mentioned in a message."
+    return (m for m in ctx.message.mentions if isinstance(m, Member))
+
+def _mentions_or_author(ctx: Context) -> Iterable[Member]:
+    return _mentioned_members(ctx) if ctx.message.mentions else (_get_member(ctx),)
+
+
+def no_memes(config: GuildConfig, member: Member) -> str:
+    return "You get nothing! Good day sir!"
+
 
 @bot.event
 async def on_ready():
@@ -68,164 +155,143 @@ async def on_message_delete(message: Message):
     if message.id in RECENT:
         await RECENT.pop(message.id).delete()
 
-
-
-
-with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
-    statuses = json.load(c)["credits"]
-
-
-def _match_template_name(name: str, guild: GuildConfig) -> str:
-    """Matches input fuzzily against proper names."""
-    fuzzed = process.extractOne(name, STORE.list_memes(guild.guild_id, ("name",)))
-    if fuzzed[1] < 25:
-        raise TemplateError(f"could not load a template matching {name}")
-    return fuzzed[0]["name"]
-
-
-def _find_close_matches(name: str, guild: GuildConfig) -> list:
-    """Chooses top matches against input."""
-    return [
-        name[0]["name"]
-        for name in process.extract(name, STORE.list_memes(guild.guild_id, ("name",)))
-        if name[1] > 40
-    ]
-
-def _get_member(ctx: Context) -> Member:
-    member = ctx.author
-    assert isinstance(member, Member)
-    return member
-
-def _mentioned_members(ctx: Context) -> Iterable[Member]:
-    "Returns the id of a memeber mentioned in a message."
-    return (m for m in ctx.message.mentions if isinstance(m, Member))
-
-def _mentions_or_author(ctx: Context) -> Iterable[Member]:
-    return _mentioned_members(ctx) if ctx.message.mentions else (_get_member(ctx),)
-
-
-async def fuzzed_templates(ctx: Context, template: str, guild: GuildConfig):
-    """Fuzzy match multiple templates."""
-    fuzzed_memes = _find_close_matches(template.strip("*"), guild)
-    memes = [
-        match
-        for match in STORE.list_memes(guild.guild_id, ("name", "description"))
-        if match["name"] in fuzzed_memes
-    ]
-    lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
-    await ctx.send("**Potential Templates**" + "".join(lines))
-
-
-async def single_fuzzed_template(ctx: Context, template: str, guild: GuildConfig):
-    """Fuzzy match a single template"""
-    fmeme = _match_template_name(template, guild)
-    _meme = STORE.get_template(guild.guild_id, fmeme)
-    await ctx.send(
-        textwrap.dedent(
-            f"""\
-        Name: {_meme.name}
-        Description: *{_meme.description}*
-        Times used: {_meme.usage}
-        Expects {len(_meme.textboxes)} strings
-        Read more: {_meme.docs}"""
-        )
-    )
-
-
-async def templates(ctx: Context, template: str = None):
+@bot.event
+async def on_message_edit(before: Message, after: Message):
+    msg = RECENT.pop(before.id, None)
+    if not msg:
+        return
     try:
-        config: GuildConfig = STORE.guild_config(ctx.guild)
-        if not config.can_use(_get_member(ctx)):
-            return await ctx.send(f"```{config.no_memes()}```")
-        if template:
-            # A fuzzy multiple match
-            if "*" in template:
-                return await fuzzed_templates(ctx, template, config)
-            # A single fuzzy match.
-            return await single_fuzzed_template(ctx, template, config)
-        else:
-            # The whole damn list.
-            memes = STORE.list_memes(config.guild_id, ("name", "description"))
-            lines = [f"\n{m['name']}: *{m['description']}*" for m in memes]
-            await ctx.send("**Templates**" + "".join(lines))
-    except TemplateError:
-        await ctx.send(f"```Could not load '{template}'```")
-    except Exception as ex:
-        await report(ctx, ex, "error listing templates")
+        config = STORE.guild_config(after.guild)
+        try:
+            await msg.clear_reactions()
+        except:
+            pass
 
+        data = after.content.split()
+        if not data or data.pop(0) != "!meme":
+            return
+
+        response = await generate(config, _get_member(after), data)
+
+        if "buffer" in response:
+            url = await UPLOADER.upload(response.pop("buffer", None), response.pop("key"))
+            response["content"] = url
+        react = response.pop("react", False)
+
+        await msg.edit(**response)
+
+
+        if react:
+            for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                await msg.add_reaction(r)
+
+    except TemplateError as err:
+        await msg.edit(content=f"```{err}```")
+    except Exception as ex:
+        await report(msg, ex)
+    # save the message for later modification
+    RECENT[after.id] = msg
+        
 
 @bot.group(description="Administrative functions group")
 async def memebot(ctx: Context):
     if ctx.subcommand_passed:
         return
     try:
-        message = "\n".join((f"**{s.name}**: {s.description}"
-            for s in ctx.command.walk_commands()))
-        await ctx.send("Available commands\n"+message)
+        message = "\n".join((f"**`{s.name}`**: {s.description}"
+            for s in cast(Group, ctx.command).walk_commands()))
+        return await ctx.send(embed=Embed(
+            title = "Available commands", 
+            description = message
+        ))
     except Exception as ex:
         await report(ctx, ex, "error listing commands")
 
 
 @memebot.command(description="updates the database with template data")
 async def refresh(ctx: Context, refresh_type: str=None):
+    is_hard = refresh_type == "--hard"
+    title = "Executing hard refresh" if is_hard else "Executing refresh"
     try:
         await ctx.trigger_typing()
-        is_hard = refresh_type == "--hard"
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if is_hard:
             if not config.can_admin(_get_member(ctx)):
-                return await ctx.send(
-                    f"```{config.no_admin(_get_member(ctx))}```"
-                )
+                return await ctx.send(embed=Embed(
+                    title = title, 
+                    description = config.no_admin(_get_member(ctx))
+                ))
         else:
             if not config.can_edit(_get_member(ctx)):
-                return await ctx.send(
-                    f"```{config.no_admin(_get_member(ctx),'refresh','edit')}```"
-                )
-
-        message = STORE.refresh_memes(config.guild_id, is_hard)
-        await ctx.send(f"```{message}```")
+                return await ctx.send(embed=Embed(
+                    title = title, 
+                    description = config.no_admin(_get_member(ctx),'refresh','edit')
+                ))
+        return await ctx.send(embed=Embed(
+                title = title, 
+                description = STORE.refresh_memes(config.guild_id, is_hard)
+        ))
     except Exception as ex:
         await report(ctx, ex)
+
 
 @memebot.command(description="set the discord role for adminstrators")
 async def admin_role(ctx: Context, role_id: str=None):
     try:
+        if ctx.guild is None:
+            raise ValueError ("no guild") 
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
-            role: Optional[Role] = ctx.guild.get_role(config.admin_role) if config.admin_role else None
-            await ctx.send(textwrap.dedent(
-                f"```Members of '{role}' are authorized to administer the memes.```"))
+            return await ctx.send(embed=Embed(
+                title = "Getting current discord admin role",
+                description = f"Members of '{ctx.guild.get_role(config.admin_role)}' are authorized to administer the memes." 
+                    if config.admin_role else 
+                    "Nobody is authorized to administer the memes."
+            ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
-            message = config.set_admin_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            return await ctx.send(embed=Embed(
+                title = "Setting discord admin role to " + role_id,
+                description = config.set_admin_role(_get_member(ctx), role)
+            ))
     except Exception as ex:
         await report(ctx, ex)
+
 
 @memebot.command(description="set the discord role for editors")
 async def edit_role(ctx: Context, role_id: str=None):
     try:
+        if ctx.guild is None:
+            raise ValueError ("no guild") 
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not role_id:
-            role: Optional[Role] = ctx.guild.get_role(config.edit_role) if config.edit_role else None
-            await ctx.send(textwrap.dedent(f"```Members of '{role}' are authorized to edit the memes.```"))
+            return await ctx.send(embed=Embed(
+                title = "Getting current discord edit role",
+                description = f"Members of '{ctx.guild.get_role(config.edit_role)}' are authorized to edit the memes." 
+                    if config.edit_role else 
+                    "Nobody is authorized to administer the memes."
+            ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
-            message = config.set_edit_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            return await ctx.send(embed=Embed(
+                title = "Setting discord edit role to " + role_id,
+                description = config.set_edit_role(_get_member(ctx), role)
+            ))
     except Exception as ex:
         await report(ctx, ex)
+
 
 @memebot.command(description="prevent user from interacting with bot")
 async def shun(ctx: Context):
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         for subject in _mentioned_members(ctx):
-            message: str = config.shun(_get_member(ctx), subject)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            await ctx.send(embed=Embed(
+                title = "Shunning " + subject.display_name,
+                description = config.shun(_get_member(ctx), subject)
+            ))
         STORE.save_guild_config(config)
     except Exception as ex:
         await report(ctx, ex)
@@ -236,27 +302,29 @@ async def endorse(ctx: Context):
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         for subject in _mentioned_members(ctx):
-            message: str = config.endorse(_get_member(ctx), subject)
-            await ctx.send(textwrap.dedent(f"```{message}```"))
+            await ctx.send(embed=Embed(
+                title = "Endorsing " + subject.display_name,
+                description = config.endorse(_get_member(ctx), subject)
+            ))
         STORE.save_guild_config(config)
     except Exception as ex:
         await report(ctx, ex)
+
 
 @memebot.command(description="userinfo")
 async def whoami(ctx: Context):
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
-        for member in _mentions_or_author(ctx):
-            name = config.member_full_name(member)
-            await ctx.send(
-                textwrap.dedent(
-                    f"""\
-                    ```Name: {name}
-                    Can use: {config.can_use(member)}, Can edit: {config.can_edit(member)}, Can admin: {config.can_admin(member)}```"""
-                )
-            )
+        for subject in _mentions_or_author(ctx):
+            await ctx.send(embed=Embed(
+                title = "User info for " + subject.display_name,
+                description = dedent(f"""
+                    Name: {config.member_full_name(subject)}
+                    Can use: {config.can_use(subject)}, Can edit: {config.can_edit(subject)}, Can admin: {config.can_admin(subject)}""")
+            ))
     except Exception as ex:
         await report(ctx, ex)
+
 
 @memebot.command(description="Make a new template.")
 async def save(ctx: Context):
@@ -266,93 +334,73 @@ async def save(ctx: Context):
             raise RuntimeError("computer says no")
         value = ctx.message.content
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
-        message = STORE.save_meme(config.guild_id, json.loads(value))
-        await ctx.send(textwrap.dedent(f"```{message}```"))
-    except JSONDecodeError:
-        await ctx.send(textwrap.dedent(f"```invalid JSON provided```"))
+        await ctx.send(embed=Embed(
+            title = "Saving meme",
+            description = STORE.save_meme(config.guild_id, json.loads(value))
+        ))
+    except JSONDecodeError as ex:
+        await report(ctx, ex, "Invalid JSON provided")
     except Exception as ex:
         await report(ctx, ex)
 
+
 @memebot.command(description="dump template json")
 async def dump(ctx: Context, template_name: str=None):
-    if not template_name:
-        return await ctx.send(textwrap.dedent(f"```No template name provided```"))
     try:
         config: GuildConfig = STORE.guild_config(ctx.guild)
         if not config.can_edit(_get_member(ctx)):
             raise RuntimeError("computer says no")
-        match = _match_template_name(template_name, config)
-        data = STORE.get_template_data(config.guild_id, match)
-        message = json.dumps(data, cls=TemplateEncoder)
-        await ctx.send(textwrap.dedent(f"```{message}```"))
-    except TemplateError as ex:
-        await ctx.send(textwrap.dedent(f'```No template matching "{template_name}" found```'))
+        template = STORE.best_match(config.guild_id, template_name, )
+        result = json.dumps(update_serialization(template.__dict__), indent=2, cls=TemplateEncoder)
+        await ctx.send(embed=Embed(
+            title = "Exporting meme",
+            description = f"```{result}```"
+        ))
     except Exception as ex:
         await report(ctx, ex)
 
+
 @bot.command(description="Make a new meme.")
-async def meme(ctx: Context, template: str = None, /, *text):
+async def meme(ctx: Context, *data):
     """Main bot command for rendering/showing memes.
 
     If no template, or template but no text, then show info about
     the memes available.
     """
-    if not isinstance(template, str) or len(text) == 0:
-        return await templates(ctx, template)
-    # We have text now, so make it a meme.
     try:
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
-        if not config.can_use(_get_member(ctx)):
-            return await ctx.send(f"```{config.no_memes()}```")
-        match = _match_template_name(template, config)
-        # Have the meme name be reflective of the contents.
-        name = re.sub(r"\W+", "", str(text))
-        key = f"{match}-{name}.png"
-        _meme = STORE.get_template(config.guild_id, match, True)
-        with io.BytesIO() as buffer:
-            _meme.render(text, buffer)
-            buffer.flush()
-            buffer.seek(0)
-            msg = await ctx.send(file=discord.File(buffer, key))
+        response = await generate(config, _get_member(ctx), data)
+
+        react = response.pop("react", False)
+
+        msg = await ctx.send(**response)
 
         # save the message for later modification
         RECENT[ctx.message.id] = msg
-        if len(RECENT) > MAX_RECENT:
-            RECENT.popitem(last=False)
 
-        for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
-            await msg.add_reaction(r)
-    except TemplateError:
-        await ctx.send(f"```Could not load '{match}'```")
+        if react:
+            for r in ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"):
+                await msg.add_reaction(r)
+
     except Exception as ex:
-        await report(ctx, ex)
+        RECENT[ctx.message.id] = await report(ctx, ex)
         
 
+def run(config: Configuration) -> None:
+    """Starts an instance of the bot using the provided configuration."""
+    config.discord_client = bot
 
-def run(debug: bool, local: bool) -> None:
-    """
-    Starts an instance of the bot using the passed-in options.
-    """
     global DEBUG
-    DEBUG = debug
-
-    creds = get_creds(debug)
+    DEBUG = config.debug
 
     global STORE
-    STORE = get_store(local, debug)
+    STORE = config.store
 
-    try:
-        token = creds["discord_token"]
-    except NameError:
-        print(
-            "Could not get Discord token from config/creds.json environment variable $DISCORD_TOKEN!"
-        )
-        sys.exit(1)
+    global UPLOADER
+    UPLOADER = config.uploader
 
-    bot.run(token)
-
+    config.start_discord_client()
 
 if __name__ == "__main__":
-    args = get_args()
-    run(args.debug, args.local)
+    run(Configuration())

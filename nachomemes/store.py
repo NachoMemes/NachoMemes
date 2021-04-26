@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, Optional, Union,  Type, Generator, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, Generator, cast
 from types import GeneratorType
 from urllib.request import Request
 import atexit, os, re
@@ -9,12 +9,13 @@ from decimal import Decimal
 from operator import attrgetter
 from types import GeneratorType, MappingProxyType
 from urllib.request import Request
+from fuzzywuzzy import process
 
 from dacite import Config, from_dict
 from discord import Guild
 
 from nachomemes.guild_config import GuildConfig
-from nachomemes.template import Color, Font, Justify, Template
+from nachomemes.template import Color, Font, Justify, Template, TemplateError, TextBox
 
 # additional deserializers for dacite
 da_config = Config({
@@ -38,6 +39,8 @@ serializers = cast(dict, MappingProxyType({
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
     """helper function to recursivly modify the format of data prior to serialization"""
+    if isinstance(value, TextBox):
+        return update_serialization(value.__dict__)
     if type(value) in _serializers:
         return _serializers[type(value)](value)
     if dict == type(value):
@@ -96,13 +99,32 @@ class Store(ABC):
     def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
         """
         Retrieve the guild configuration as a GuildConfig object from the store.
-        Takes a Discord.py Guild object (https://discordpy.readthedocs.io/en/latest/api.html#guild).
         """
 
     @abstractmethod
     def save_guild_config(self, guild: GuildConfig) -> None:
         """serialize and persist the guild configuration information in the store"""
+
         
+    def best_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
+    ) -> Template:
+        """Matches input fuzzily against proper names."""
+        if name is None:
+            raise TemplateError(f"No template name provided")
+        fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)))
+        if fuzzed[1] < 50:
+            raise TemplateError(f"No template matching '{name}'")
+        return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
+
+
+    def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
+        """Fuzzy match multiple templates."""
+        return [
+            match[0]
+            for match in process.extract(name, self.list_memes(guild_id, fields))
+            if  match[1] > 40
+        ]
+
 
 def get_guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
     """

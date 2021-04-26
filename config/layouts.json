@@ -71,7 +71,7 @@
             "top": 0.58,
             "bottom": 0.8,
             "font": "COMIC_SANS",
-            "justify": "LEFT",
+            "justify": "CENTER",
             "rotation": 3
         }
     ],
