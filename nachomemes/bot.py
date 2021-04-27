@@ -70,7 +70,10 @@ def print_template(config: GuildConfig, template_name: str) -> dict:
         Times used: {template.usage}
         Expects {len(template.textboxes)} strings
         Read more: {template.docs}""")
-    )}
+        ).set_image(
+            url=template.image_url.full_url
+        )
+    }
 
 
 async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
@@ -250,10 +253,11 @@ async def admin_role(ctx: Context, role_id: str=None):
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
+            description = config.set_admin_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
             return await ctx.send(embed=Embed(
                 title = "Setting discord admin role to " + role_id,
-                description = config.set_admin_role(_get_member(ctx), role)
+                description = description
             ))
     except Exception as ex:
         await report(ctx, ex)
@@ -274,10 +278,11 @@ async def edit_role(ctx: Context, role_id: str=None):
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
+            description = config.set_edit_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
             return await ctx.send(embed=Embed(
                 title = "Setting discord edit role to " + role_id,
-                description = config.set_edit_role(_get_member(ctx), role)
+                description = description
             ))
     except Exception as ex:
         await report(ctx, ex)
