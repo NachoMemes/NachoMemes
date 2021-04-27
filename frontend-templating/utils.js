@@ -3,6 +3,7 @@ function getImage() {
     var canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d');
 
+    context.canvas.hidden = false;
     var base_image = new Image();
 
     base_image.src = document.getElementById('imagename').value; //Load Image ;
@@ -46,6 +47,32 @@ function getImage() {
         reOffset();
     }
 
+    function getHTMLRow(labelValue, labelForValue, select) {
+        var row = document.createElement("div");
+        row.setAttribute("class", "row");
+        var div = document.createElement("div");
+        div.setAttribute("class", "col-25");
+        var labelDiv = document.createElement("div");
+        labelDiv.setAttribute("class", "col-25");
+        var label = document.createElement("label");
+        label.setAttribute("for", labelForValue);
+        label.innerHTML = labelValue;
+        div.appendChild(select);
+        labelDiv.appendChild(label)
+        row.appendChild(div);
+        row.insertBefore(labelDiv, row.firstChild);
+
+        return row
+    }
+
+    function getHTMLSelectOption(value, humanReadableValue) {
+        var option = document.createElement("option");
+        option.setAttribute("value", value);
+        option.innerHTML = humanReadableValue;
+
+        return option
+    }
+
     var isRecDown = false;
     var startX, startY;
 
@@ -69,7 +96,7 @@ function getImage() {
     var drawRectangleOnCanvas = {
 
         handleMouseDown: function (e) {
-            
+
             // tell the browser we're handling this event
             e.preventDefault();
             e.stopPropagation();
@@ -98,8 +125,8 @@ function getImage() {
             e.preventDefault();
             e.stopPropagation();
 
-            mouseX = parseInt(e.clientX - recOffsetX);
-            mouseY = parseInt(e.clientY - recOffsetY);
+            var mouseX = parseInt(e.clientX - recOffsetX);
+            var mouseY = parseInt(e.clientY - recOffsetY);
 
             // Put your mouseup stuff here
             isRecDown = false;
@@ -119,75 +146,98 @@ function getImage() {
             drawCount = drawCount + 1;
 
 
+            var container = document.createElement("div");
+            container.setAttribute("class", "container");
+
             // Create new form fields dynamically when every 
             var form = document.createElement("form");
             form.setAttribute("method", "post");
 
+            var textBoxTitleCount = "title" + drawCount;
+            var textBoxTitle = document.createElement("h3");
+            textBoxTitle.setAttribute("id", textBoxTitleCount);
+            textBoxTitle.setAttribute("docId", drawCount);
+            textBoxTitle.innerHTML = "Text Box " + drawCount + ":";
+
+            form.appendChild(getHTMLRow("", textBoxTitleCount, textBoxTitle));
+
+
             // Create an input element for color
+
+            var coloroption2 = document.createElement("option");
+            coloroption2.setAttribute("value", "BLACK");
+            coloroption2.innerHTML = "Black";
+
             var colorCount = "color" + drawCount;
-            var color = document.createElement("input");
-            color.setAttribute("type", "text");
+            var color = document.createElement("select");
             color.setAttribute("id", colorCount);
             color.setAttribute("docId", drawCount);
-            color.setAttribute("placeholder", colorCount);
+            color.appendChild(getHTMLSelectOption("WHITE", "White"));
+            color.appendChild(getHTMLSelectOption("BLACK", "Black"));
+
             // Append the color input to the form 
-            form.appendChild(color);
+            form.appendChild(getHTMLRow("Text Color: ", colorCount, color));
+
+            // Create an outline element for justify
+            var outlineCount = "outline" + drawCount;
+            var outline = document.createElement("select");
+            outline.setAttribute("id", outlineCount);
+            outline.setAttribute("docId", drawCount);
+            outline.appendChild(getHTMLSelectOption("BLACK", "Black"))
+            outline.appendChild(getHTMLSelectOption("WHITE", "White"))
+            // Append the outline input to the form 
+            form.appendChild(getHTMLRow("Outline Color: ", outlineCount, outline));
 
 
             // Create an input element for font
             var fontCount = "font" + drawCount;
-            var font = document.createElement("input");
-            font.setAttribute("type", "text");
+            var font = document.createElement("select");
             font.setAttribute("id", fontCount);
             font.setAttribute("docId", drawCount);
-            font.setAttribute("placeholder", fontCount);
             // Append the font input to the form 
-            form.appendChild(font);
+            font.appendChild(getHTMLSelectOption("IMPACT", "Impact"));
+            form.appendChild(getHTMLRow("Font Type: ", fontCount, font));
+
 
             // Create an input element for justify
             var justifyCount = "justify" + drawCount;
-            var justify = document.createElement("input");
-            justify.setAttribute("type", "text");
+            var justify = document.createElement("select");
             justify.setAttribute("id", justifyCount);
             justify.setAttribute("docId", drawCount);
-            justify.setAttribute("placeholder", justifyCount);
             // Append the justify input to the form 
-            form.appendChild(justify);
+            justify.appendChild(getHTMLSelectOption("CENTER", "Center"));
+            justify.appendChild(getHTMLSelectOption("RIGHT", "Right"));
+            justify.appendChild(getHTMLSelectOption("LEFT", "Left"));
+            form.appendChild(getHTMLRow("Justification: ", justifyCount, justify));
+
 
             // Create an concat element for justify
             var concatCount = "concat" + drawCount;
-            var concat = document.createElement("input");
-            concat.setAttribute("type", "text");
+            var concat = document.createElement("select");
             concat.setAttribute("id", concatCount);
             concat.setAttribute("docId", drawCount);
-            concat.setAttribute("placeholder", concatCount);
             // Append the concat input to the form 
-            form.appendChild(concat);
-
-            // Create an outline element for justify
-            var outlineCount = "outline" + drawCount;
-            var outline = document.createElement("input");
-            outline.setAttribute("type", "text");
-            outline.setAttribute("id", outlineCount);
-            outline.setAttribute("docId", drawCount);
-            outline.setAttribute("placeholder", outlineCount);
-            // Append the outline input to the form 
-            form.appendChild(outline);
-
+            concat.appendChild(getHTMLSelectOption("TOP", "Top"));
+            form.appendChild(getHTMLRow("Concatenation: ", concatCount, concat));
 
             if (drawCount == 1) {
                 // create a submit button 
                 var s = document.createElement("input");
                 s.setAttribute("type", "button");
                 s.setAttribute("id", "submitButton");
-                s.setAttribute("value", "submit");
+                s.setAttribute("value", "Get Template JSON");
 
                 // Append the submit button to the form 
-                form.appendChild(s);
+                container.appendChild(s);
+
             }
 
-            document.getElementsByTagName("body")[0]
-                .appendChild(form);
+
+            container.appendChild(form);
+
+            document.getElementsByClassName("center")[0]
+                .appendChild(container);
+
 
 
 
@@ -237,6 +287,19 @@ function getImage() {
                             jsonTemplate.textboxes[index]['outline'] = document.getElementById(("outline" + (index + 1))).value;
 
                         }
+                        var copyText = JSON.stringify(jsonTemplate, null, 2)
+
+                          function updateClipboard(copyText) {
+                            navigator.clipboard.writeText(copyText).then(function() {
+                              /* clipboard successfully set */
+                              alert("The template JSON was copied to your clipboard!");
+                            }, function() {
+                              /* clipboard write failed */
+                            });
+                          }
+                          
+
+                        updateClipboard(copyText);
 
                         console.log(JSON.stringify(jsonTemplate, null, 2));
 
@@ -251,8 +314,8 @@ function getImage() {
             e.preventDefault();
             e.stopPropagation();
 
-            mouseX = parseInt(e.clientX - recOffsetX);
-            mouseY = parseInt(e.clientY - recOffsetY);
+            var mouseX = parseInt(e.clientX - recOffsetX);
+            var mouseY = parseInt(e.clientY - recOffsetY);
 
             // Put your mouseOut stuff here
             isRecDown = false;
@@ -266,8 +329,8 @@ function getImage() {
             e.preventDefault();
             e.stopPropagation();
 
-            mouseX = parseInt(e.clientX - recOffsetX);
-            mouseY = parseInt(e.clientY - recOffsetY);
+            var mouseX = parseInt(e.clientX - recOffsetX);
+            var mouseY = parseInt(e.clientY - recOffsetY);
             newRect = {
                 left: Math.min(startX, mouseX),
                 right: Math.max(startX, mouseX),
