@@ -10,7 +10,6 @@
     .centerCanvas {
         margin: auto;
         width: 80%;
-        padding: 10px;
     }
 
     input[type=button],
@@ -103,7 +102,28 @@
 <script type="text/javascript" src="utils.js"></script>
 
 <div class="center">
-    <div class="container">
+    <div class="container" id="chooseAction">
+        <div class="row">
+            <div class="col-50">
+                <label for="imagename">Please Choose what you want to do today: </label>
+            </div>
+            <div class="col-25">
+                <input type="button" id="updateExistingMemeButton"" onclick=" updateExistingMeme()"
+                    value="Update Existing Meme">
+            </div>
+            <div class="col-25">
+                <input type="button" id="makeNewMemeButton"" onclick=" makeNewMeme()" value="Make New Meme">
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <div class="container" hidden="true" id="makeNewMeme">
         <form>
             <div class="row">
                 <div class="col-25">
@@ -138,7 +158,6 @@
                         placeholder="Your template name..">
                 </div>
             </div>
-
         </form>
         <div class="row">
             <div class="col-25">
@@ -147,6 +166,62 @@
                 <input type="button" id="getImageButton"" onclick=" getImage()" value="Get Image">
             </div>
         </div>
+    </div>
+    <canvas hidden="true" id="canvas"></canvas>
+
+
+
+
+
+
+
+    <div class="container" hidden="true" id="updateExistingMeme">
+        <div class="row">
+            <div class="col-25">
+                <label for="imagename">Choose Meme: </label>
+            </div>
+            <div class="col-25" id="existingMemeOption">
+            </div>
+            <div class="col-50">
+                <input type="button" id="loadExistingMemeButton"" onclick=" loadMeme()" value="Load Meme">
+            </div>
+        </div>
+        <form id="updateExistingMemeForm" hidden="true">
+            <div class="row">
+                <div class="col-25">
+                    <label for="imageNameUpdate">Image URL: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="imageNameUpdate" name="imageNameUpdate" placeholder="Your image URL..">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="descriptionValue">Description: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="descriptionValueUpdate" name="descriptionValue" placeholder="Your description..">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="docsValue">KnowYourMeme URL: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="docsValueUpdate" name="docsValue" placeholder="Enter Docs URL here">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="templateNameValueUpdate">Template Name: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="templateNameValueUpdate" name="templateNameValue"
+                        placeholder="Your template name..">
+                </div>
+            </div>
+
+        </form>
     </div>
     <canvas hidden="true" id="canvas"></canvas>
 </div>

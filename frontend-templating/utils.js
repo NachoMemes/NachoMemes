@@ -1,3 +1,89 @@
+function updateExistingMeme() {
+    document.getElementById('updateExistingMeme').hidden = false;
+    document.getElementById('chooseAction').hidden = true;
+    //existingMemeOption
+
+    const otherParam = {
+        headers: {
+            "content-type": "application/json; charset=UTF-8"
+        },
+        method: "GET"
+    };
+    // fetch('http://example.com/movies.json')
+    //     .then(response => response.json())
+    //     .then(data => console.log(data));
+
+    function getHTMLSelectOption(value) {
+        var option = document.createElement("option");
+        option.setAttribute("value", value);
+        option.innerHTML = value;
+        return option
+    }
+
+    const baseUrl = 'http://localhost:5000/api/';
+    fetch((baseUrl + "557224886125461521/memes"), otherParam)
+        .then(data => { return data.json() })
+        .then(res => {
+            console.log("response from api:")
+            console.log(res)
+
+
+            var memesDiv = document.getElementById('existingMemeOption');
+            var memes = document.createElement("select");
+            memes.setAttribute("id", "memeChoiceSelect");
+            memes.setAttribute("docId", "1");
+            res.forEach((item, index) => {
+                memes.appendChild(getHTMLSelectOption(item));
+            })
+    
+            // Append the color input to the form 
+            memesDiv.appendChild(memes);
+
+        })
+        .catch(error => console.log(error));
+
+    //console.log(existingMemes)
+}
+
+function loadMeme() {
+    document.getElementById('updateExistingMemeForm').hidden = false;
+
+    const otherParam = {
+        headers: {
+            "content-type": "application/json; charset=UTF-8"
+        },
+        method: "GET"
+    };
+
+    let memeChoice = document.getElementById('memeChoiceSelect').value
+
+    const baseUrl = 'http://localhost:5000/api/';
+    fetch((baseUrl + "557224886125461521/memes/"+ memeChoice), otherParam)
+        .then(data => { return data.json() })
+        .then(res => {
+            console.log("response from api:")
+            console.log(res)
+            
+            document.getElementById('imageNameUpdate').value = res['image_url']
+            document.getElementById('descriptionValueUpdate').value = res['description']
+            document.getElementById('docsValueUpdate').value = res['docs']
+            document.getElementById('templateNameValueUpdate').value = res['name']
+
+            
+            // Append the color input to the form 
+
+        })
+        .catch(error => console.log(error));
+
+}
+
+function makeNewMeme() {
+    document.getElementById('makeNewMeme').hidden = false;
+    document.getElementById('chooseAction').hidden = true;
+
+
+}
+
 function getImage() {
 
     var canvas = document.getElementById('canvas'),
@@ -164,10 +250,6 @@ function getImage() {
 
             // Create an input element for color
 
-            var coloroption2 = document.createElement("option");
-            coloroption2.setAttribute("value", "BLACK");
-            coloroption2.innerHTML = "Black";
-
             var colorCount = "color" + drawCount;
             var color = document.createElement("select");
             color.setAttribute("id", colorCount);
@@ -225,7 +307,7 @@ function getImage() {
                 var s = document.createElement("input");
                 s.setAttribute("type", "button");
                 s.setAttribute("id", "submitButton");
-                s.setAttribute("value", "Get Template JSON");
+                s.setAttribute("value", "Save Meme Template");
 
                 // Append the submit button to the form 
                 container.appendChild(s);
@@ -289,30 +371,30 @@ function getImage() {
                         }
                         const baseUrl = 'http://localhost:5000/api/';
                         var dataBody = JSON.stringify(jsonTemplate, null, 2);
-                        const otherParam={
-                            headers:{
-                                "content-type":"application/json; charset=UTF-8"
+                        const otherParam = {
+                            headers: {
+                                "content-type": "application/json; charset=UTF-8"
                             },
-                            body:dataBody,
-                            method:"POST"
+                            body: dataBody,
+                            method: "POST"
                         };
 
                         fetch((baseUrl + "557224886125461521/save-template/" + jsonTemplate['name']), otherParam)
-                        .then(data =>{return data.json()})
-                        .then(rest => {console.log(res)})
-                        .catch(error => console.log(error));
+                            .then(data => { return data.json() })
+                            .then(rest => { console.log(res) })
+                            .catch(error => console.log(error));
 
                         var copyText = JSON.stringify(jsonTemplate, null, 2)
 
-                          function updateClipboard(copyText) {
-                            navigator.clipboard.writeText(copyText).then(function() {
-                              /* clipboard successfully set */
-                              alert("The template JSON was copied to your clipboard!");
-                            }, function() {
-                              /* clipboard write failed */
+                        function updateClipboard(copyText) {
+                            navigator.clipboard.writeText(copyText).then(function () {
+                                /* clipboard successfully set */
+                                alert("The meme template was sent to the database!");
+                            }, function () {
+                                /* clipboard write failed */
                             });
-                          }
-                          
+                        }
+
 
                         updateClipboard(copyText);
 

@@ -18,7 +18,10 @@ def make_server(store: Store) -> Flask:
     @app.route('/api/<guild_id>/memes')
     def list_memes(guild_id: str):
         data = store.list_memes(guild_id)
-        return json.dumps(data, cls=TemplateEncoder)
+        list_of_memes = []
+        for entry in data:
+            list_of_memes.append(entry['name'])
+        return json.dumps(list_of_memes, cls=TemplateEncoder)
 
     @app.route('/api/<guild_id>/memes/<template_id>')
     def get_template_data(guild_id: str, template_id: str):
