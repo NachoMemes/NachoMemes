@@ -39,9 +39,8 @@ def make_server(store: Store) -> Flask:
 
     @app.route('/api/<guild_id>/save-template/<template_id>', methods=['GET', 'POST'])
     def save_template(guild_id: str, template_id: str):
-        #Uncomment the commented out section when you fix the bug that broke everything else
         print("Updated: " + template_id + " in guild: " + guild_id)
-        return json.dumps(request.json, cls=TemplateEncoder) #store.save_meme(guild_id, meme_json)
+        return store.save_meme(guild_id, request.json)
     
     @app.route('/update-template/<path:filename>')
     def download_file(filename: str):
