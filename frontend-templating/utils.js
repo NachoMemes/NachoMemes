@@ -287,6 +287,21 @@ function getImage() {
                             jsonTemplate.textboxes[index]['outline'] = document.getElementById(("outline" + (index + 1))).value;
 
                         }
+                        const baseUrl = 'http://localhost:5000/api/';
+                        var dataBody = JSON.stringify(jsonTemplate, null, 2);
+                        const otherParam={
+                            headers:{
+                                "content-type":"application/json; charset=UTF-8"
+                            },
+                            body:dataBody,
+                            method:"POST"
+                        };
+
+                        fetch((baseUrl + "557224886125461521/save-template/" + jsonTemplate['name']), otherParam)
+                        .then(data =>{return data.json()})
+                        .then(rest => {console.log(res)})
+                        .catch(error => console.log(error));
+
                         var copyText = JSON.stringify(jsonTemplate, null, 2)
 
                           function updateClipboard(copyText) {

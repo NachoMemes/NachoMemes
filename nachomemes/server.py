@@ -2,6 +2,7 @@ import io
 import json
 
 from flask import Flask, jsonify, request, send_file, send_from_directory
+from flask_cors import CORS
 
 from nachomemes import Configuration
 from nachomemes.store import Store, update_serialization, TemplateEncoder
@@ -35,6 +36,12 @@ def make_server(store: Store) -> Flask:
         return send_file(
             buffer,
             mimetype='image/png')
+
+    @app.route('/api/<guild_id>/save-template/<template_id>', methods=['GET', 'POST'])
+    def save_template(guild_id: str, template_id: str):
+        #Uncomment the commented out section when you fix the bug that broke everything else
+        print("Updated: " + template_id + " in guild: " + guild_id)
+        return json.dumps(request.json, cls=TemplateEncoder) #store.save_meme(guild_id, meme_json)
     
     @app.route('/update-template/<path:filename>')
     def download_file(filename: str):
@@ -48,4 +55,5 @@ if __name__ == '__main__':
     config = Configuration()
     app = make_server(config.store)
     app.debug = config.debug
+    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
     app.run()
