@@ -103,7 +103,7 @@ class TextBox:
     ind_size: Optional[bool] = False
 
 
-def _fetch_image(url: Request) -> BufferedIOBase:
+def fetch_image(url: Request) -> BufferedIOBase:
     """
     Fetch an image from a URL and return an IO stream.
     """
@@ -147,15 +147,22 @@ class Template:
     # Times used
     usage: int = 0
 
+    # URL for the image in the preview
+    preview_url: Request = None
+
+
     def read_source_image(self, buffer) -> Image:
         """
         Read the source image into an Image object.
         """
-        with _fetch_image(self.image_url) as s:
+        with fetch_image(self.image_url) as s:
             buffer.write(s.read())
             buffer.seek(0)
             return ImageModule.open(buffer)
 
+    def read_image_bytes(self) -> BufferedIOBase:
+        return fetch_image(self.image_url)
+        
     def render(self, message: Iterable[str], output: BufferedIOBase):
         """
         Renders the image into the local filesystem.

@@ -60,9 +60,9 @@ def print_matching_templates(config: GuildConfig, template_name: str) -> dict:
         description = "".join(f"\n{m['name']}: *{m['description']}*" for m in memes)
     )}
 
-def print_template(config: GuildConfig, template_name: str) -> dict:
-    template = STORE.best_match(config.guild_id, template_name)
-    return {"embed": Embed(
+async def print_template(config: GuildConfig, template_name: str) -> dict:
+    template = await STORE.best_match_with_preview(config.guild_id, template_name)
+    response = {"embed": Embed(
         title="Template info",
         description = dedent(f"""\
         Name: {template.name}
@@ -70,10 +70,11 @@ def print_template(config: GuildConfig, template_name: str) -> dict:
         Times used: {template.usage}
         Expects {len(template.textboxes)} strings
         Read more: {template.docs}""")
-        ).set_image(
-            url=template.image_url.full_url
-        )
-    }
+        )}
+    if template.preview_url:
+        response["embed"] = response["embed"].set_image(url=template.preview_url.full_url)
+        print(template.preview_url.full_url)
+    return response        
 
 
 async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
@@ -92,7 +93,7 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
             if "*" in template_name:
                 return print_matching_templates(config, template_name)
             else:
-                return print_template(config, template_name)
+                return await print_template(config, template_name)
 
         template = STORE.best_match(config.guild_id, template_name, True)
         name = re.sub(r"\W+", "-", str(text))
@@ -339,9 +340,11 @@ async def save(ctx: Context):
             raise RuntimeError("computer says no")
         value = ctx.message.content
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
+        j = {k:v for k,v in json.loads(value).items() if k is not None}
+
         await ctx.send(embed=Embed(
             title = "Saving meme",
-            description = STORE.save_meme(config.guild_id, json.loads(value))
+            description = STORE.save_meme(config.guild_id, j)
         ))
     except JSONDecodeError as ex:
         await report(ctx, ex, "Invalid JSON provided")

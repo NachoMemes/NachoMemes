@@ -44,12 +44,15 @@ class Configuration:
                 self._store = DynamoTemplateStore(
                     self.access_key, self.secret, self.region, self._store, self.debug
                 )
+            if not self.local:
+                self._store.uploader = self.uploader
         return self._store
 
     @property
     def uploader(self) -> Uploader:
         if not self._uploader:
-            self._uploader = DiscordChannelUploader(self._discord_client, 825517179326824498)
+            if self._discord_client:
+                self._uploader = DiscordChannelUploader(self._discord_client, 825517179326824498)
         return self._uploader
 
     @property
