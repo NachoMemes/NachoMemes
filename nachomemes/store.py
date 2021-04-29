@@ -77,7 +77,6 @@ class Store(ABC):
         """
         Retrieve template data (serialized template) as a dict from the store.
         """
-        
 
     def get_template(
         self, guild_id: Optional[str], template_id: str, increment_use: bool = False
@@ -88,8 +87,6 @@ class Store(ABC):
         return from_dict(Template, self.get_template_data(
             guild_id if guild_id is not None else "default", 
             template_id, increment_use), config=da_config)
-
-
 
     @abstractmethod
     def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
@@ -142,7 +139,6 @@ class Store(ABC):
                         template.preview_url = Request(await self.uploader.upload(buffer, template.name + '.' + template.image_url.full_url.split('.')[-1]))
                 self.save_meme(guild_id, update_serialization(template.__dict__))
         return template
-
 
     def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
         """Fuzzy match multiple templates."""
