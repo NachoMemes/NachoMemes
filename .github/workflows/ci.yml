@@ -83,7 +83,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Run Hadolint
-        uses: brpaz/hadolint-action@master
+        uses: hadolint/hadolint-action@v1.4.0
 
   image:
     name: Image

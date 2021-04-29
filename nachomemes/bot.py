@@ -60,9 +60,9 @@ def print_matching_templates(config: GuildConfig, template_name: str) -> dict:
         description = "".join(f"\n{m['name']}: *{m['description']}*" for m in memes)
     )}
 
-def print_template(config: GuildConfig, template_name: str) -> dict:
-    template = STORE.best_match(config.guild_id, template_name)
-    return {"embed": Embed(
+async def print_template(config: GuildConfig, template_name: str) -> dict:
+    template = await STORE.best_match_with_preview(config.guild_id, template_name)
+    response = {"embed": Embed(
         title="Template info",
         description = dedent(f"""\
         Name: {template.name}
@@ -70,7 +70,10 @@ def print_template(config: GuildConfig, template_name: str) -> dict:
         Times used: {template.usage}
         Expects {len(template.textboxes)} strings
         Read more: {template.docs}""")
-    )}
+        )}
+    if template.preview_url:
+        response["embed"] = response["embed"].set_image(url=template.preview_url.full_url)
+    return response        
 
 
 async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
@@ -89,7 +92,7 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
             if "*" in template_name:
                 return print_matching_templates(config, template_name)
             else:
-                return print_template(config, template_name)
+                return await print_template(config, template_name)
 
         template = STORE.best_match(config.guild_id, template_name, True)
         name = re.sub(r"\W+", "-", str(text))
@@ -250,10 +253,11 @@ async def admin_role(ctx: Context, role_id: str=None):
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
+            description = config.set_admin_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
             return await ctx.send(embed=Embed(
                 title = "Setting discord admin role to " + role_id,
-                description = config.set_admin_role(_get_member(ctx), role)
+                description = description
             ))
     except Exception as ex:
         await report(ctx, ex)
@@ -274,10 +278,11 @@ async def edit_role(ctx: Context, role_id: str=None):
             ))
         else:
             role = ctx.guild.get_role(int(role_id)) if role_id else None
+            description = config.set_edit_role(_get_member(ctx), role)
             STORE.save_guild_config(config)
             return await ctx.send(embed=Embed(
                 title = "Setting discord edit role to " + role_id,
-                description = config.set_edit_role(_get_member(ctx), role)
+                description = description
             ))
     except Exception as ex:
         await report(ctx, ex)

@@ -10,10 +10,12 @@ from operator import attrgetter
 from types import GeneratorType, MappingProxyType
 from urllib.request import Request
 from fuzzywuzzy import process
+from io import BytesIO
 
 from dacite import Config, from_dict
 from discord import Guild
 
+from nachomemes.uploader import Uploader
 from nachomemes.guild_config import GuildConfig
 from nachomemes.template import Color, Font, Justify, Template, TemplateError, TextBox
 
@@ -35,6 +37,8 @@ serializers = cast(dict, MappingProxyType({
     Color: attrgetter("name"),
     Justify: attrgetter("name"),
 }))
+
+
 
 
 def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
@@ -59,6 +63,9 @@ class Store(ABC):
     """
     Abstract base class for implementing data stores for template and guild data.
     """
+
+    uploader: Uploader
+
     @abstractmethod
     def refresh_memes(self, guild_id: str, hard: bool = False) -> str:
         pass
@@ -81,6 +88,8 @@ class Store(ABC):
         return from_dict(Template, self.get_template_data(
             guild_id if guild_id is not None else "default", 
             template_id, increment_use), config=da_config)
+
+
 
     @abstractmethod
     def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
@@ -106,7 +115,7 @@ class Store(ABC):
         """serialize and persist the guild configuration information in the store"""
 
         
-    def best_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
+    def best_match(self, guild_id: str, name: str = None, increment_use: bool = False
     ) -> Template:
         """Matches input fuzzily against proper names."""
         if name is None:
@@ -115,6 +124,24 @@ class Store(ABC):
         if fuzzed[1] < 50:
             raise TemplateError(f"No template matching '{name}'")
         return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
+
+    async def best_match_with_preview(
+        self, guild_id: str, template_id: str, increment_use: bool = False
+    ) -> Template:
+        """
+        Retrieve a template as a Template object from the store.
+        """
+        template = self.best_match(guild_id, template_id, increment_use)
+        if not template.preview_url:
+            if self.uploader:
+                with BytesIO() as buffer:
+                    with template.read_image_bytes() as src:
+                        buffer.write(src.read())
+                        buffer.flush()
+                        buffer.seek(0)
+                        template.preview_url = Request(await self.uploader.upload(buffer, template.name + '.' + template.image_url.full_url.split('.')[-1]))
+                self.save_meme(guild_id, update_serialization(template.__dict__))
+        return template
 
 
     def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
