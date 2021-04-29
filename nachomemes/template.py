@@ -148,7 +148,7 @@ class Template:
     usage: int = 0
 
     # URL for the image in the preview
-    preview_url: Request = None
+    preview_url: Optional[Request] = None
 
 
     def read_source_image(self, buffer) -> Image:

@@ -64,7 +64,7 @@ class Store(ABC):
     Abstract base class for implementing data stores for template and guild data.
     """
 
-    uploader: Uploader = None
+    uploader: Uploader
 
     @abstractmethod
     def refresh_memes(self, guild_id: str, hard: bool = False) -> str:
@@ -115,7 +115,7 @@ class Store(ABC):
         """serialize and persist the guild configuration information in the store"""
 
         
-    def best_match(self, guild_id: str, name: Optional[str] = None, increment_use: bool = False
+    def best_match(self, guild_id: str, name: str = None, increment_use: bool = False
     ) -> Template:
         """Matches input fuzzily against proper names."""
         if name is None:
@@ -126,7 +126,7 @@ class Store(ABC):
         return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
 
     async def best_match_with_preview(
-        self, guild_id: Optional[str], template_id: str, increment_use: bool = False
+        self, guild_id: str, template_id: str, increment_use: bool = False
     ) -> Template:
         """
         Retrieve a template as a Template object from the store.
