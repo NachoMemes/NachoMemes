@@ -339,11 +339,9 @@ async def save(ctx: Context):
             raise RuntimeError("computer says no")
         value = ctx.message.content
         value = ctx.message.content[value.index("save")+4:].strip().strip('`')
-        j = {k:v for k,v in json.loads(value).items() if k is not None}
-
         await ctx.send(embed=Embed(
             title = "Saving meme",
-            description = STORE.save_meme(config.guild_id, j)
+            description = STORE.save_meme(config.guild_id, json.loads(value))
         ))
     except JSONDecodeError as ex:
         await report(ctx, ex, "Invalid JSON provided")
