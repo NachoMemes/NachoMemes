@@ -13,21 +13,12 @@ function updateExistingMeme() {
     //     .then(response => response.json())
     //     .then(data => console.log(data));
 
-    function getHTMLSelectOption(value) {
-        var option = document.createElement("option");
-        option.setAttribute("value", value);
-        option.innerHTML = value;
-        return option
-    }
-
     const baseUrl = 'http://localhost:5000/api/';
     fetch((baseUrl + "557224886125461521/memes"), otherParam)
         .then(data => { return data.json() })
         .then(res => {
             console.log("response from api:")
             console.log(res)
-
-
             var memesDiv = document.getElementById('existingMemeOption');
             var memes = document.createElement("select");
             memes.setAttribute("id", "memeChoiceSelect");
@@ -35,14 +26,11 @@ function updateExistingMeme() {
             res.forEach((item, index) => {
                 memes.appendChild(getHTMLSelectOption(item));
             })
-    
             // Append the color input to the form 
             memesDiv.appendChild(memes);
 
         })
         .catch(error => console.log(error));
-
-    //console.log(existingMemes)
 }
 
 function loadMeme() {
@@ -58,393 +46,1395 @@ function loadMeme() {
     let memeChoice = document.getElementById('memeChoiceSelect').value
 
     const baseUrl = 'http://localhost:5000/api/';
-    fetch((baseUrl + "557224886125461521/memes/"+ memeChoice), otherParam)
+    fetch((baseUrl + "557224886125461521/memes/" + memeChoice), otherParam)
         .then(data => { return data.json() })
         .then(res => {
             console.log("response from api:")
             console.log(res)
-            
+
             document.getElementById('imageNameUpdate').value = res['image_url']
             document.getElementById('descriptionValueUpdate').value = res['description']
             document.getElementById('docsValueUpdate').value = res['docs']
             document.getElementById('templateNameValueUpdate').value = res['name']
 
-            
-            // Append the color input to the form 
+            buildExisitngMeme(res);
+
+
 
         })
         .catch(error => console.log(error));
 
 }
 
-function makeNewMeme() {
+function switchToNewMeme() {
     document.getElementById('makeNewMeme').hidden = false;
     document.getElementById('chooseAction').hidden = true;
 
+}
+
+function buildNewMeme() {
+
+    // Last updated November 2010 by Simon Sarris
+    // www.simonsarris.com
+    // sarris@acm.org
+    //
+    // Free to use and distribute at will
+    // So long as you are nice to people, etc
+
+    // This is a self-executing function that I added only to stop this
+    // new script from interfering with the old one. It's a good idea in general, but not
+    // something I wanted to go over during this tutorial
+
+
+    (function (window) {
+
+        // Initiate base image for meme in background
+        var base_image = new Image();
+        // holds all our boxes
+        var boxes2 = [];
+
+        // New, holds the 8 tiny boxes that will be our selection handles
+        // the selection handles will be in this order:
+        // 0  1  2
+        // 3     4
+        // 5  6  7
+        var selectionHandles = [];
+
+        // Hold canvas information
+        var canvas;
+        var ctx;
+        var WIDTH;
+        var HEIGHT;
+        var INTERVAL = 20;  // how often, in milliseconds, we check to see if a redraw is needed
+
+        var isDrag = false;
+        var isResizeDrag = false;
+        var expectResize = -1; // New, will save the # of the selection handle if the mouse is over one.
+        var mx, my; // mouse coordinates
+
+        // when set to true, the canvas will redraw everything
+        // invalidate() just sets this to false right now
+        // we want to call invalidate() whenever we make a change
+        var canvasValid = false;
+
+        // The node (if any) being selected.
+        // If in the future we want to select multiple objects, this will get turned into an array
+        var mySel = null;
+
+        // The selection color and width. Right now we have a red selection with a small width
+        var mySelColor = '#CC0000';
+        var mySelWidth = 6;
+        var mySelBoxColor = 'black'; // New for selection boxes
+        var mySelBoxSize = 10;
+
+        // we use a fake canvas to draw individual shapes for selection testing
+        var ghostcanvas;
+        var gctx; // fake canvas context
+
+        // since we can drag from anywhere in a node
+        // instead of just its x/y corner, we need to save
+        // the offset of the mouse when we start dragging.
+        var offsetx, offsety;
+
+        // Padding and border style widths for mouse offsets
+        var stylePaddingLeft, stylePaddingTop, styleBorderLeft, styleBorderTop;
+
+        let maxx = 400,
+            maxy = 500;
+
+        let ratio = null;
+
+        // Box object to hold data
+        function Box2() {
+            this.x = 0;
+            this.y = 0;
+            this.w = 1; // default width and height?
+            this.h = 1;
+            this.fill = '#444444';
+        }
+
+        // New methods on the Box class
+        Box2.prototype = {
+            // we used to have a solo draw function
+            // but now each box is responsible for its own drawing
+            // mainDraw() will call this with the normal canvas
+            // myDown will call this with the ghost canvas with 'black'
+            draw: function (context, optionalColor) {
+                if (context === gctx) {
+                    context.fillStyle = 'black'; // always want black for the ghost canvas
+                } else {
+                    context.fillStyle = this.fill;
+                }
+
+                // We can skip the drawing of elements that have moved off the screen:
+                if (this.x > WIDTH || this.y > HEIGHT) return;
+                if (this.x + this.w < 0 || this.y + this.h < 0) return;
+
+                context.fillRect(this.x, this.y, this.w, this.h);
+
+                // draw selection
+                // this is a stroke along the box and also 8 new selection handles
+                if (mySel === this) {
+                    context.strokeStyle = mySelColor;
+                    context.lineWidth = mySelWidth;
+                    context.strokeRect(this.x, this.y, this.w, this.h);
+
+                    // draw the boxes
+
+                    var half = mySelBoxSize / 2;
+
+                    // 0  1  2
+                    // 3     4
+                    // 5  6  7
+                    //https://jswny.github.io/2ewiki/chris.png
+                    //chris neckbeard yummy
+                    //https://wiki.2edgy4.me
+                    //chris-neck-beard
+
+                    // top left, middle, right
+                    selectionHandles[0].x = this.x - half;
+                    selectionHandles[0].y = this.y - half;
+
+                    selectionHandles[1].x = this.x + this.w / 2 - half;
+                    selectionHandles[1].y = this.y - half;
+
+                    selectionHandles[2].x = this.x + this.w - half;
+                    selectionHandles[2].y = this.y - half;
+
+                    //middle left
+                    selectionHandles[3].x = this.x - half;
+                    selectionHandles[3].y = this.y + this.h / 2 - half;
+
+                    //middle right
+                    selectionHandles[4].x = this.x + this.w - half;
+                    selectionHandles[4].y = this.y + this.h / 2 - half;
+
+                    //bottom left, middle, right
+                    selectionHandles[6].x = this.x + this.w / 2 - half;
+                    selectionHandles[6].y = this.y + this.h - half;
+
+                    selectionHandles[5].x = this.x - half;
+                    selectionHandles[5].y = this.y + this.h - half;
+
+                    selectionHandles[7].x = this.x + this.w - half;
+                    selectionHandles[7].y = this.y + this.h - half;
+
+
+                    context.fillStyle = mySelBoxColor;
+                    for (var i = 0; i < 8; i++) {
+                        var cur = selectionHandles[i];
+                        context.fillRect(cur.x, cur.y, mySelBoxSize, mySelBoxSize);
+                    }
+                }
+
+            } // end draw
+
+        }
+
+        //Initialize a new Box, add it, and invalidate the canvas
+        function addRect(x, y, w, h, fill) {
+            var rect = new Box2;
+            rect.x = x;
+            rect.y = y;
+            rect.w = w
+            rect.h = h;
+            rect.fill = fill;
+            boxes2.push(rect);
+            invalidate();
+        }
+
+        // initialize our canvas, add a ghost canvas, set draw loop
+        // then add everything we want to intially exist on the canvas
+        function init2() {
+
+            base_image.src = document.getElementById('imagename').value; //Load Image ;
+            canvas = document.getElementById('canvasNewMeme');
+
+            ratio = maxx / maxy > base_image.height / base_image.width
+                ? maxx / base_image.height
+                : maxy / base_image.width
+
+            canvas.width = base_image.width * ratio;
+            canvas.height = base_image.height * ratio;
+
+            HEIGHT = canvas.height;
+            WIDTH = canvas.width;
+            ctx = canvas.getContext('2d');
+
+            ghostcanvas = document.createElement('canvas');
+            ghostcanvas.height = HEIGHT;
+            ghostcanvas.width = WIDTH;
+            gctx = ghostcanvas.getContext('2d');
+
+            // once we get the image, unhide the canvas
+            base_image.onload = function () {
+                document.getElementById('canvasNewMeme').hidden = false;
+                ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio);
+            }
+
+            //fixes a problem where double clicking causes text to get selected on the canvas
+            canvas.onselectstart = function () { return false; }
+
+            // fixes mouse co-ordinate problems when there's a border or padding
+            // see getMouse for more detail
+            if (document.defaultView && document.defaultView.getComputedStyle) {
+                stylePaddingLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingLeft'], 10) || 0;
+                stylePaddingTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingTop'], 10) || 0;
+                styleBorderLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderLeftWidth'], 10) || 0;
+                styleBorderTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderTopWidth'], 10) || 0;
+            }
+
+            // make mainDraw() fire every INTERVAL milliseconds
+            setInterval(mainDraw, INTERVAL);
+
+            // set our events. Up and down are for dragging,
+            // double click is for making new boxes
+            canvas.onmousedown = myDown;
+            canvas.onmouseup = myUp;
+            canvas.ondblclick = myDblClick;
+            canvas.onmousemove = myMove;
+
+            // set up the selection handle boxes
+            for (var i = 0; i < 8; i++) {
+                var rect = new Box2;
+                selectionHandles.push(rect);
+            }
+
+            // add custom initialization here:
+
+        }
+
+
+        //wipes the canvas context
+        function clear(c) {
+            c.clearRect(0, 0, WIDTH, HEIGHT);
+        }
+
+        // Main draw loop.
+        // While draw is called as often as the INTERVAL variable demands,
+        // It only ever does something if the canvas gets invalidated by our code
+        function mainDraw() {
+            if (canvasValid == false) {
+                clear(ctx);
+
+                // Add stuff you want drawn in the background all the time here
+                ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio)
+
+                // draw all boxes
+                var l = boxes2.length;
+                for (var i = 0; i < l; i++) {
+                    boxes2[i].draw(ctx); // we used to call drawshape, but now each box draws itself
+                }
+
+                // Add stuff you want drawn on top all the time here
+
+                canvasValid = true;
+            }
+
+            // Post json data to API here after dynamicall building the json data
+            if (boxes2.length != 0) {
+                document.getElementById('submitButton').onclick = function () {
+                    postJson(getJson(boxes2, WIDTH, HEIGHT));
+                }
+            }
+        }
+
+        // Happens when the mouse is moving inside the canvas
+        function myMove(e) {
+            if (isDrag) {
+                getMouse(e);
+
+                mySel.x = mx - offsetx;
+                mySel.y = my - offsety;
+
+                // something is changing position so we better invalidate the canvas!
+                invalidate();
+            } else if (isResizeDrag) {
+                // time ro resize!
+                var oldx = mySel.x;
+                var oldy = mySel.y;
+
+                // 0  1  2
+                // 3     4
+                // 5  6  7
+                switch (expectResize) {
+                    case 0:
+                        mySel.x = mx;
+                        mySel.y = my;
+                        mySel.w += oldx - mx;
+                        mySel.h += oldy - my;
+                        break;
+                    case 1:
+                        mySel.y = my;
+                        mySel.h += oldy - my;
+                        break;
+                    case 2:
+                        mySel.y = my;
+                        mySel.w = mx - oldx;
+                        mySel.h += oldy - my;
+                        break;
+                    case 3:
+                        mySel.x = mx;
+                        mySel.w += oldx - mx;
+                        break;
+                    case 4:
+                        mySel.w = mx - oldx;
+                        break;
+                    case 5:
+                        mySel.x = mx;
+                        mySel.w += oldx - mx;
+                        mySel.h = my - oldy;
+                        break;
+                    case 6:
+                        mySel.h = my - oldy;
+                        break;
+                    case 7:
+                        mySel.w = mx - oldx;
+                        mySel.h = my - oldy;
+                        break;
+                }
+
+                invalidate();
+            }
+
+            getMouse(e);
+            // if there's a selection see if we grabbed one of the selection handles
+            if (mySel !== null && !isResizeDrag) {
+                for (var i = 0; i < 8; i++) {
+                    // 0  1  2
+                    // 3     4
+                    // 5  6  7
+
+                    var cur = selectionHandles[i];
+
+                    // we dont need to use the ghost context because
+                    // selection handles will always be rectangles
+                    if (mx >= cur.x && mx <= cur.x + mySelBoxSize &&
+                        my >= cur.y && my <= cur.y + mySelBoxSize) {
+                        // we found one!
+                        expectResize = i;
+                        invalidate();
+
+                        switch (i) {
+                            case 0:
+                                this.style.cursor = 'nw-resize';
+                                break;
+                            case 1:
+                                this.style.cursor = 'n-resize';
+                                break;
+                            case 2:
+                                this.style.cursor = 'ne-resize';
+                                break;
+                            case 3:
+                                this.style.cursor = 'w-resize';
+                                break;
+                            case 4:
+                                this.style.cursor = 'e-resize';
+                                break;
+                            case 5:
+                                this.style.cursor = 'sw-resize';
+                                break;
+                            case 6:
+                                this.style.cursor = 's-resize';
+                                break;
+                            case 7:
+                                this.style.cursor = 'se-resize';
+                                break;
+                        }
+                        return;
+                    }
+
+                }
+                // not over a selection box, return to normal
+                isResizeDrag = false;
+                expectResize = -1;
+                this.style.cursor = 'auto';
+            }
+
+        }
+
+        // Happens when the mouse is clicked in the canvas
+        function myDown(e) {
+            getMouse(e);
+
+            //we are over a selection box
+            if (expectResize !== -1) {
+                isResizeDrag = true;
+                return;
+            }
+
+            clear(gctx);
+            var l = boxes2.length;
+            for (var i = l - 1; i >= 0; i--) {
+                // draw shape onto ghost context
+                boxes2[i].draw(gctx, 'black');
+
+                // get image data at the mouse x,y pixel
+                var imageData = gctx.getImageData(mx, my, 1, 1);
+                var index = (mx + my * imageData.width) * 4;
+
+                // if the mouse pixel exists, select and break
+                if (imageData.data[3] > 0) {
+                    mySel = boxes2[i];
+                    offsetx = mx - mySel.x;
+                    offsety = my - mySel.y;
+                    mySel.x = mx - offsetx;
+                    mySel.y = my - offsety;
+                    isDrag = true;
+
+                    invalidate();
+                    clear(gctx);
+                    return;
+                }
+
+            }
+            // havent returned means we have selected nothing
+            mySel = null;
+            // clear the ghost canvas for next time
+            clear(gctx);
+            // invalidate because we might need the selection border to disappear
+            invalidate();
+        }
+
+        function myUp() {
+
+            // ADD IN the updating of fields here
+
+
+            console.log(boxes2);
+            isDrag = false;
+            isResizeDrag = false;
+            expectResize = -1;
+        }
+
+        // adds a new node
+        function myDblClick(e) {
+            getMouse(e);
+            // for this method width and height determine the starting X and Y, too.
+            // so I left them as vars in case someone wanted to make them args for something and copy this code
+
+            // ADD IN THE CREATION OF EACH TEXT BOX FIELD DATA FORM HERE
+
+            addDataFields(boxes2.length, "container additionalfields")
+
+            var width = 200;
+            var height = 80;
+            addRect(mx - (width / 2), my - (height / 2), width, height, 'rgba(220,205,65,0.7)');
+        }
+
+
+        function invalidate() {
+            canvasValid = false;
+        }
+
+        // Sets mx,my to the mouse position relative to the canvas
+        // unfortunately this can be tricky, we have to worry about padding and borders
+        function getMouse(e) {
+            var element = canvas, offsetX = 0, offsetY = 0;
+
+            if (element.offsetParent) {
+                do {
+                    offsetX += element.offsetLeft;
+                    offsetY += element.offsetTop;
+                } while ((element = element.offsetParent));
+            }
+
+            // Add padding and border style widths to offset
+            offsetX += stylePaddingLeft;
+            offsetY += stylePaddingTop;
+
+            offsetX += styleBorderLeft;
+            offsetY += styleBorderTop;
+
+            mx = e.pageX - offsetX;
+            my = e.pageY - offsetY
+        }
+
+        // If you dont want to use <body onLoad='init()'>
+        // You could uncomment this init() reference and place the script reference inside the body tag
+        //init();
+        window.init2 = init2;
+    })(window);
+
+    init2();
 
 }
 
-function getImage() {
 
-    var canvas = document.getElementById('canvas'),
-        context = canvas.getContext('2d');
-
-    context.canvas.hidden = false;
-    var base_image = new Image();
-
-    base_image.src = document.getElementById('imagename').value; //Load Image ;
-    base_image.onload = function () {
-        context.drawImage(base_image, 0, 0);
-    }
-    canvas.width = base_image.width;
-    canvas.height = base_image.height;
-
-    function drawImage() {
-    }
-    var strokeWidth = 3;
-    drawCount = 0;
-
-    canvas.addEventListener("mousemove", function (e) {
-        drawRectangleOnCanvas.handleMouseMove(e);
-    }, false);
-    canvas.addEventListener("mousedown", function (e) {
-        drawRectangleOnCanvas.handleMouseDown(e);
-    }, false);
-    canvas.addEventListener("mouseup", function (e) {
-        drawRectangleOnCanvas.handleMouseUp(e);
-    }, false);
-    canvas.addEventListener("mouseout", function (e) {
-        drawRectangleOnCanvas.handleMouseOut(e);
-    }, false);
-
-    function reOffset() {
-        var BB = canvas.getBoundingClientRect();
-        recOffsetX = BB.left;
-        recOffsetY = BB.top;
-    }
-
-    var recOffsetX, recOffsetY;
-    reOffset();
-
-    window.onscroll = function (e) {
-        reOffset();
-    }
-    window.onresize = function (e) {
-        reOffset();
-    }
-
-    function getHTMLRow(labelValue, labelForValue, select) {
-        var row = document.createElement("div");
-        row.setAttribute("class", "row");
-        var div = document.createElement("div");
-        div.setAttribute("class", "col-25");
-        var labelDiv = document.createElement("div");
-        labelDiv.setAttribute("class", "col-25");
-        var label = document.createElement("label");
-        label.setAttribute("for", labelForValue);
-        label.innerHTML = labelValue;
-        div.appendChild(select);
-        labelDiv.appendChild(label)
-        row.appendChild(div);
-        row.insertBefore(labelDiv, row.firstChild);
-
-        return row
-    }
-
-    function getHTMLSelectOption(value, humanReadableValue) {
-        var option = document.createElement("option");
-        option.setAttribute("value", value);
-        option.innerHTML = humanReadableValue;
-
-        return option
-    }
-
-    var isRecDown = false;
-    var startX, startY;
-
-    var rects = [];
-    var newRect;
-
+function getJson(boxes2, canvas_width, canvas_hight) {
+    var textboxes = [];
+    textboxes = boxes2;
     var jsonTemplate = {};
+    var temp_json_push = {};
 
-    var test_json_push = {};
-    var descriptionValue = document.getElementById('descriptionValue').value; //Load Image ;
-    jsonTemplate["description"] = descriptionValue;
-    var docsValue = document.getElementById('docsValue').value; //Load Image ;
-    jsonTemplate["docs"] = docsValue;
-    jsonTemplate["image_url"] = base_image.src;
+    jsonTemplate["description"] = document.getElementById('descriptionValue').value;
+    jsonTemplate["docs"] = document.getElementById('docsValue').value;;
+    jsonTemplate["image_url"] = document.getElementById('imagename').value;
     jsonTemplate["layout"] = (document.getElementById('templateNameValue').value + "_layout");
-
     jsonTemplate["usage"] = 0;
     jsonTemplate["textboxes"] = [];
     jsonTemplate["name"] = document.getElementById('templateNameValue').value;
 
-    var drawRectangleOnCanvas = {
 
-        handleMouseDown: function (e) {
+    textboxes.forEach(addTextboxData)
 
-            // tell the browser we're handling this event
-            e.preventDefault();
-            e.stopPropagation();
+    function addTextboxData(item, index) {
+        temp_json_push = {
+            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
+            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "color": document.getElementById(("color" + (index + 1))).value,
+            "font": document.getElementById(("font" + (index + 1))).value,
+            "justify": document.getElementById(("justify" + (index + 1))).value,
+            "max_font_size": document.getElementById(("max_font_size" + (index + 1))).value,
+            "outline": document.getElementById(("outline" + (index + 1))).value
+        }
+        jsonTemplate.textboxes.push(temp_json_push);
+    }
 
-            startX = parseInt(e.clientX - recOffsetX);
-            startY = parseInt(e.clientY - recOffsetY);
+    return jsonTemplate
+}
 
-            //jsonTemplate.textboxes[drawCount]['left'] = (startX / base_image.width).toFixed(3);
-            //jsonTemplate.textboxes[drawCount]['up'] = (startY / base_image.height).toFixed(3);
 
-            test_json_push = {
-                "left": (startX / base_image.width).toFixed(3),
-                "top": (startY / base_image.height).toFixed(3)
-            }
+function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
+    var textboxes = [];
+    textboxes = boxes2;
+    var jsonTemplate = {};
+    var temp_json_push = {};
 
-            jsonTemplate.textboxes.push(test_json_push);
+    jsonTemplate["description"] = document.getElementById('descriptionValueUpdate').value;
+    jsonTemplate["docs"] = document.getElementById('docsValueUpdate').value;;
+    jsonTemplate["image_url"] = document.getElementById('imageNameUpdate').value;
+    jsonTemplate["layout"] = (document.getElementById('templateNameValueUpdate').value + "_layout");
+    jsonTemplate["usage"] = 0;
+    jsonTemplate["textboxes"] = [];
+    jsonTemplate["name"] = document.getElementById('templateNameValueUpdate').value;
 
-            // Put your mousedown stuff here
-            isRecDown = true;
 
+    textboxes.forEach(addTextboxData)
+
+    function emptyString (value) {
+
+        if (value == "") {
+            return null
+        }
+    }
+
+    function addTextboxData(item, index) {
+        temp_json_push = {
+            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
+            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "color": document.getElementById(("color" + (index + 1))).value,
+            "font": document.getElementById(("font" + (index + 1))).value,
+            "justify": document.getElementById(("justify" + (index + 1))).value,
+            "max_font_size": emptyString(document.getElementById(("max_font_size" + (index + 1))).value),
+            "outline": document.getElementById(("outline" + (index + 1))).value
+        }
+        jsonTemplate.textboxes.push(temp_json_push);
+    }
+
+    return jsonTemplate
+}
+
+function postJson(json_data) {
+
+    const baseUrl = 'http://localhost:5000/api/';
+    var dataBody = JSON.stringify(json_data, null, 2);
+    const otherParam = {
+        headers: {
+            "content-type": "application/json; charset=UTF-8"
         },
+        body: dataBody,
+        method: "POST"
+    };
 
-        handleMouseUp: function (e) {
+    fetch((baseUrl + "557224886125461521/save-template/" + json_data['name']), otherParam)
+        .then(data => { return data.json() })
+        .then(rest => { console.log(res) })
+        .catch(error => console.log(error));
 
-            // tell the browser we're handling this event
-            e.preventDefault();
-            e.stopPropagation();
+    alert("The meme template was sent to the database!");
+    console.log(JSON.stringify(json_data, null, 2));
 
-            var mouseX = parseInt(e.clientX - recOffsetX);
-            var mouseY = parseInt(e.clientY - recOffsetY);
-
-            // Put your mouseup stuff here
-            isRecDown = false;
-
-            //test_json_push = test_json_push + {
-            //"right": (mouseX / base_image.width).toFixed(3),
-            //"down": (mouseY / base_image.height).toFixed(3)
-            //}
-            //jsonTemplate.textboxes.push(test_json_push);
-            jsonTemplate.textboxes[drawCount]['right'] = (mouseX / base_image.width).toFixed(3);
-            jsonTemplate.textboxes[drawCount]['bottom'] = (mouseY / base_image.height).toFixed(3);
+}
 
 
+function getHTMLRow(labelValue, labelForValue, select) {
+    var row = document.createElement("div");
+    row.setAttribute("class", "row");
 
-            //console.log(JSON.stringify(jsonTemplate, null, 2));
-            //console.log(drawCount);
-            drawCount = drawCount + 1;
+    var div = document.createElement("div");
+    div.setAttribute("class", "col-25");
 
+    var labelDiv = document.createElement("div");
+    labelDiv.setAttribute("class", "col-25");
 
-            var container = document.createElement("div");
-            container.setAttribute("class", "container");
+    var label = document.createElement("label");
+    label.setAttribute("for", labelForValue);
+    label.innerHTML = labelValue;
 
-            // Create new form fields dynamically when every 
-            var form = document.createElement("form");
-            form.setAttribute("method", "post");
+    div.appendChild(select);
+    labelDiv.appendChild(label)
+    row.appendChild(div);
+    row.insertBefore(labelDiv, row.firstChild);
 
-            var textBoxTitleCount = "title" + drawCount;
-            var textBoxTitle = document.createElement("h3");
-            textBoxTitle.setAttribute("id", textBoxTitleCount);
-            textBoxTitle.setAttribute("docId", drawCount);
-            textBoxTitle.innerHTML = "Text Box " + drawCount + ":";
+    return row
+}
 
-            form.appendChild(getHTMLRow("", textBoxTitleCount, textBoxTitle));
+function getHTMLSelectOption(value) {
+    var option = document.createElement("option");
+    option.setAttribute("value", value);
+    option.innerHTML = value;
 
+    return option
+}
 
-            // Create an input element for color
+function getHTMLSelectOptionHR(value, humanReadableValue) {
+    var option = document.createElement("option");
+    option.setAttribute("value", value);
+    option.innerHTML = humanReadableValue;
 
-            var colorCount = "color" + drawCount;
-            var color = document.createElement("select");
-            color.setAttribute("id", colorCount);
-            color.setAttribute("docId", drawCount);
-            color.appendChild(getHTMLSelectOption("WHITE", "White"));
-            color.appendChild(getHTMLSelectOption("BLACK", "Black"));
-
-            // Append the color input to the form 
-            form.appendChild(getHTMLRow("Text Color: ", colorCount, color));
-
-            // Create an outline element for justify
-            var outlineCount = "outline" + drawCount;
-            var outline = document.createElement("select");
-            outline.setAttribute("id", outlineCount);
-            outline.setAttribute("docId", drawCount);
-            outline.appendChild(getHTMLSelectOption("BLACK", "Black"))
-            outline.appendChild(getHTMLSelectOption("WHITE", "White"))
-            // Append the outline input to the form 
-            form.appendChild(getHTMLRow("Outline Color: ", outlineCount, outline));
+    return option
+}
 
 
-            // Create an input element for font
-            var fontCount = "font" + drawCount;
-            var font = document.createElement("select");
-            font.setAttribute("id", fontCount);
-            font.setAttribute("docId", drawCount);
-            // Append the font input to the form 
-            font.appendChild(getHTMLSelectOption("IMPACT", "Impact"));
-            form.appendChild(getHTMLRow("Font Type: ", fontCount, font));
+function addDataFields(count, containerName) {
+    var drawCount = count + 1;
+
+    var container = document.createElement("div");
+    container.setAttribute("class", "container-div");
+
+    // Create new form fields dynamically when every 
+    var form = document.createElement("form");
+    form.setAttribute("method", "post");
+
+    var textBoxTitleCount = "title" + drawCount;
+    var textBoxTitle = document.createElement("h3");
+    textBoxTitle.setAttribute("id", textBoxTitleCount);
+    textBoxTitle.setAttribute("docId", drawCount);
+    textBoxTitle.innerHTML = "Text Box " + drawCount + ":";
+
+    form.appendChild(getHTMLRow("", textBoxTitleCount, textBoxTitle));
+
+    // Create an input element for color
+
+    var colorCount = "color" + drawCount;
+    var color = document.createElement("select");
+    color.setAttribute("id", colorCount);
+    color.setAttribute("docId", drawCount);
+    color.appendChild(getHTMLSelectOptionHR("WHITE", "White"));
+    color.appendChild(getHTMLSelectOptionHR("BLACK", "Black"));
+
+    // Append the color input to the form 
+    form.appendChild(getHTMLRow("Text Color: ", colorCount, color));
+
+    // Create an outline element for justify
+    var outlineCount = "outline" + drawCount;
+    var outline = document.createElement("select");
+    outline.setAttribute("id", outlineCount);
+    outline.setAttribute("docId", drawCount);
+    outline.appendChild(getHTMLSelectOptionHR("BLACK", "Black"))
+    outline.appendChild(getHTMLSelectOptionHR("WHITE", "White"))
+    // Append the outline input to the form 
+    form.appendChild(getHTMLRow("Outline Color: ", outlineCount, outline));
 
 
-            // Create an input element for justify
-            var justifyCount = "justify" + drawCount;
-            var justify = document.createElement("select");
-            justify.setAttribute("id", justifyCount);
-            justify.setAttribute("docId", drawCount);
-            // Append the justify input to the form 
-            justify.appendChild(getHTMLSelectOption("CENTER", "Center"));
-            justify.appendChild(getHTMLSelectOption("RIGHT", "Right"));
-            justify.appendChild(getHTMLSelectOption("LEFT", "Left"));
-            form.appendChild(getHTMLRow("Justification: ", justifyCount, justify));
+    // Create an input element for font
+    var fontCount = "font" + drawCount;
+    var font = document.createElement("select");
+    font.setAttribute("id", fontCount);
+    font.setAttribute("docId", drawCount);
+    // Append the font input to the form 
+    //COMIC_SANS
+    font.appendChild(getHTMLSelectOptionHR("XKCD", "xkcd"));
+    font.appendChild(getHTMLSelectOptionHR("COMIC_SANS", "Comic Sans"));
+    font.appendChild(getHTMLSelectOptionHR("IMPACT", "Impact"));
+    form.appendChild(getHTMLRow("Font Type: ", fontCount, font));
 
 
-            // Create an concat element for justify
-            var concatCount = "concat" + drawCount;
-            var concat = document.createElement("select");
-            concat.setAttribute("id", concatCount);
-            concat.setAttribute("docId", drawCount);
-            // Append the concat input to the form 
-            concat.appendChild(getHTMLSelectOption("TOP", "Top"));
-            form.appendChild(getHTMLRow("Concatenation: ", concatCount, concat));
-
-            if (drawCount == 1) {
-                // create a submit button 
-                var s = document.createElement("input");
-                s.setAttribute("type", "button");
-                s.setAttribute("id", "submitButton");
-                s.setAttribute("value", "Save Meme Template");
-
-                // Append the submit button to the form 
-                container.appendChild(s);
-
-            }
+    // Create an input element for justify
+    var justifyCount = "justify" + drawCount;
+    var justify = document.createElement("select");
+    justify.setAttribute("id", justifyCount);
+    justify.setAttribute("docId", drawCount);
+    // Append the justify input to the form 
+    justify.appendChild(getHTMLSelectOptionHR("CENTER", "Center"));
+    justify.appendChild(getHTMLSelectOptionHR("RIGHT", "Right"));
+    justify.appendChild(getHTMLSelectOptionHR("LEFT", "Left"));
+    form.appendChild(getHTMLRow("Justification: ", justifyCount, justify));
 
 
-            container.appendChild(form);
+    // Create an max_font_size element for justify
+    var max_font_sizeCount = "max_font_size" + drawCount;
+    var max_font_size = document.createElement("input");
+    max_font_size.setAttribute("id", max_font_sizeCount);
+    max_font_size.setAttribute("docId", drawCount);
+    // Append the max_font_size input to the form 
+    form.appendChild(getHTMLRow("Max Font Size (Optional): ", max_font_sizeCount, max_font_size));
 
-            document.getElementsByClassName("center")[0]
-                .appendChild(container);
+    if (drawCount == 1) {
+        // create a submit button 
+        var s = document.createElement("input");
+        s.setAttribute("type", "button");
+        s.setAttribute("id", "submitButton");
+        //s.setAttribute("onClick", "getJSON()")
+        s.setAttribute("value", "Save Meme Template");
 
-
-
-
-            //if(!willOverlap(newRect)){
-            rects.push(newRect);
-            //}
-            drawRectangleOnCanvas.drawAll()
-
-        },
-
-        drawAll: function () {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(base_image, 0, 0);
-            context.lineWidth = strokeWidth;
-            for (var i = 0; i < rects.length; i++) {
-                var r = rects[i];
-                context.strokeStyle = r.color;
-                context.globalAlpha = 1;
-                context.strokeRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
-
-                context.beginPath();
-                //context.arc(r.left, r.top, 15, 0, Math.PI * 2, true);
-                context.closePath();
-                context.fillStyle = r.color;
-                context.fill();
-
-                var text = drawCount;
-                context.fillStyle = "#fff";
-                var font = "bold " + 2 + "px serif";
-                context.font = font;
-                var width = context.measureText(text).width;
-                var height = context.measureText("w").width; // this is a GUESS of height
-                context.fillText(text, r.left - (width / 2), r.top + (height / 2));
-
-
-                // submit support after
-                if (drawCount != 0) {
-                    document.getElementById('submitButton').onclick = function () {
-                        var numberOfTextboxes = drawCount;
-                        jsonTemplate.textboxes.forEach(addData)
-                        function addData(item, index) {
-                            var colorIndex = `color${index}`;
-                            jsonTemplate.textboxes[index]['color'] = document.getElementById(("color" + (index + 1))).value;
-                            jsonTemplate.textboxes[index]['font'] = document.getElementById(("font" + (index + 1))).value;
-                            jsonTemplate.textboxes[index]['justify'] = document.getElementById(("justify" + (index + 1))).value;
-                            jsonTemplate.textboxes[index]['concat'] = document.getElementById(("concat" + (index + 1))).value;
-                            jsonTemplate.textboxes[index]['outline'] = document.getElementById(("outline" + (index + 1))).value;
-
-                        }
-                        const baseUrl = 'http://localhost:5000/api/';
-                        var dataBody = JSON.stringify(jsonTemplate, null, 2);
-                        const otherParam = {
-                            headers: {
-                                "content-type": "application/json; charset=UTF-8"
-                            },
-                            body: dataBody,
-                            method: "POST"
-                        };
-
-                        fetch((baseUrl + "557224886125461521/save-template/" + jsonTemplate['name']), otherParam)
-                            .then(data => { return data.json() })
-                            .then(rest => { console.log(res) })
-                            .catch(error => console.log(error));
-
-                        var copyText = JSON.stringify(jsonTemplate, null, 2)
-
-                        function updateClipboard(copyText) {
-                            navigator.clipboard.writeText(copyText).then(function () {
-                                /* clipboard successfully set */
-                                alert("The meme template was sent to the database!");
-                            }, function () {
-                                /* clipboard write failed */
-                            });
-                        }
-
-
-                        updateClipboard(copyText);
-
-                        console.log(JSON.stringify(jsonTemplate, null, 2));
-
-                    }
-
-                }
-            }
-        },
-
-        handleMouseOut: function (e) {
-            // tell the browser we're handling this event
-            e.preventDefault();
-            e.stopPropagation();
-
-            var mouseX = parseInt(e.clientX - recOffsetX);
-            var mouseY = parseInt(e.clientY - recOffsetY);
-
-            // Put your mouseOut stuff here
-            isRecDown = false;
-        },
-
-        handleMouseMove: function (e) {
-            if (!isRecDown) {
-                return;
-            }
-            // tell the browser we're handling this event
-            e.preventDefault();
-            e.stopPropagation();
-
-            var mouseX = parseInt(e.clientX - recOffsetX);
-            var mouseY = parseInt(e.clientY - recOffsetY);
-            newRect = {
-                left: Math.min(startX, mouseX),
-                right: Math.max(startX, mouseX),
-                top: Math.min(startY, mouseY),
-                bottom: Math.max(startY, mouseY),
-                color: "#000000"
-            }
-            drawRectangleOnCanvas.drawAll();
-            context.strokeStyle = "#000000";
-            context.lineWidth = strokeWidth;
-            context.globalAlpha = 1;
-            context.strokeRect(startX, startY, mouseX - startX, mouseY - startY);
-        },
+        // Append the submit button to the form 
+        container.appendChild(s);
 
     }
+
+    container.appendChild(form);
+
+    document.getElementsByClassName(containerName)[0]
+        .appendChild(container);
 
 
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function buildExisitngMeme(templateJson) {
+
+    // Last updated November 2010 by Simon Sarris
+    // www.simonsarris.com
+    // sarris@acm.org
+    //
+    // Free to use and distribute at will
+    // So long as you are nice to people, etc
+
+    // This is a self-executing function that I added only to stop this
+    // new script from interfering with the old one. It's a good idea in general, but not
+    // something I wanted to go over during this tutorial
+
+
+    (function (window) {
+
+        // Initiate base image for meme in background
+        var base_image = new Image();
+        // holds all our boxes
+        var boxes2 = [];
+
+        // New, holds the 8 tiny boxes that will be our selection handles
+        // the selection handles will be in this order:
+        // 0  1  2
+        // 3     4
+        // 5  6  7
+        var selectionHandles = [];
+
+        // Hold canvas information
+        var canvas;
+        var ctx;
+        var WIDTH;
+        var HEIGHT;
+        var INTERVAL = 20;  // how often, in milliseconds, we check to see if a redraw is needed
+
+        var isDrag = false;
+        var isResizeDrag = false;
+        var expectResize = -1; // New, will save the # of the selection handle if the mouse is over one.
+        var mx, my; // mouse coordinates
+
+        // when set to true, the canvas will redraw everything
+        // invalidate() just sets this to false right now
+        // we want to call invalidate() whenever we make a change
+        var canvasValid = false;
+
+        // The node (if any) being selected.
+        // If in the future we want to select multiple objects, this will get turned into an array
+        var mySel = null;
+
+        // The selection color and width. Right now we have a red selection with a small width
+        var mySelColor = '#CC0000';
+        var mySelWidth = 6;
+        var mySelBoxColor = 'black'; // New for selection boxes
+        var mySelBoxSize = 10;
+
+        // we use a fake canvas to draw individual shapes for selection testing
+        var ghostcanvas;
+        var gctx; // fake canvas context
+
+        // since we can drag from anywhere in a node
+        // instead of just its x/y corner, we need to save
+        // the offset of the mouse when we start dragging.
+        var offsetx, offsety;
+
+        // Padding and border style widths for mouse offsets
+        var stylePaddingLeft, stylePaddingTop, styleBorderLeft, styleBorderTop;
+
+        let maxx = 400,
+            maxy = 500;
+
+        let ratio = null;
+
+        // Box object to hold data
+        function Box2() {
+            this.x = 0;
+            this.y = 0;
+            this.w = 1; // default width and height?
+            this.h = 1;
+            this.fill = '#444444';
+        }
+
+        // New methods on the Box class
+        Box2.prototype = {
+            // we used to have a solo draw function
+            // but now each box is responsible for its own drawing
+            // mainDraw() will call this with the normal canvas
+            // myDown will call this with the ghost canvas with 'black'
+            draw: function (context, optionalColor) {
+                if (context === gctx) {
+                    context.fillStyle = 'black'; // always want black for the ghost canvas
+                } else {
+                    context.fillStyle = this.fill;
+                }
+
+                // We can skip the drawing of elements that have moved off the screen:
+                if (this.x > WIDTH || this.y > HEIGHT) return;
+                if (this.x + this.w < 0 || this.y + this.h < 0) return;
+
+                context.fillRect(this.x, this.y, this.w, this.h);
+
+                // draw selection
+                // this is a stroke along the box and also 8 new selection handles
+                if (mySel === this) {
+                    context.strokeStyle = mySelColor;
+                    context.lineWidth = mySelWidth;
+                    context.strokeRect(this.x, this.y, this.w, this.h);
+
+                    // draw the boxes
+
+                    var half = mySelBoxSize / 2;
+
+                    // 0  1  2
+                    // 3     4
+                    // 5  6  7
+                    //https://jswny.github.io/2ewiki/chris.png
+                    //chris neckbeard yummy
+                    //https://wiki.2edgy4.me
+                    //chris-neck-beard
+
+                    // top left, middle, right
+                    selectionHandles[0].x = this.x - half;
+                    selectionHandles[0].y = this.y - half;
+
+                    selectionHandles[1].x = this.x + this.w / 2 - half;
+                    selectionHandles[1].y = this.y - half;
+
+                    selectionHandles[2].x = this.x + this.w - half;
+                    selectionHandles[2].y = this.y - half;
+
+                    //middle left
+                    selectionHandles[3].x = this.x - half;
+                    selectionHandles[3].y = this.y + this.h / 2 - half;
+
+                    //middle right
+                    selectionHandles[4].x = this.x + this.w - half;
+                    selectionHandles[4].y = this.y + this.h / 2 - half;
+
+                    //bottom left, middle, right
+                    selectionHandles[6].x = this.x + this.w / 2 - half;
+                    selectionHandles[6].y = this.y + this.h - half;
+
+                    selectionHandles[5].x = this.x - half;
+                    selectionHandles[5].y = this.y + this.h - half;
+
+                    selectionHandles[7].x = this.x + this.w - half;
+                    selectionHandles[7].y = this.y + this.h - half;
+
+
+                    context.fillStyle = mySelBoxColor;
+                    for (var i = 0; i < 8; i++) {
+                        var cur = selectionHandles[i];
+                        context.fillRect(cur.x, cur.y, mySelBoxSize, mySelBoxSize);
+                    }
+                }
+
+            } // end draw
+
+        }
+
+        //Initialize a new Box, add it, and invalidate the canvas
+        function addRect(x, y, w, h, fill) {
+            var rect = new Box2;
+            rect.x = x;
+            rect.y = y;
+            rect.w = w
+            rect.h = h;
+            rect.fill = fill;
+            boxes2.push(rect);
+            invalidate();
+        }
+
+        // initialize our canvas, add a ghost canvas, set draw loop
+        // then add everything we want to intially exist on the canvas
+        function init2() {
+
+            base_image.src = document.getElementById('imageNameUpdate').value; //Load Image ;
+            canvas = document.getElementById('canvasExistingMeme');
+
+            ratio = maxx / maxy > base_image.height / base_image.width
+                ? maxx / base_image.height
+                : maxy / base_image.width
+
+            canvas.width = base_image.width * ratio;
+            canvas.height = base_image.height * ratio;
+
+            HEIGHT = canvas.height;
+            WIDTH = canvas.width;
+            ctx = canvas.getContext('2d');
+
+            ghostcanvas = document.createElement('canvas');
+            ghostcanvas.height = HEIGHT;
+            ghostcanvas.width = WIDTH;
+            gctx = ghostcanvas.getContext('2d');
+
+            // once we get the image, unhide the canvas
+            base_image.onload = function () {
+                document.getElementById('canvasExistingMeme').hidden = false;
+                ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio);
+            }
+
+            //fixes a problem where double clicking causes text to get selected on the canvas
+            canvas.onselectstart = function () { return false; }
+
+            // fixes mouse co-ordinate problems when there's a border or padding
+            // see getMouse for more detail
+            if (document.defaultView && document.defaultView.getComputedStyle) {
+                stylePaddingLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingLeft'], 10) || 0;
+                stylePaddingTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingTop'], 10) || 0;
+                styleBorderLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderLeftWidth'], 10) || 0;
+                styleBorderTop = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderTopWidth'], 10) || 0;
+            }
+
+            // make mainDraw() fire every INTERVAL milliseconds
+            setInterval(mainDraw, INTERVAL);
+
+            // set our events. Up and down are for dragging,
+            // double click is for making new boxes
+            canvas.onmousedown = myDown;
+            canvas.onmouseup = myUp;
+            canvas.ondblclick = myDblClick;
+            canvas.onmousemove = myMove;
+
+            // set up the selection handle boxes
+            for (var i = 0; i < 8; i++) {
+                var rect = new Box2;
+                selectionHandles.push(rect);
+            }
+
+            // add textbox initialization here:
+            templateJson.textboxes.forEach(addExistingRect)
+
+
+            //left": (textboxes[index]['x'] / canvas_width).toFixed(3),
+            //"top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
+            //"right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
+            //"bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+
+            function addExistingRect(item, index) {
+
+                let x = (templateJson.textboxes[index]['left'] * WIDTH)
+                let y = (templateJson.textboxes[index]['top'] * HEIGHT)
+                let w = ((templateJson.textboxes[index]['right'] * WIDTH) - x)
+                let h = ((templateJson.textboxes[index]['bottom'] * HEIGHT) - y)
+
+                addRect(x, y, w, h, 'rgba(0,205,0,0.7)');
+
+                addDataFields(index, "container additionalfieldsUpdate")
+
+            }
+
+            console.log(boxes2.length)
+
+            //addRect(260, 70, 60, 65, 'rgba(0,205,0,0.7)');
+
+            // add a green-blue rectangle
+            //addRect(240, 120, 40, 40, 'rgba(2,165,165,0.7)');  
+
+            // add a smaller purple rectangle
+            //addRect(45, 60, 25, 25, 'rgba(150,150,250,0.7)');
+
+        }
+
+
+        //wipes the canvas context
+        function clear(c) {
+            c.clearRect(0, 0, WIDTH, HEIGHT);
+        }
+
+        // Main draw loop.
+        // While draw is called as often as the INTERVAL variable demands,
+        // It only ever does something if the canvas gets invalidated by our code
+        function mainDraw() {
+            if (canvasValid == false) {
+                clear(ctx);
+
+                // Add stuff you want drawn in the background all the time here
+                ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio)
+
+                // draw all boxes
+                var l = boxes2.length;
+                for (var i = 0; i < l; i++) {
+                    boxes2[i].draw(ctx); // we used to call drawshape, but now each box draws itself
+                }
+
+                // Add stuff you want drawn on top all the time here
+
+                canvasValid = true;
+            }
+
+            // Post json data to API here after dynamicall building the json data
+            if (boxes2.length != 0) {
+                document.getElementById('submitButton').onclick = function () {
+                    postJson(getJsonUpdated(boxes2, WIDTH, HEIGHT));
+                }
+            }
+        }
+
+        // Happens when the mouse is moving inside the canvas
+        function myMove(e) {
+            if (isDrag) {
+                getMouse(e);
+
+                mySel.x = mx - offsetx;
+                mySel.y = my - offsety;
+
+                // something is changing position so we better invalidate the canvas!
+                invalidate();
+            } else if (isResizeDrag) {
+                // time ro resize!
+                var oldx = mySel.x;
+                var oldy = mySel.y;
+
+                // 0  1  2
+                // 3     4
+                // 5  6  7
+                switch (expectResize) {
+                    case 0:
+                        mySel.x = mx;
+                        mySel.y = my;
+                        mySel.w += oldx - mx;
+                        mySel.h += oldy - my;
+                        break;
+                    case 1:
+                        mySel.y = my;
+                        mySel.h += oldy - my;
+                        break;
+                    case 2:
+                        mySel.y = my;
+                        mySel.w = mx - oldx;
+                        mySel.h += oldy - my;
+                        break;
+                    case 3:
+                        mySel.x = mx;
+                        mySel.w += oldx - mx;
+                        break;
+                    case 4:
+                        mySel.w = mx - oldx;
+                        break;
+                    case 5:
+                        mySel.x = mx;
+                        mySel.w += oldx - mx;
+                        mySel.h = my - oldy;
+                        break;
+                    case 6:
+                        mySel.h = my - oldy;
+                        break;
+                    case 7:
+                        mySel.w = mx - oldx;
+                        mySel.h = my - oldy;
+                        break;
+                }
+
+                invalidate();
+            }
+
+            getMouse(e);
+            // if there's a selection see if we grabbed one of the selection handles
+            if (mySel !== null && !isResizeDrag) {
+                for (var i = 0; i < 8; i++) {
+                    // 0  1  2
+                    // 3     4
+                    // 5  6  7
+
+                    var cur = selectionHandles[i];
+
+                    // we dont need to use the ghost context because
+                    // selection handles will always be rectangles
+                    if (mx >= cur.x && mx <= cur.x + mySelBoxSize &&
+                        my >= cur.y && my <= cur.y + mySelBoxSize) {
+                        // we found one!
+                        expectResize = i;
+                        invalidate();
+
+                        switch (i) {
+                            case 0:
+                                this.style.cursor = 'nw-resize';
+                                break;
+                            case 1:
+                                this.style.cursor = 'n-resize';
+                                break;
+                            case 2:
+                                this.style.cursor = 'ne-resize';
+                                break;
+                            case 3:
+                                this.style.cursor = 'w-resize';
+                                break;
+                            case 4:
+                                this.style.cursor = 'e-resize';
+                                break;
+                            case 5:
+                                this.style.cursor = 'sw-resize';
+                                break;
+                            case 6:
+                                this.style.cursor = 's-resize';
+                                break;
+                            case 7:
+                                this.style.cursor = 'se-resize';
+                                break;
+                        }
+                        return;
+                    }
+
+                }
+                // not over a selection box, return to normal
+                isResizeDrag = false;
+                expectResize = -1;
+                this.style.cursor = 'auto';
+            }
+
+        }
+
+        // Happens when the mouse is clicked in the canvas
+        function myDown(e) {
+            getMouse(e);
+
+            //we are over a selection box
+            if (expectResize !== -1) {
+                isResizeDrag = true;
+                return;
+            }
+
+            clear(gctx);
+            var l = boxes2.length;
+            for (var i = l - 1; i >= 0; i--) {
+                // draw shape onto ghost context
+                boxes2[i].draw(gctx, 'black');
+
+                // get image data at the mouse x,y pixel
+                var imageData = gctx.getImageData(mx, my, 1, 1);
+                var index = (mx + my * imageData.width) * 4;
+
+                // if the mouse pixel exists, select and break
+                if (imageData.data[3] > 0) {
+                    mySel = boxes2[i];
+                    offsetx = mx - mySel.x;
+                    offsety = my - mySel.y;
+                    mySel.x = mx - offsetx;
+                    mySel.y = my - offsety;
+                    isDrag = true;
+
+                    invalidate();
+                    clear(gctx);
+                    return;
+                }
+
+            }
+            // havent returned means we have selected nothing
+            mySel = null;
+            // clear the ghost canvas for next time
+            clear(gctx);
+            // invalidate because we might need the selection border to disappear
+            invalidate();
+        }
+
+        function myUp() {
+
+            // ADD IN the updating of fields here
+
+
+            console.log(boxes2);
+            isDrag = false;
+            isResizeDrag = false;
+            expectResize = -1;
+        }
+
+        // adds a new node
+        function myDblClick(e) {
+            getMouse(e);
+            // for this method width and height determine the starting X and Y, too.
+            // so I left them as vars in case someone wanted to make them args for something and copy this code
+
+            // ADD IN THE CREATION OF EACH TEXT BOX FIELD DATA FORM HERE
+
+            addDataFields(boxes2.length, "container additionalfieldsUpdate")
+
+            var width = 200;
+            var height = 80;
+            addRect(mx - (width / 2), my - (height / 2), width, height, 'rgba(220,205,65,0.7)');
+        }
+
+
+        function invalidate() {
+            canvasValid = false;
+        }
+
+        // Sets mx,my to the mouse position relative to the canvas
+        // unfortunately this can be tricky, we have to worry about padding and borders
+        function getMouse(e) {
+            var element = canvas, offsetX = 0, offsetY = 0;
+
+            if (element.offsetParent) {
+                do {
+                    offsetX += element.offsetLeft;
+                    offsetY += element.offsetTop;
+                } while ((element = element.offsetParent));
+            }
+
+            // Add padding and border style widths to offset
+            offsetX += stylePaddingLeft;
+            offsetY += stylePaddingTop;
+
+            offsetX += styleBorderLeft;
+            offsetY += styleBorderTop;
+
+            mx = e.pageX - offsetX;
+            my = e.pageY - offsetY
+        }
+
+        // If you dont want to use <body onLoad='init()'>
+        // You could uncomment this init() reference and place the script reference inside the body tag
+        //init();
+        window.init2 = init2;
+    })(window);
+
+    init2();
+
+}

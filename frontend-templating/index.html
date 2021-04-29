@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen" />
 <style>
-    .center {
-        margin: auto;
-        width: 60%;
-        padding: 10px;
+    .center.newmeme {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
     }
 
-    .centerCanvas {
-        margin: auto;
-        width: 80%;
+    .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     input[type=button],
@@ -34,6 +36,7 @@
     input[type=text],
     select,
     textarea {
+
         width: 100%;
         padding: 12px;
         border: 1px solid #ccc;
@@ -43,20 +46,25 @@
     }
 
     canvas {
-        padding: 12px;
+        margin-left: auto;
+        margin-right: auto;
+        float: center;
+        margin-top: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        box-sizing: border-box;
-
+        position: relative
     }
 
 
     /* Style the container */
     .container {
+        margin-left: auto;
+        margin-right: auto;
         border-radius: 5px;
-        background-color: #f2f2f2;
+        background-color: #bbb8b8;
         padding: 20px;
         max-width: 800px;
+        position: relative;
     }
 
     /* Floating column for labels: 25% width */
@@ -80,6 +88,15 @@
         margin-top: 6px;
     }
 
+    .col-100 {
+        float: left;
+        width: 100%;
+        margin-top: 6px;
+    }
+
+    .row {
+        min-width: 500px;
+    }
 
     /* Clear floats after the columns */
     .row:after {
@@ -92,7 +109,9 @@
     @media screen and (max-width: 100px) {
 
         .col-25,
+        .col-50,
         .col-75,
+        .col-100,
         input[type=submit] {
             width: 20%;
             margin-top: 0;
@@ -105,24 +124,24 @@
     <div class="container" id="chooseAction">
         <div class="row">
             <div class="col-50">
-                <label for="imagename">Please Choose what you want to do today: </label>
+                <div class="center">
+                    <input type="button" id="updateExistingMemeButton"" onclick=" updateExistingMeme()"
+                        value="Update Existing Meme">
+                </div>
             </div>
-            <div class="col-25">
-                <input type="button" id="updateExistingMemeButton"" onclick=" updateExistingMeme()"
-                    value="Update Existing Meme">
-            </div>
-            <div class="col-25">
-                <input type="button" id="makeNewMemeButton"" onclick=" makeNewMeme()" value="Make New Meme">
+            <div class="col-50">
+                <div class="center">
+                    <input type="button" id="makeNewMemeButton"" onclick=" switchToNewMeme()" value="Make New Meme">
+                </div>
             </div>
         </div>
     </div>
+</div>
 
 
 
 
-
-
-
+<div class="center newmeme">
     <div class="container" hidden="true" id="makeNewMeme">
         <form>
             <div class="row">
@@ -163,11 +182,15 @@
             <div class="col-25">
             </div>
             <div class="col-75">
-                <input type="button" id="getImageButton"" onclick=" getImage()" value="Get Image">
+                <input type="button" id="getImageButton"" onclick=" buildNewMeme()" value="Get Image">
             </div>
         </div>
+        <div class="row">
+            <canvas id="canvasNewMeme" hidden="true"></canvas>
+        </div>
+        <div class="container additionalfields"></div>
     </div>
-    <canvas hidden="true" id="canvas"></canvas>
+</div>
 
 
 
@@ -175,12 +198,17 @@
 
 
 
+
+
+
+<div class="center existingmeme">
     <div class="container" hidden="true" id="updateExistingMeme">
         <div class="row">
             <div class="col-25">
-                <label for="imagename">Choose Meme: </label>
+                <label for="existingMemeOption">Choose Meme: </label>
             </div>
             <div class="col-25" id="existingMemeOption">
+
             </div>
             <div class="col-50">
                 <input type="button" id="loadExistingMemeButton"" onclick=" loadMeme()" value="Load Meme">
@@ -197,18 +225,18 @@
             </div>
             <div class="row">
                 <div class="col-25">
-                    <label for="descriptionValue">Description: </label>
+                    <label for="descriptionValueUpdate">Description: </label>
                 </div>
                 <div class="col-75">
-                    <input type="text" id="descriptionValueUpdate" name="descriptionValue" placeholder="Your description..">
+                    <input type="text" id="descriptionValueUpdate" name="descriptionValueUpdate" placeholder="Your description..">
                 </div>
             </div>
             <div class="row">
                 <div class="col-25">
-                    <label for="docsValue">KnowYourMeme URL: </label>
+                    <label for="docsValueUpdate">KnowYourMeme URL: </label>
                 </div>
                 <div class="col-75">
-                    <input type="text" id="docsValueUpdate" name="docsValue" placeholder="Enter Docs URL here">
+                    <input type="text" id="docsValueUpdate" name="docsValueUpdate" placeholder="Enter Docs URL here">
                 </div>
             </div>
             <div class="row">
@@ -216,14 +244,14 @@
                     <label for="templateNameValueUpdate">Template Name: </label>
                 </div>
                 <div class="col-75">
-                    <input type="text" id="templateNameValueUpdate" name="templateNameValue"
+                    <input type="text" id="templateNameValueUpdate" name="templateNameValueUpdate"
                         placeholder="Your template name..">
                 </div>
             </div>
-
         </form>
+        <div class="row">
+            <canvas hidden="true" id="canvasExistingMeme"></canvas>
+        </div>
+        <div class="container additionalfieldsUpdate"></div>
     </div>
-    <canvas hidden="true" id="canvas"></canvas>
 </div>
-
-</html>
