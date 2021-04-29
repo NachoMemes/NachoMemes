@@ -33,6 +33,7 @@ function updateExistingMeme() {
         .catch(error => console.log(error));
 }
 
+
 function loadMeme() {
     document.getElementById('updateExistingMemeForm').hidden = false;
 
@@ -58,8 +59,6 @@ function loadMeme() {
             document.getElementById('templateNameValueUpdate').value = res['name']
 
             buildExisitngMeme(res);
-
-
 
         })
         .catch(error => console.log(error));
@@ -736,10 +735,9 @@ function addDataFields(count, containerName) {
     font.setAttribute("id", fontCount);
     font.setAttribute("docId", drawCount);
     // Append the font input to the form 
-    //COMIC_SANS
+    font.appendChild(getHTMLSelectOptionHR("IMPACT", "Impact"));
     font.appendChild(getHTMLSelectOptionHR("XKCD", "xkcd"));
     font.appendChild(getHTMLSelectOptionHR("COMIC_SANS", "Comic Sans"));
-    font.appendChild(getHTMLSelectOptionHR("IMPACT", "Impact"));
     form.appendChild(getHTMLRow("Font Type: ", fontCount, font));
 
 
@@ -1148,6 +1146,11 @@ function buildExisitngMeme(templateJson) {
 
             }
 
+            // THIS IS A CHEAT because there is a bug i dont want to figure out right now
+            canvas.click()
+            // figure it out at some point
+
+
             console.log(boxes2.length)
 
             //addRect(260, 70, 60, 65, 'rgba(0,205,0,0.7)');
@@ -1353,10 +1356,6 @@ function buildExisitngMeme(templateJson) {
         }
 
         function myUp() {
-
-            // ADD IN the updating of fields here
-
-
             console.log(boxes2);
             isDrag = false;
             isResizeDrag = false;
