@@ -74,18 +74,6 @@ function switchToNewMeme() {
 
 function buildNewMeme() {
 
-    // Last updated November 2010 by Simon Sarris
-    // www.simonsarris.com
-    // sarris@acm.org
-    //
-    // Free to use and distribute at will
-    // So long as you are nice to people, etc
-
-    // This is a self-executing function that I added only to stop this
-    // new script from interfering with the old one. It's a good idea in general, but not
-    // something I wanted to go over during this tutorial
-
-
     (function (window) {
 
         // Initiate base image for meme in background
@@ -923,17 +911,6 @@ function addDataFields(count, containerName) {
 
 function buildExisitngMeme(templateJson) {
 
-    // Last updated November 2010 by Simon Sarris
-    // www.simonsarris.com
-    // sarris@acm.org
-    //
-    // Free to use and distribute at will
-    // So long as you are nice to people, etc
-
-    // This is a self-executing function that I added only to stop this
-    // new script from interfering with the old one. It's a good idea in general, but not
-    // something I wanted to go over during this tutorial
-
 
     (function (window) {
 
@@ -972,9 +949,9 @@ function buildExisitngMeme(templateJson) {
 
         // The selection color and width. Right now we have a red selection with a small width
         var mySelColor = '#CC0000';
-        var mySelWidth = 6;
+        var mySelWidth = 4;
         var mySelBoxColor = 'black'; // New for selection boxes
-        var mySelBoxSize = 10;
+        var mySelBoxSize = 8;
 
         // we use a fake canvas to draw individual shapes for selection testing
         var ghostcanvas;
