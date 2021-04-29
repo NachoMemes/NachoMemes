@@ -73,7 +73,6 @@ async def print_template(config: GuildConfig, template_name: str) -> dict:
         )}
     if template.preview_url:
         response["embed"] = response["embed"].set_image(url=template.preview_url.full_url)
-        print(template.preview_url.full_url)
     return response        
 
 
