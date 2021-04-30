@@ -147,6 +147,10 @@ class Template:
     # Times used
     usage: int = 0
 
+    # URL for the image in the preview
+    preview_url: Optional[Request] = None
+
+
     def read_source_image(self, buffer) -> Image:
         """
         Read the source image into an Image object.
@@ -156,6 +160,9 @@ class Template:
             buffer.seek(0)
             return ImageModule.open(buffer)
 
+    def read_image_bytes(self) -> BufferedIOBase:
+        return _fetch_image(self.image_url)
+        
     def render(self, message: Iterable[str], output: BufferedIOBase):
         """
         Renders the image into the local filesystem.
