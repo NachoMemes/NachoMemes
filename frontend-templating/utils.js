@@ -640,7 +640,7 @@ function postJson(json_data) {
 
     fetch((baseUrl + "557224886125461521/save-template/" + json_data['name']), otherParam)
         .then(data => { return data.json() })
-        .then(rest => { console.log(res) })
+        .then(res => { console.log(res) })
         .catch(error => console.log(error));
 
     alert("The meme template was sent to the database!");
