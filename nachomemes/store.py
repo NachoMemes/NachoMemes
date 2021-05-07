@@ -1,140 +1,161 @@
-# pylint: skip-file
-
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum, auto
-from pathlib import Path
-from sys import maxsize
-from typing import IO, Callable, Iterable, List, Optional
-from urllib.request import Request, urlopen
+from enum import Enum
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, Generator, cast
+from types import GeneratorType
+from urllib.request import Request
+import atexit, os, re
+import json
+from decimal import Decimal
+from operator import attrgetter
+from types import GeneratorType, MappingProxyType
+from urllib.request import Request
+from fuzzywuzzy import process
+from io import BytesIO
 
-from dacite import Config
-from PIL import Image, ImageFont
+from dacite import Config, from_dict
+from discord import Guild
 
-# Monkeypatch Request to show the url in repr
-Request.__repr__ = lambda self: f"Request(<{self.full_url}>)"
-
-
-class TemplateError(Exception):
-    pass
-
-
-class Color(Enum):
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-
-
-class Justify(Enum):
-    """Horizontal text position; lambda function calculates left offset from
-    enclosing box"""
-
-    LEFT = (lambda w1, w2: 0,)
-    CENTER = (lambda w1, w2: (w1 - w2) // 2,)
-    RIGHT = (lambda w1, w2: w1 - w2,)
-
-    def __call__(self, *args, **kwargs):
-        return self.value[0](*args, **kwargs)
-
-
-class Font(Enum):
-    IMPACT = Path("fonts/impact.ttf")
-    XKCD = Path("fonts/xkcd-script.ttf")
-    COMIC_SANS = Path("fonts/comic.ttf")
-
-    def load(self, font_size: int) -> ImageFont:
-        return ImageFont.truetype(str(self.value), font_size)
-
-
-@dataclass
-class TextBox:
-    """ Definition for text that will be placed in a template."""
-
-    # left, right, top and bottom are offsets from the top left corner as a
-    # percentage of the target image
-    left: float
-    right: float
-    top: float
-    bottom: float
-
-    face: Font
-
-    # in pixels
-    max_font_size: Optional[int]
-
-    color: Color = Color.BLACK
-    outline: Optional[Color] = None
-
-    # text alignment
-    justify: Justify = Justify.CENTER
-
-    # in degrees
-    rotation: Optional[int] = 0
-
-    # if this textbox is sized independently of the other boxes
-    ind_size: Optional[bool] = False
-
-
-@dataclass
-class MemeTemplate:
-    """Anatomy of a Meme"""
-
-    name: str
-
-    # URL to load the image
-    source_image_url: Request
-
-    # Where to put the text
-    textboxes: List[TextBox]
-
-    # name of the layout
-    layout: str
-    description: str
-    docs: str
-
-    # times used
-    usage: int
-
-    def read_source_image(self, buffer) -> Image:
-        with urlopen(self.source_image_url) as s:
-            buffer.write(s.read())
-            buffer.flush
-            buffer.seek(0)
-            return Image.open(buffer)
-
-    def render(self, message: Iterable[str], output: IO):
-        from render import render_template
-
-        render_template(self, message, output)
-
+from nachomemes.uploader import Uploader
+from nachomemes.guild_config import GuildConfig
+from nachomemes.template import Color, Font, Justify, Template, TemplateError, TextBox
 
 # additional deserializers for dacite
-da_config = Config(
-    {
-        Font: Font.__getitem__,
-        Color: Color.__getitem__,
-        Justify: Justify.__getitem__,
-        Request: Request,
-        float: float,
-        int: int,
-    }
-)
+da_config = Config({
+    Font: Font.__getitem__,
+    Color: Color.__getitem__,
+    Justify: Justify.__getitem__,
+    Request: Request,
+    float: float,
+    int: int,
+})
 
+# additional serializers for dacite
+serializers = cast(dict, MappingProxyType({
+    Request: attrgetter("full_url"),
+    float: lambda f: Decimal(str(f)),
+    Font: attrgetter("name"),
+    Color: attrgetter("name"),
+    Justify: attrgetter("name"),
+}))
+
+
+def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serializers):
+    """helper function to recursivly modify the format of data prior to serialization"""
+    if isinstance(value, TextBox):
+        return update_serialization(value.__dict__)
+    if type(value) in _serializers:
+        return _serializers[type(value)](value)
+    if dict == type(value):
+        return {k: update_serialization(v, _serializers) for k, v in value.items()}
+    if type(value) in (list, GeneratorType):
+        return [update_serialization(v, _serializers) for v in value]
+    return value
+
+class TemplateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(TemplateEncoder, self).default(obj)
 
 class Store(ABC):
+    """
+    Abstract base class for implementing data stores for template and guild data.
+    """
+
+    uploader: Uploader
+
     @abstractmethod
-    def refresh_memes(self, guild: str, hard: bool = False) -> str:
+    def refresh_memes(self, guild_id: str, hard: bool = False) -> str:
         pass
 
     @abstractmethod
-    def read_meme(
-        self, guild: str, id: str, increment_use: bool = False
-    ) -> MemeTemplate:
-        pass
+    def get_template_data(
+        self, guild_id: str, template_id: str, increment_use: bool = False
+    ) -> dict:
+        """
+        Retrieve template data (serialized template) as a dict from the store.
+        """
+
+    def get_template(
+        self, guild_id: Optional[str], template_id: str, increment_use: bool = False
+    ) -> Template:
+        """
+        Retrieve a template as a Template object from the store.
+        """
+        return from_dict(Template, self.get_template_data(
+            guild_id if guild_id is not None else "default", 
+            template_id, increment_use), config=da_config)
 
     @abstractmethod
-    def list_memes(self, guild: str, fields: List[str] = None) -> Iterable[dict]:
-        pass
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
+        """
+        List all the serialized templates in the store as dictionaries.
+        Optionally, pass fields to get only those fields in the dicts.
+        """
 
     @abstractmethod
-    def guild_config(self, guild: str) -> dict:
-        pass
+    def save_meme(self, guild_id: str, item: dict) -> str:
+        """
+        Saves a serialized template as a dict to the store.
+        """
+
+    @abstractmethod
+    def guild_config(self, guild: Optional[Guild]) -> GuildConfig:
+        """
+        Retrieve the guild configuration as a GuildConfig object from the store.
+        """
+
+    @abstractmethod
+    def save_guild_config(self, guild: GuildConfig) -> None:
+        """serialize and persist the guild configuration information in the store"""
+
+        
+    def best_match(self, guild_id: str, name: str = None, increment_use: bool = False
+    ) -> Template:
+        """Matches input fuzzily against proper names."""
+        if name is None:
+            raise TemplateError(f"No template name provided")
+        fuzzed = process.extractOne(name, self.list_memes(guild_id, ("name",)))
+        if fuzzed[1] < 50:
+            raise TemplateError(f"No template matching '{name}'")
+        return self.get_template(guild_id, fuzzed[0]["name"], increment_use)
+
+    async def best_match_with_preview(
+        self, guild_id: str, template_id: str, increment_use: bool = False
+    ) -> Template:
+        """
+        Retrieve a template as a Template object from the store.
+        """
+        template = self.best_match(guild_id, template_id, increment_use)
+        if not template.preview_url:
+            if self.uploader:
+                with BytesIO() as buffer:
+                    with template.read_image_bytes() as src:
+                        buffer.write(src.read())
+                        buffer.flush()
+                        buffer.seek(0)
+                        template.preview_url = Request(await self.uploader.upload(buffer, template.name + '.' + template.image_url.full_url.split('.')[-1]))
+                self.save_meme(guild_id, update_serialization(template.__dict__))
+        return template
+
+    def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
+        """Fuzzy match multiple templates."""
+        return [
+            match[0]
+            for match in process.extract(name, self.list_memes(guild_id, fields))
+            if  match[1] > 40
+        ]
+
+
+def get_guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
+    """
+    Coerces either a Guild, GuildConfig, or string guild ID into a guild ID string.
+    Returns "default" if no valid argument was provided.
+    """
+    if isinstance(guild, str):
+        return guild
+    if isinstance(guild, Guild):
+        return str(guild.id)
+    if isinstance(guild, GuildConfig):
+        return str(guild.guild_id)
+    return "default"

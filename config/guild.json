@@ -1,3 +1,9 @@
 {
+    "guild_id": "default",
+    "name": "default",
+    "override": [219206788162125845],
+    "pariah": [],
+    "admin_role": null,
+    "edit_role": null,
     "default_reactions": ["\\N{THUMBS UP SIGN}", "\\N{THUMBS DOWN SIGN}"]
 }

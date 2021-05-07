@@ -2,149 +2,185 @@
     "aliens": {
         "description": "Woah dude.",
         "docs": "https://knowyourmeme.com/memes/ancient-aliens",
-        "source_image_url": "file:source_images/aliens.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/aliens.jpg",
         "layout": "standard_layout",
         "usage": 0
     },
     "sam": {
         "description": "stay hungry.",
         "docs": "http://www.wiltonps.org/wilton-high-school",
-        "source_image_url": "file:source_images/sam.png",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/sam.png",
         "usage": 0,
         "layout": "sam_layout"
     },
     "successkid": {
         "description": "Success.",
         "docs": "https://knowyourmeme.com/memes/success-kid-i-hate-sandcastles",
-        "source_image_url": "file:source_images/successkid.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/successkid.jpg",
         "usage": 0,
         "layout": "standard_layout"
     },
     "drake": {
         "description": "Hotline Bling.",
         "docs": "https://knowyourmeme.com/memes/drakeposting",
-        "source_image_url": "file:source_images/drake.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/drake.jpg",
         "usage": 0,
         "layout": "drake_layout"
     },
     "galaxy-brain-3": {
         "description": "Galaxy Brain.",
         "docs": "https://knowyourmeme.com/memes/galaxy-brain",
-        "source_image_url": "file:source_images/galaxy-brain-3.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/galaxy-brain-3.jpg",
         "usage": 0,
         "layout": "galaxy_layout_3"
     },
     "galaxy-brain-4": {
         "description": "Galaxy Brain.",
         "docs": "https://knowyourmeme.com/memes/galaxy-brain",
-        "source_image_url": "file:source_images/galaxy-brain-4.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/galaxy-brain-4.jpg",
         "layout": "galaxy_layout_4",
         "usage": 0
     },
     "galaxy-brain-6": {
         "description": "Galaxy Brain.",
         "docs": "https://knowyourmeme.com/memes/galaxy-brain",
-        "source_image_url": "file:source_images/galaxy-brain-6.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/galaxy-brain-6.jpg",
         "layout": "galaxy_layout_6",
         "usage": 0
     },
     "millionaire1": {
         "description": "Call a friend?",
         "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
-        "source_image_url": "file:source_images/millionaire1.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/millionaire1.jpg",
         "layout": "millionaire_layout",
         "usage": 0
     },
     "millionaire2": {
         "description": "Call a friend?",
         "docs": "https://knowyourmeme.com/memes/subcultures/who-wants-to-be-a-millionaire",
-        "source_image_url": "file:source_images/millionaire2.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/millionaire2.jpg",
         "layout": "millionaire_layout",
         "usage": 0
     },
     "pikachu": {
         "description": "Pika!?",
         "docs": "https://knowyourmeme.com/memes/surprised-pikachu",
-        "source_image_url": "file:source_images/surprised-pikachu.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/surprised-pikachu.jpg",
         "layout": "pikachu_layout",
         "usage": 0
     },
     "big-brain": {
         "description": "It's big brain time",
         "docs": "https://knowyourmeme.com/memes/yeah-this-is-big-brain-time",
-        "source_image_url": "file:source_images/bigbrain.png",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/bigbrain.png",
         "layout": "standard_layout",
         "usage": 0
     },
     "change-my-mind": {
         "description": "Change my mind",
         "docs": "https://knowyourmeme.com/memes/steven-crowders-change-my-mind-campus-sign",
-        "source_image_url": "file:source_images/change-my-mind.png",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/change-my-mind.png",
         "layout": "change_mind_layout",
         "usage": 0
     },
     "bruh": {
         "description": "bruh",
         "docs": "https://knowyourmeme.com/memes/bruh",
-        "source_image_url": "file:source_images/bruh.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/bruh.jpg",
         "layout": "standard_layout",
         "usage": 0
     },
     "boardroom": {
         "description": "and out the window he goes",
         "docs": "https://knowyourmeme.com/memes/boardroom-suggestion",
-        "source_image_url": "file:source_images/boardroom.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/boardroom.jpg",
         "layout": "boardroom_layout",
         "usage": 0
     },
     "penguin": {
         "description": "awkward...",
         "docs": "https://knowyourmeme.com/memes/socially-awkward-penguin",
-        "source_image_url": "file:source_images/sap.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/sap.jpg",
         "layout": "standard_layout",
         "usage": 0
     },
     "hannibal": {
         "description": "why would he do this?",
         "docs": "https://knowyourmeme.com/memes/who-killed-hannibal",
-        "source_image_url": "file:source_images/hannibal.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/hannibal.jpg",
         "layout": "hannibal_layout",
         "usage": 0
     },
     "stonks": {
         "description": "stonks go up and up",
         "docs": "https://knowyourmeme.com/memes/stonks",
-        "source_image_url": "file:source_images/stonks.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/stonks.jpg",
+        "layout": "stonks_layout",
+        "usage": 0
+    },
+    "something-of-a-scientist": {
+        "description": "we are all scientists",
+        "docs": "https://knowyourmeme.com/memes/im-something-of-a-scientist-myself",
+        "image_url": "https://i.imgur.com/QoXbJAX.jpg",
         "layout": "stonks_layout",
         "usage": 0
     },
     "woman-yelling-at-a-cat": {
         "description": "you pu--y!",
         "docs": "https://knowyourmeme.com/memes/woman-yelling-at-a-cat",
-        "source_image_url": "file:source_images/woman-yelling-at-a-cat.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/woman-yelling-at-a-cat.jpg",
         "layout": "woman_yelling_at_a_cat_layout",
         "usage": 0
     },
     "xzibit": {
         "description": "yo dawg!",
         "docs": "https://knowyourmeme.com/memes/xzibit-yo-dawg",
-        "source_image_url": "file:source_images/xzibit-yo-dawg.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/xzibit-yo-dawg.jpg",
         "layout": "standard_layout",
         "usage": 0
     },
     "american-chopper": {
         "description": "LISTEN YOU F**k",
         "docs": "https://knowyourmeme.com/memes/american-chopper",
-        "source_image_url": "file:source_images/american-chopper.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/american-chopper.jpg",
         "layout": "american_chopper_layout",
         "usage": 0
     },
     "rollsafe": {
         "description": "she's got good brains",
         "docs": "https://knowyourmeme.com/memes/roll-safe",
-        "source_image_url": "file:source_images/rollsafe.jpg",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/rollsafe.jpg",
         "layout": "standard_layout",
         "usage": 0
+    },
+    "nacho": {
+        "description": "she's got good brains",
+        "docs": "https://knowyourmeme.com/memes/roll-safe",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/nacho2.jpg",
+        "layout": "nacho_layout",
+        "usage": 0
+    },
+    "doesnt-effect-my-baby": {
+        "description": "side effects include low birthweight, autism, asthma, and roblox memes",
+        "docs": "https://knowyourmeme.com/memes/it-doesnt-effect-my-baby",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/doesnteffectmybaby.jpg",
+        "layout": "doesnt_effect_baby_layout",
+        "usage": 0
+    },
+    "epic-handshake": {
+        "description": "The best agreement",
+        "docs": "https://knowyourmeme.com/memes/epic-handshake",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/Epic-Handshake.jpg",
+        "layout": "epic_handshake_layout",
+        "usage": 0
+    },
+    "2fast-2weasley": {
+        "description": "2 Harry 2 Potter",
+        "docs": "https://9gag.com/gag/aQ3pD97/too-fast-too-weasley",
+        "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/2fast2weasley.jpg",
+        "layout": "2pane_bottom",
+        "usage": 0
     }
+
 
 }
