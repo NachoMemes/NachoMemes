@@ -13,40 +13,6 @@ from PIL.ImageFont import FreeTypeFont
 from nachomemes.template import Color, Font, Template, TextBox, TemplateError
 from nachomemes.reflow import reflow_text
 
-
-
-
-def _reflow_text(message: str, count: int) -> List[str]:
-    """Using slashes, break up the provided text into the requested number of boxes"""
-    text = [message]
-    if len(text) == count:
-        return text
-
-    # if we are expecting a single string, smash everything together replacing
-    # slash with newline
-    if count == 1:
-        return ["\n".join(" ".join(l) for l in partition_on_value("/", text))]
-
-    # if we see a double slash, use that as the text box boundary, and smash
-    # the sub-sequences together replacing slash with newline
-    if "//" in text:
-        result = [
-            "\n".join(" ".join(l) for l in partition_on_value("/", b))
-            for b in partition_on_value("//", text)
-        ]
-        if len(result) != count:
-            raise TemplateError(f"unable to fit provided text into {count} boxes")
-        return result
-
-    # if we just see a single slash, use that as the text box boundary
-    if "/" in text:
-        result = [" ".join(l) for l in partition_on_value("/", text)]
-        assert len(result) == count
-        return result
-
-    raise ValueError(f"could not fit provided text into {count} boxes")
-
-
 def _text_width(font: Font, size: int, string: str) -> int:
     """Returns the width of the provided text at the given font size in pixels"""
     return font.load(size).getsize(string)[0]

@@ -392,21 +392,6 @@ async def meme(ctx: Context, *, data=None):
     except Exception as ex:
         RECENT[ctx.message.id] = await report(ctx, ex)
 
-@bot.command(description="Make a new meme.")
-async def flow(ctx: Context, *, data=None):
-    if not DEBUG:
-        return
-
-    from nachomemes.reflow import reflow_text
-
-    try:
-        count, text = pop_arg(data)
-        result = reflow_text(text or "", int(count))
-        # print ('\n'.join(("```{}```".format(s) for s in result)))
-        await ctx.send('\n'.join(("```\n{}```".format(s) for s in result)))
-
-    except Exception as ex:
-        await report(ctx, ex)
 
 
 def run(config: Configuration) -> None:
@@ -421,6 +406,21 @@ def run(config: Configuration) -> None:
 
     global UPLOADER
     UPLOADER = config.uploader
+
+    if DEBUG:
+        @bot.command(description="Make a new meme.")
+        async def flow(ctx: Context, *, data=None):
+
+            from nachomemes.reflow import reflow_text
+
+            try:
+                count, text = pop_arg(data)
+                result = reflow_text(text or "", int(count))
+                # print ('\n'.join(("```{}```".format(s) for s in result)))
+                await ctx.send('\n'.join(("```\n{}```".format(s) for s in result)))
+
+            except Exception as ex:
+                await report(ctx, ex)
 
     config.start_discord_client()
 
