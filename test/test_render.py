@@ -26,7 +26,7 @@ def rmsdiff(d):
 def make_diff(expected_filename, template, message):
     with Image.open(f"sample-memes/{expected_filename}") as expected:
         with io.BytesIO() as buffer:
-            template.render(shlex.split(message), buffer)
+            template.render(message, buffer)
             buffer.flush()
             buffer.seek(0)
             actual = Image.open(buffer)
