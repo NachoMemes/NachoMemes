@@ -16,4 +16,4 @@ if __name__ == "__main__":
 
     config = Configuration(["--local"])
     with cast(BufferedIOBase, open(filename, "wb")) as f:
-        config.store.get_template(None, template_name).render(text, f)
+        config.store.get_template(None, template_name).render(" ".join(text), f)

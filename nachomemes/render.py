@@ -11,31 +11,14 @@ from PIL.Image import Image
 from PIL.ImageFont import FreeTypeFont
 
 from nachomemes.template import Color, Font, Template, TextBox, TemplateError
-
-T = TypeVar('T')
-
-def partition_on(pred: Callable[[T],bool], seq: Iterable[T]) -> Iterable[Iterable[T]]:
-    "Split a sequence into multuple sub-sequences using a provided value as the boundary"
-    i = iter(seq)
-    while True:
-        # note that we need to do an explicit StopIteration check because
-        # takewhile returns an empty sequence if it encounters StopIteration
-        try:
-            n = next(i)
-        except StopIteration:
-            return
-        # return the next sub-sequence up to the boundary.
-        yield takewhile(lambda v: not pred(v), chain([n], i))
+from nachomemes.reflow import reflow_text
 
 
-def partition_on_value(value: T, seq: Iterable[T]) -> Iterable[Iterable[T]]:
-    pred: Callable[[T],bool] = lambda v: v == value
-    return partition_on(pred, seq)
 
 
-def _reflow_text(text: List[str], count: int) -> List[str]:
+def _reflow_text(message: str, count: int) -> List[str]:
     """Using slashes, break up the provided text into the requested number of boxes"""
-
+    text = [message]
     if len(text) == count:
         return text
 
@@ -170,12 +153,12 @@ def _debug_box(img: Image, tb: TextBox) -> None:
 
 
 def render_template(
-    template: Template, message: List[str], output: BufferedIOBase, debug: bool = False
+    template: Template, message: str, output: BufferedIOBase, debug: bool = False
 ) -> None:
     """This is the thing that does the thing"""
 
     # combine the strings into the required number of textboxes
-    strings = _reflow_text(message, len(template.textboxes))
+    strings = reflow_text(message, len(template.textboxes))
 
     # zip the strings up with the corrosponding textbox
     texts: List[Tuple[TextBox, List[str]]] = list(
