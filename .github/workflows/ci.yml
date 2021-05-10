@@ -72,7 +72,7 @@ jobs:
         run: |
           pip install poetry==${{ env.poetry-version }}
           poetry install
-      - name: Run Mypy
+      - name: Run Vulture
         run: poetry run vulture --min-confidence 90 nachomemes
 
   test:
