@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
+from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence
 
 from nachomemes.util import partition_on_value
 
