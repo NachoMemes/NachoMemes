@@ -26,7 +26,7 @@ def make_server(store: Store) -> Flask:
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def render(guild_id: str, template_id: str):
         meme = store.get_template(guild_id, template_id)
-        text = " ".join(request.args.getlist('text'))
+        text = "\n".join(request.args.getlist('text'))
         print(text)
         buffer = io.BytesIO()
         meme.render(text, buffer)

@@ -163,7 +163,7 @@ class Template:
     def read_image_bytes(self) -> BufferedIOBase:
         return _fetch_image(self.image_url)
         
-    def render(self, message: Iterable[str], output: BufferedIOBase):
+    def render(self, message: str, output: BufferedIOBase):
         """
         Renders the image into the local filesystem.
         """
