@@ -141,7 +141,7 @@ jobs:
     needs: [image]
     if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', 'develop') }}
     env:
-      SAD_CHANNEL: 'production'
+      SAD_CHANNEL: "production"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
