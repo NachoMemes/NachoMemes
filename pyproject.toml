@@ -26,6 +26,7 @@ mypy = "^0.812"
 rope = "^0.18.0"
 "discord.py-stubs" = "^1.7.0"
 discord-ext-typed-commands = "^1.0.3"
+vulture = "^2.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
