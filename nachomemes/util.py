@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Callable, Iterator, TypeVar, Optional, Iterable
+from typing import Callable, TypeVar, Optional, Iterable
 from itertools import chain, takewhile
 
 _KT = TypeVar('_KT')
