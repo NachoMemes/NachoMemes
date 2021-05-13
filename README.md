@@ -5,28 +5,6 @@
   <img src="https://github.com/cooperpellaton/NachoMemes/workflows/CI/badge.svg">
 </p>
 
-
-## Table of Contents
-
-
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
-
-<!-- code_chunk_output -->
-
-- [Table of Contents](#table-of-contents)
-- [Overview](#overview)
-- [Run This Yourself](#run-this-yourself)
-  - [Local Development](#local-development)
-    - [Without Docker](#without-docker)
-    - [With Docker](#with-docker)
-  - [Production](#production)
-- [Dependencies](#dependencies)
-- [Meet the Team](#meet-the-team)
-
-<!-- /code_chunk_output -->
-
-
-
 ## Overview
 
 [This](https://discordapp.com/oauth2/authorize?&client_id=628445658743046154&scope=bot&permissions=387136) is a [Discord](https://discordapp.com) bot to create memes with custom text on top of pre-loaded image templates. Use this to mess with your friends and meme quickly without ever leaving the chat.
