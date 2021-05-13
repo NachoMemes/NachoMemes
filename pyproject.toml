@@ -18,7 +18,7 @@ fuzzywuzzy = "^0.18.0"
 python-Levenshtein-wheels = "^0.13.2"
 
 [tool.poetry.dev-dependencies]
-ipython = "^7.21.0"
+ipython = "^7.23.1"
 pylint = "^2.7.2"
 autopep8 = "^1.5.5"
 yamllint = "^1.26.0"
