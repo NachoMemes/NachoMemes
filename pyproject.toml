@@ -13,7 +13,7 @@ psutil = "^5.8.0"
 argparse = "^1.4.0"
 asyncio = "^3.4.3"
 dacite = "^1.6.0"
-Flask = "^1.1.2"
+Flask = "^2.0.0"
 fuzzywuzzy = "^0.18.0"
 python-Levenshtein-wheels = "^0.13.2"
 
