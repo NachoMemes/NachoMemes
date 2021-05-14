@@ -1,7 +1,7 @@
 import io
 import json
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, Response
 
 from nachomemes import Configuration
 from nachomemes.store import Store, update_serialization, TemplateEncoder
@@ -33,7 +33,7 @@ def make_server(store: Store) -> Flask:
         buffer.seek(0)
         return send_file(
             buffer,
-            mimetype='image/png')
+            mimetype='image/png') # type: ignore
 
     return app
 
