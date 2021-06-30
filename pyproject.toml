@@ -15,7 +15,7 @@ asyncio = "^3.4.3"
 dacite = "^1.6.0"
 fuzzywuzzy = "^0.18.0"
 python-Levenshtein-wheels = "^0.13.2"
-Flask = "^2.0.0"
+Flask = "^2.0.1"
 mypy = "^0.812"
 
 [tool.poetry.dev-dependencies]

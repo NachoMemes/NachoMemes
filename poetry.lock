@@ -211,7 +211,7 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [[package]]
 name = "flask"
-version = "2.0.0"
+version = "2.0.1"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
@@ -695,7 +695,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a09c6877d6058fdb032ed9b3e7cb1148a8d540402e591ec0d371f2363d0c60f8"
+content-hash = "b05907d6394d512004c60fe0803c89ef9589396910ed98e86ae9cf67827063e2"
 
 [metadata.files]
 aiohttp = [
@@ -812,8 +812,8 @@ discord-ext-typed-commands = [
     {file = "discord.py_stubs-1.7.1-py3-none-any.whl", hash = "sha256:9752ca1ca43a20988ab0ed95ec607a323fab9859b1c03fa1be46ceb5a291eed2"},
 ]
 flask = [
-    {file = "Flask-2.0.0-py3-none-any.whl", hash = "sha256:1833a4b36ace08dfa1510d86f1bb6fc595d990ec1b838e03ac8dd80ac0705954"},
-    {file = "Flask-2.0.0.tar.gz", hash = "sha256:168e8507792cb8a3aa06afbe5d4d431d3e07c6318bc3893ceecb81aff09f848d"},
+    {file = "Flask-2.0.1-py3-none-any.whl", hash = "sha256:a6209ca15eb63fc9385f38e452704113d679511d9574d09b2cf9183ae7d20dc9"},
+    {file = "Flask-2.0.1.tar.gz", hash = "sha256:1c4c257b1892aec1398784c63791cbaa43062f1f7aeb555c4da961b20ee68f55"},
 ]
 fuzzywuzzy = [
     {file = "fuzzywuzzy-0.18.0-py2.py3-none-any.whl", hash = "sha256:928244b28db720d1e0ee7587acf660ea49d7e4c632569cad4f1cd7e68a5f0993"},
