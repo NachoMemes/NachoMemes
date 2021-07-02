@@ -8,14 +8,12 @@ import traceback
 from io import BufferedIOBase
 from textwrap import dedent
 from pathlib import Path
-from typing import cast, List, Optional, Iterable, Generator, Union
+from typing import cast, List, Optional, Iterable, Union
 from json.decoder import JSONDecodeError
-from contextlib import AbstractContextManager
 
 import discord
 from discord import Member, Role, Embed
 from discord.message import Message
-from discord.ext import commands
 from discord.ext.commands import Bot, Context, Group
 
 from nachomemes import Configuration, SimpleCache, Uploader
@@ -35,13 +33,8 @@ STORE: Store
 
 UPLOADER: Uploader
 
-# Base directory from which paths should extend.
-BASE_DIR = Path(__file__).parent.parent
-
 # Debug mode (true or false)
 DEBUG = False
-
-UPLOAD_ALL = True
 
 # recent meme requests (and the resulting meme message)
 RECENT: SimpleCache[int,Message] = SimpleCache(200)
@@ -127,10 +120,6 @@ async def report(ctx: Union[Context,Message], ex: Exception, message: str="An er
     else:
         await ctx.edit(**response)
         return ctx
-
-with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
-    statuses = json.load(c)["credits"]
-
 
 def _get_member(ctx: Union[Message,Context]) -> Member:
     if isinstance(ctx, Context):

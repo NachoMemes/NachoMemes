@@ -2,8 +2,7 @@ import sys
 from io import BufferedIOBase, BytesIO
 from itertools import chain, takewhile
 from math import cos, pi, sin
-from os import PathLike
-from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
+from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence
 
 
 from PIL import Image as ImageModule, ImageFont, ImageDraw, ImageFont

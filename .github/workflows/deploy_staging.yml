@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Publish image to GitHub Container Registry
-        uses: elgohr/Publish-Docker-Github-Action@2.12
+        uses: elgohr/Publish-Docker-Github-Action@3.04
         with:
           name: nachomemes/nachomemes/nachomemes
           username: ${{ github.actor }}

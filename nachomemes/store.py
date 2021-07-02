@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, Generator, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, cast
 from types import GeneratorType
 from urllib.request import Request
 import atexit, os, re

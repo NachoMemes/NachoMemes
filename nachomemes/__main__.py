@@ -8,9 +8,7 @@ from nachomemes import Configuration
 # Example: python -m nachomemes bruh.png bruh bruh top / bottom
 if __name__ == "__main__":
     args = sys.argv[1:]
-    show_boxes = False
     if "--show" in args:
-        show_boxes = True
         args.remove("--show")
     (filename, template_name, *text) = args
 
