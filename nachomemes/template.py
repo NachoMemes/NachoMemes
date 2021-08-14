@@ -116,7 +116,6 @@ def _fetch_image(url: Request) -> BufferedIOBase:
             with urlopen(url) as u:
                 f.write(u.read())
             LOCAL_IMAGE_CACHE[url.full_url] = f.name
-        print(f.name)
     return cast(BufferedIOBase, open(LOCAL_IMAGE_CACHE[url.full_url], 'rb'))
 
 
