@@ -365,7 +365,8 @@ async def meme(ctx: Context, *, data=None):
     try:
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
-        response = await generate(config, _get_member(ctx), data)
+        _, text = pop_arg(ctx.message.content)
+        response = await generate(config, _get_member(ctx), text)
 
         react = response.pop("react", False)
 

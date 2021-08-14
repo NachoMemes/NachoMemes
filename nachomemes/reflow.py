@@ -18,93 +18,93 @@ def _match(text, pos, chars) -> bool:
         return False
     return text[pos] in chars
 
-def _state_start(text: str, start : int, pos: int, tokens: list) -> Optional[Callable]:
+def _state_start(text: str, start : int, pos: int, match_quotes: bool, tokens: list) -> Optional[Callable]: # pylint: disable=unused-argument
     if pos == len(text):
         return None
-    if _match(text, pos, "\'\""):
+    if match_quotes and _match(text, pos, "\'\""):
         end = _find_unescaped(text, pos+1, text[pos])
         if end:
             tokens.append(text[pos+1:end])
-            return lambda: _state_start(text, end+1, end+1, tokens)
+            return lambda: _state_start(text, end+1, end+1, match_quotes, tokens)
     if _match(text, pos, "\n"):
         if _match(text, pos+1, "\n"):
             tokens.append(text[pos:pos+2])
-            return lambda: _state_start(text, pos+2, pos+2, tokens)
+            return lambda: _state_start(text, pos+2, pos+2, match_quotes, tokens)
         else:
             tokens.append(text[pos:pos+1])
-            return lambda: _state_start(text, pos+1, pos+1, tokens)
+            return lambda: _state_start(text, pos+1, pos+1, match_quotes, tokens)
 
     if _match(text, pos, " "):
-        return lambda: _state_whitespace(text,  pos, pos+1, tokens)
+        return lambda: _state_whitespace(text,  pos, pos+1, match_quotes, tokens)
     else:
-        return lambda: _state_other(text,  pos, pos+1, tokens)
+        return lambda: _state_other(text,  pos, pos+1, match_quotes, tokens)
 
 
-def _state_whitespace(text: str, start : int, pos: int, tokens: list) -> Optional[Callable]:
+def _state_whitespace(text: str, start : int, pos: int, match_quotes: bool, tokens: list) -> Optional[Callable]: # pylint: disable=unused-argument
     if pos == len(text):
         tokens.append(text[start:pos])
         return None
-    if _match(text, pos, "\'\""):
+    if match_quotes and _match(text, pos, "\'\""):
         end = _find_unescaped(text, pos+1, text[pos])
         if end:
             tokens.append(text[start:pos])
             tokens.append(text[pos+1:end])
-            return lambda: _state_start(text, end+1, end+1, tokens)
+            return lambda: _state_start(text, end+1, end+1, match_quotes, tokens)
     if _match(text, pos, "\n"):
         if _match(text, pos+1, "\n"):
             tokens.append(text[start:pos])
             tokens.append(text[pos:pos+2])
-            return lambda: _state_start(text, pos+2, pos+2, tokens)
+            return lambda: _state_start(text, pos+2, pos+2, match_quotes, tokens)
         else:
             tokens.append(text[start:pos])
             tokens.append(text[pos:pos+1])
-            return lambda: _state_start(text, pos+1, pos+1, tokens)
+            return lambda: _state_start(text, pos+1, pos+1, match_quotes, tokens)
     if _match(text, pos, "/"):
         if _match(text, pos+1, " "):
             tokens.append(text[start:pos-1])
             tokens.append(text[pos-1:pos+2])
-            return lambda: _state_start(text, pos+2, pos+2, tokens)
+            return lambda: _state_start(text, pos+2, pos+2, match_quotes, tokens)
         elif _match(text, pos+1, "/") and _match(text, pos+2, " "):
             tokens.append(text[start:pos-1])
             tokens.append(text[pos-1:pos+3])
-            return lambda: _state_start(text, pos+3, pos+3, tokens)
+            return lambda: _state_start(text, pos+3, pos+3, match_quotes, tokens)
     if _match(text, pos, " "):
-        return lambda: _state_whitespace(text, start, pos+1, tokens)
+        return lambda: _state_whitespace(text, start, pos+1, match_quotes, tokens)
     else:
         tokens.append(text[start:pos])
-        return lambda: _state_other(text, pos, pos+1, tokens)
+        return lambda: _state_other(text, pos, pos+1, match_quotes, tokens)
 
-def _state_other(text: str, start : int, pos: int, tokens: list) -> Optional[Callable]:
+def _state_other(text: str, start : int, pos: int, match_quotes: bool, tokens: list) -> Optional[Callable]: # pylint: disable=unused-argument
     if pos == len(text):
         tokens.append(text[start:pos])
         return None
-    if _match(text, pos, "\'\""):
+    if match_quotes and _match(text, pos, "\'\""):
         end = _find_unescaped(text, pos+1, text[pos])
         if end:
             tokens.append(text[start:pos])
             tokens.append(text[pos+1:end])
-            return lambda: _state_start(text, end+1, end+1, tokens)
+            return lambda: _state_start(text, end+1, end+1, match_quotes, tokens)
     if _match(text, pos, "\n"):
         if _match(text, pos+1, "\n"):
             tokens.append(text[start:pos])
             tokens.append(text[pos:pos+2])
-            return lambda: _state_start(text, pos+2, pos+2, tokens)
+            return lambda: _state_start(text, pos+2, pos+2, match_quotes, tokens)
         else:
             tokens.append(text[start:pos])
             tokens.append(text[pos:pos+1])
-            return lambda: _state_start(text, pos+1, pos+1, tokens)
+            return lambda: _state_start(text, pos+1, pos+1, match_quotes, tokens)
     if _match(text, pos, " "):
         tokens.append(text[start:pos])
-        return lambda: _state_whitespace(text,  pos, pos+1, tokens)
+        return lambda: _state_whitespace(text,  pos, pos+1, match_quotes, tokens)
     else:
-        return lambda: _state_other(text,  start, pos+1, tokens)
+        return lambda: _state_other(text,  start, pos+1, match_quotes, tokens)
     
 
 
-def _tokenize(text: str) -> list[str]:
+def _tokenize(text: str, match_quotes: bool=False) -> list[str]:
     tokens: list[str]  = []
 
-    trampoline: Optional[Callable] = lambda: _state_start(text, 0, 0, tokens)
+    trampoline: Optional[Callable] = lambda: _state_start(text, 0, 0, match_quotes, tokens)
     while trampoline:
         trampoline = trampoline()
 

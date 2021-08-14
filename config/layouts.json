@@ -453,5 +453,46 @@
             "color": "WHITE",
             "outline": "BLACK"
         }
+    ],
+    "for_the_better_layout": [{
+        "left": 0.02,
+        "right": 0.48,
+        "top": 0.38,
+        "bottom": 0.48,
+        "font": "IMPACT",
+        "justify": "CENTER",
+        "color": "WHITE",
+        "outline": "BLACK"
+    },{
+        "left": 0.52,
+        "right": 0.98,
+        "top": 0.38,
+        "bottom": 0.48,
+        "font": "IMPACT",
+        "justify": "CENTER",
+        "color": "WHITE",
+        "outline": "BLACK"
+    },{
+        "left": 0.52,
+        "right": 0.98,
+        "top": 0.88,
+        "bottom": 0.98,
+        "font": "IMPACT",
+        "justify": "CENTER",
+        "color": "WHITE",
+        "outline": "BLACK"
+    }],
+    "party_layout": [
+        {
+            "left": 0.25,
+            "right": 0.95,
+            "top": 0.05,
+            "bottom": 0.4,
+            "font": "IMPACT",
+            "color": "BLACK",
+            "justify": "LEFT",
+            "outline": "WHITE"
+        }
     ]
+
 }
