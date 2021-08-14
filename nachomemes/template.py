@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Dict, cast
 from tempfile import NamedTemporaryFile
 from functools import partial
-from io import BufferedIOBase
+from io import BufferedIOBase, BytesIO
 
 from urllib.request import Request, urlopen
 from PIL import Image as ImageModule, ImageFont
@@ -150,7 +150,7 @@ class Template:
     # URL for the image in the preview
     preview_url: Optional[Request] = None
 
-
+    
     def read_source_image(self, buffer) -> Image:
         """
         Read the source image into an Image object.
