@@ -1,7 +1,7 @@
 import io
 import json
 
-from flask import Flask, jsonify, request, send_file, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory, render_template
 from flask_cors import CORS
 
 from nachomemes import Configuration
@@ -40,6 +40,18 @@ def make_server(store: Store) -> Flask:
             buffer,
             mimetype='image/png')
 
+    @app.route('/api/<guild_id>/memes/<template_id>/render')
+    def baseimage(guild_id: str, template_id: str):
+        meme = store.get_template(guild_id, template_id)
+        text = " ".join(request.args.getlist('text'))
+        print(text)
+        buffer = io.BytesIO()
+        meme.render(text, buffer)
+        buffer.seek(0)
+        return send_file(
+            buffer,
+            mimetype='image/png')
+
     @app.route('/api/<guild_id>/save-template/<template_id>', methods=['GET', 'POST'])
     def save_template(guild_id: str, template_id: str):
         print("Updated: " + template_id + " in guild: " + guild_id)
@@ -49,6 +61,14 @@ def make_server(store: Store) -> Flask:
     def download_file(filename: str):
         folder_path = "../frontend-templating"
         return send_from_directory(folder_path, filename)
+    
+    @app.route('/edit/<guild_id>/update-template/<template_id>')
+    def update_temp(guild_id, template_id):
+        return render_template('update_meme.html', guild_id = guild_id, template_id = template_id)
+
+    @app.route('/edit/<guild_id>/all-memes')
+    def memes(guild_id):
+        return render_template('list_memes.html', guild_id = guild_id)
 
     return app
 
