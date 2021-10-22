@@ -1,4 +1,4 @@
-import os, sys, json, asyncio
+import os, sys, json
 from argparse import ArgumentParser
 from collections import OrderedDict
 from warnings import warn
@@ -61,7 +61,6 @@ class Configuration:
 
     @discord_client.setter
     def discord_client(self, client: Client) -> None:
-        # asyncio.get_event_loop().run_until_complete(client.login(self.discord_token))
         self._discord_client = client
 
     def start_discord_client(self) -> None:

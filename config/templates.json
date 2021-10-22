@@ -180,7 +180,19 @@
         "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/develop/source_images/2fast2weasley.jpg",
         "layout": "2pane_bottom",
         "usage": 0
+    },
+    "for-the-better-right": {
+        "description": "For the better, right?",
+        "docs": "https://knowyourmeme.com/memes/for-the-better-right",
+        "image_url": "https://i.imgur.com/YPW7OLu.png",
+        "layout": "for_the_better_layout",
+        "usage": 0
+    },
+    "they-dont-know": {
+        "image_url": "https://i.imgur.com/pIRwFi7.jpg",
+        "layout": "party_layout",
+        "description": "I wish I was at home playing video games",
+        "docs": "https://knowyourmeme.com/memes/i-wish-i-was-at-home-they-dont-know",
+        "usage": 0
     }
-
-
 }

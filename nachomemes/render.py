@@ -2,8 +2,7 @@ import sys
 from io import BufferedIOBase, BytesIO
 from itertools import chain, takewhile
 from math import cos, pi, sin
-from os import PathLike
-from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence, Generator
+from typing import Callable, Iterable, List, Optional, Tuple, TypeVar, Sequence
 
 
 from PIL import Image as ImageModule, ImageFont, ImageDraw, ImageFont
@@ -11,58 +10,7 @@ from PIL.Image import Image
 from PIL.ImageFont import FreeTypeFont
 
 from nachomemes.template import Color, Font, Template, TextBox, TemplateError
-
-T = TypeVar('T')
-
-def partition_on(pred: Callable[[T],bool], seq: Iterable[T]) -> Iterable[Iterable[T]]:
-    "Split a sequence into multuple sub-sequences using a provided value as the boundary"
-    i = iter(seq)
-    while True:
-        # note that we need to do an explicit StopIteration check because
-        # takewhile returns an empty sequence if it encounters StopIteration
-        try:
-            n = next(i)
-        except StopIteration:
-            return
-        # return the next sub-sequence up to the boundary.
-        yield takewhile(lambda v: not pred(v), chain([n], i))
-
-
-def partition_on_value(value: T, seq: Iterable[T]) -> Iterable[Iterable[T]]:
-    pred: Callable[[T],bool] = lambda v: v == value
-    return partition_on(pred, seq)
-
-
-def _reflow_text(text, count) -> List[str]:
-    """Using slashes, break up the provided text into the requested number of boxes"""
-
-    if len(text) == count:
-        return text
-
-    # if we are expecting a single string, smash everything together replacing
-    # slash with newline
-    if count == 1:
-        return ["\n".join(" ".join(l) for l in partition_on_value("/", text))]
-
-    # if we see a double slash, use that as the text box boundary, and smash
-    # the sub-sequences together replacing slash with newline
-    if "//" in text:
-        result = [
-            "\n".join(" ".join(l) for l in partition_on_value("/", b))
-            for b in partition_on_value("//", text)
-        ]
-        if len(result) != count:
-            raise TemplateError(f"unable to fit provided text into {count} boxes")
-        return result
-
-    # if we just see a single slash, use that as the text box boundary
-    if "/" in text:
-        result = [" ".join(l) for l in partition_on_value("/", text)]
-        assert len(result) == count
-        return result
-
-    raise ValueError(f"could not fit provided text into {count} boxes")
-
+from nachomemes.reflow import reflow_text
 
 def _text_width(font: Font, size: int, string: str) -> int:
     """Returns the width of the provided text at the given font size in pixels"""
@@ -170,12 +118,12 @@ def _debug_box(img: Image, tb: TextBox) -> None:
 
 
 def render_template(
-    template: Template, message: Iterable[str], output: BufferedIOBase, debug: bool = False
+    template: Template, message: str, output: BufferedIOBase, debug: bool = False
 ) -> None:
     """This is the thing that does the thing"""
 
     # combine the strings into the required number of textboxes
-    strings = _reflow_text(message, len(template.textboxes))
+    strings = reflow_text(message, len(template.textboxes))
 
     # zip the strings up with the corrosponding textbox
     texts: List[Tuple[TextBox, List[str]]] = list(

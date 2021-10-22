@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Dict, cast
 from tempfile import NamedTemporaryFile
 from functools import partial
-from io import BufferedIOBase
+from io import BufferedIOBase, BytesIO
 
 from urllib.request import Request, urlopen
 from PIL import Image as ImageModule, ImageFont
@@ -116,7 +116,6 @@ def _fetch_image(url: Request) -> BufferedIOBase:
             with urlopen(url) as u:
                 f.write(u.read())
             LOCAL_IMAGE_CACHE[url.full_url] = f.name
-        print(f.name)
     return cast(BufferedIOBase, open(LOCAL_IMAGE_CACHE[url.full_url], 'rb'))
 
 
@@ -150,7 +149,7 @@ class Template:
     # URL for the image in the preview
     preview_url: Optional[Request] = None
 
-
+    
     def read_source_image(self, buffer) -> Image:
         """
         Read the source image into an Image object.
@@ -163,7 +162,7 @@ class Template:
     def read_image_bytes(self) -> BufferedIOBase:
         return _fetch_image(self.image_url)
         
-    def render(self, message: Iterable[str], output: BufferedIOBase):
+    def render(self, message: str, output: BufferedIOBase):
         """
         Renders the image into the local filesystem.
         """

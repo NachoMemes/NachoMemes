@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, Generator, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, cast
 from types import GeneratorType
 from urllib.request import Request
 import atexit, os, re
@@ -11,6 +11,8 @@ from types import GeneratorType, MappingProxyType
 from urllib.request import Request
 from fuzzywuzzy import process
 from io import BytesIO
+
+import PIL
 
 from dacite import Config, from_dict
 from discord import Guild
@@ -129,12 +131,14 @@ class Store(ABC):
         template = self.best_match(guild_id, template_id, increment_use)
         if not template.preview_url:
             if self.uploader:
-                with BytesIO() as buffer:
-                    with template.read_image_bytes() as src:
-                        buffer.write(src.read())
-                        buffer.flush()
-                        buffer.seek(0)
-                        template.preview_url = Request(await self.uploader.upload(buffer, template.name + '.' + template.image_url.full_url.split('.')[-1]))
+                with BytesIO() as input:
+                    img = template.read_source_image(input)
+                    img.thumbnail((256,256), PIL.Image.BICUBIC)
+                    with BytesIO() as output:
+                        img.save(output, format="PNG")
+                        output.flush()
+                        output.seek(0)
+                        template.preview_url = Request(await self.uploader.upload(output, template.name + '.' + template.image_url.full_url.split('.')[-1]))
                 self.save_meme(guild_id, update_serialization(template.__dict__))
         return template
 

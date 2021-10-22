@@ -8,21 +8,19 @@ import traceback
 from io import BufferedIOBase
 from textwrap import dedent
 from pathlib import Path
-from typing import cast, List, Optional, Iterable, Generator, Union
+from typing import cast, List, Optional, Iterable, Union
 from json.decoder import JSONDecodeError
-from contextlib import AbstractContextManager
 
 import discord
 from discord import Member, Role, Embed
 from discord.message import Message
-from discord.ext import commands
 from discord.ext.commands import Bot, Context, Group
 
 from nachomemes import Configuration, SimpleCache, Uploader
 from nachomemes.template import TemplateError
 from nachomemes.guild_config import GuildConfig
 from nachomemes.store import Store, TemplateEncoder, update_serialization
-
+from nachomemes.util import pop_arg
 
 # this description describes
 DESCRIPTION = "A bot to generate custom memes using pre-loaded templates."
@@ -35,16 +33,13 @@ STORE: Store
 
 UPLOADER: Uploader
 
-# Base directory from which paths should extend.
-BASE_DIR = Path(__file__).parent.parent
-
 # Debug mode (true or false)
 DEBUG = False
 
-UPLOAD_ALL = True
-
 # recent meme requests (and the resulting meme message)
 RECENT: SimpleCache[int,Message] = SimpleCache(200)
+
+
 
 def print_all_templates(config: GuildConfig) -> dict:
     memes = STORE.list_memes(config.guild_id, ("name", "description"))
@@ -76,7 +71,7 @@ async def print_template(config: GuildConfig, template_name: str) -> dict:
     return response        
 
 
-async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> dict:
+async def generate(config: GuildConfig, member: Member, data: Optional[str]) -> dict:
     buffer: Optional[BufferedIOBase] = None
     try:
         if not config.can_use(member):
@@ -87,7 +82,7 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
         if not data:
             return print_all_templates(config)
 
-        (template_name, *text) = data
+        template_name, text = pop_arg(data)
         if not text:
             if "*" in template_name:
                 return print_matching_templates(config, template_name)
@@ -95,7 +90,7 @@ async def generate(config: GuildConfig, member: Member, data: Iterable[str]) -> 
                 return await print_template(config, template_name)
 
         template = STORE.best_match(config.guild_id, template_name, True)
-        name = re.sub(r"\W+", "-", str(text))
+        name = re.sub(r"\W+", "-", text)
         key = f"{template.name}-{name}.png"
         buffer = io.BytesIO()
         template.render(text, buffer)
@@ -125,10 +120,6 @@ async def report(ctx: Union[Context,Message], ex: Exception, message: str="An er
     else:
         await ctx.edit(**response)
         return ctx
-
-with open(os.path.join(BASE_DIR, "config/messages.json"), "rb") as c:
-    statuses = json.load(c)["credits"]
-
 
 def _get_member(ctx: Union[Message,Context]) -> Member:
     if isinstance(ctx, Context):
@@ -170,11 +161,11 @@ async def on_message_edit(before: Message, after: Message):
         except:
             pass
 
-        data = after.content.split()
-        if not data or data.pop(0) != "!meme":
+        command, text = pop_arg(after.content)
+        if command != "!meme":
             return
 
-        response = await generate(config, _get_member(after), data)
+        response = await generate(config, _get_member(after), text)
 
         if "buffer" in response:
             url = await UPLOADER.upload(response.pop("buffer", None), response.pop("key"))
@@ -364,7 +355,6 @@ async def dump(ctx: Context, template_name: str=None):
     except Exception as ex:
         await report(ctx, ex)
 
-
 @bot.command(description="Make a new meme.")
 async def meme(ctx: Context, *, data=None):
     """Main bot command for rendering/showing memes.
@@ -375,7 +365,8 @@ async def meme(ctx: Context, *, data=None):
     try:
         await ctx.trigger_typing()
         config = STORE.guild_config(ctx.guild)
-        response = await generate(config, _get_member(ctx), data.split())
+        _, text = pop_arg(ctx.message.content)
+        response = await generate(config, _get_member(ctx), text)
 
         react = response.pop("react", False)
 
@@ -390,7 +381,8 @@ async def meme(ctx: Context, *, data=None):
 
     except Exception as ex:
         RECENT[ctx.message.id] = await report(ctx, ex)
-        
+
+
 
 def run(config: Configuration) -> None:
     """Starts an instance of the bot using the provided configuration."""
@@ -404,6 +396,21 @@ def run(config: Configuration) -> None:
 
     global UPLOADER
     UPLOADER = config.uploader
+
+    if DEBUG:
+        @bot.command(description="Make a new meme.")
+        async def flow(ctx: Context, *, data=None):
+
+            from nachomemes.reflow import reflow_text
+
+            try:
+                count, text = pop_arg(data)
+                result = reflow_text(text or "", int(count))
+                # print ('\n'.join(("```{}```".format(s) for s in result)))
+                await ctx.send('\n'.join(("```\n{}```".format(s) for s in result)))
+
+            except Exception as ex:
+                await report(ctx, ex)
 
     config.start_discord_client()
 
