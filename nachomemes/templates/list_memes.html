@@ -17,20 +17,8 @@
 }
 </style>
 
+<script type="text/javascript" src="{{url_for('static', filename='utils.js')}}"></script>
 <var id="guildIdTempVar" hidden="true">{{ guild_id }}</var>
+<body onload="loadListOfMemes()"></body>
 
-<div class="row">
-    <div class="column1">
-
-    </div>
-    <div class="column2">
-
-    </div>
-    <div class="column3">
-
-
-    </div>
-    <div class="column4">
-
-    </div>
-  </div>
+<div id="dvTable"></div>

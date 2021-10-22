@@ -14,7 +14,7 @@ function updateExistingMeme() {
     //     .then(data => console.log(data));
 
     const baseUrl = 'http://localhost:5000/api/';
-    fetch((baseUrl + "557224886125461521/memes"), otherParam)
+    fetch((baseUrl + "557224886125461521/memes-name"), otherParam)
         .then(data => { return data.json() })
         .then(res => {
             console.log("response from api:")

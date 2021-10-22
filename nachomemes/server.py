@@ -19,6 +19,14 @@ def make_server(store: Store) -> Flask:
     def list_memes(guild_id):
         return jsonify(update_serialization(store.list_memes(guild_id)))
 
+    @app.route("/api/<guild_id>/memes-name")
+    def list_of_meme_names(guild_id):
+        data = store.list_memes(guild_id)
+        list_names = []
+        for entry in data:
+            list_names.append(entry['name'])
+        return json.dumps(list_names, cls=TemplateEncoder)
+
     @app.route("/api/<guild_id>/memes/<template_id>")
     def get_template_data(guild_id: str, template_id: str):
         data = store.get_template_data(guild_id, template_id)
@@ -60,7 +68,7 @@ def make_server(store: Store) -> Flask:
     def update_temp(guild_id, template_id):
         return render_template('update_meme.html', guild_id = guild_id, template_id = template_id)
 
-    @app.route('/edit/<guild_id>/all-memes')
+    @app.route('/edit/<guild_id>')
     def memes(guild_id):
         return render_template('list_memes.html', guild_id = guild_id)
 
@@ -71,4 +79,5 @@ if __name__ == "__main__":
     config = Configuration()
     app = make_server(config.store)
     app.debug = config.debug
+    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
     app.run()

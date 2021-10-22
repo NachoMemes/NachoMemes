@@ -1,22 +1,6 @@
-function showAllMemes() {
-
-    var memes = []
-    memes.forEach(addImages)
-
-    var memeCount = 5;
-    var container = document.createElement("div");
-
-
-
-}
-
-function addImages() {
-
-    
-
-
-}
-
+// main function for edit meme template page
+// get passed here by list all memes page
+// or you can go to it dynamically
 function loadMemeToUpdate() {
     document.getElementById('updateExistingMemeForm').hidden = false;
 
@@ -46,7 +30,6 @@ function loadMemeToUpdate() {
 
         })
         .catch(error => console.log(error));
-
 }
 
 function switchToNewMeme() {
@@ -54,6 +37,90 @@ function switchToNewMeme() {
     document.getElementById('chooseAction').hidden = true;
 
 }
+
+
+// main function for list all memes page..
+// hits api with guild id to get list of memes (and their objs)
+// builds those into a table
+function loadListOfMemes() {
+
+    const otherParam = {
+        headers: {
+            "content-type": "application/json; charset=UTF-8"
+        },
+        method: "GET"
+    };
+
+    let guild = document.getElementById('guildIdTempVar').innerHTML
+
+    const baseUrl = 'http://localhost:5000/api/';
+    fetch((baseUrl + guild + "/memes"), otherParam)
+        .then(data => { return data.json() })
+        .then(res => {
+            console.log("response from api:")
+            console.log(res)
+
+            insRows(res, guild)
+
+        })
+        .catch(error => console.log(error));
+}
+
+
+// insert rows of memes from guild dynamically into table
+function insRows(res, guild_id) {
+    var data = res
+    //var totalColumns = Object.keys(data[0]).length;
+    var totalColumns = 3;
+    var columnNames = [];
+    columnNames = ["Name", "Description", "Image"]
+    
+    //Create a HTML Table element.
+    var table = document.createElement("TABLE");
+    table.border = "1";
+    
+    //Add the header row.
+    var row = table.insertRow(-1);
+    for (var i = 0; i < totalColumns; i++) {
+      var headerCell = document.createElement("TH");
+      headerCell.innerHTML = columnNames[i];
+      row.appendChild(headerCell);
+    }
+    
+    // Add the data rows.
+    for (var i = 0; i < data.length; i++) {
+      row = table.insertRow(-1);
+
+      var cell = row.insertCell(-1);
+      var name = data[i]['name'];
+      var link = "http://localhost:5000/edit/" + guild_id + "/update-template/" + name
+      var returned = '<a href="' + link + '">' + name + '</a>';
+      cell.innerHTML = returned;
+      var cell = row.insertCell(-1);
+      cell.innerHTML = data[i]['description'];
+      var cell = row.insertCell(-1);
+      var image = data[i]['image_url'];
+      var image_html =  '<img src="' + image + '" alt="' + name + '" width="100" height="100">'
+      cell.innerHTML = image_html
+
+    }
+    
+    var dvTable = document.getElementById("dvTable");
+    dvTable.innerHTML = "";
+    dvTable.appendChild(table);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -98,6 +165,11 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 
     return jsonTemplate
 }
+
+
+
+
+
 
 function postJson(json_data) {
 
