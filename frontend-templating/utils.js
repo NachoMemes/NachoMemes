@@ -74,7 +74,7 @@ function loadListOfMemes() {
 
 function render_meme_list(memes, guild) {
     document.getElementById("memes").innerHTML = memes.map(m => 
-        `<div class="meme" data-link="edit#${guild}/${m.name}">
+        `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
             <div class="info">
                 <span class="name">${m.name}</span>
                 <span class="description">${m.description}</span>
