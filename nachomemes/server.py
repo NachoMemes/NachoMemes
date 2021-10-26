@@ -59,11 +59,6 @@ def make_server(store: Store) -> Flask:
         print("Updated: " + template_id + " in guild: " + guild_id)
         return store.save_meme(guild_id, request.json)
     
-    @app.route('/update-template/<path:filename>')
-    def download_file(filename: str):
-        folder_path = "../frontend-templating"
-        return send_from_directory(folder_path, filename)
-    
     @app.route('/edit/<guild_id>/update-template/<template_id>')
     def update_temp(guild_id, template_id):
         return render_template('update_meme.html', guild_id = guild_id, template_id = template_id)
