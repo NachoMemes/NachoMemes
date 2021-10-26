@@ -11,6 +11,15 @@ function goToNewMemePage() {
     window.location.href = url;
 }
 
+
+function readHash() {
+    parts = window.location.hash.replace('#','').split("/")
+    return {
+        guild: parts[0],
+        template: parts[1]
+    }
+}
+
 // main function for edit meme template page
 // get passed here by list all memes page
 // or you can go to it dynamically
@@ -24,11 +33,9 @@ function loadMemeToUpdate() {
         method: "GET"
     };
 
-    let guild = document.getElementById('guildIdTempVar').innerHTML
-    let template = document.getElementById('templateIdTempVar').innerHTML
+    let { guild, template } = readHash();
 
-    const baseUrl = 'http://localhost:5000/api/';
-    fetch((baseUrl + guild + "/memes/" + template), otherParam)
+    fetch(`/api/${guild}/memes/${template}`, otherParam)
         .then(data => { return data.json() })
         .then(res => {
             console.log("response from api:")
@@ -62,7 +69,7 @@ function loadListOfMemes() {
         method: "GET"
     };
 
-    let guild = window.location.hash.replace('#','')
+    let { guild } = readHash();
     fetch(`/api/${guild}/memes`, otherParam)
         .then(res => res.json())
         .then(memes => {
