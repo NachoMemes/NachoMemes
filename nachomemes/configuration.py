@@ -20,6 +20,8 @@ class Configuration:
             help="Run state::debug. True or false. Runs different credentials and logging level.")
         parser.add_argument("-l", "--local", action="store_true",
             help="Run locally without DynamoDB.")
+        parser.add_argument("--webroot", type=str, default="../frontend-templating",
+            help="Directory for static web content.")
         self.config = parser.parse_args(args)
 
         creds_file_name = os.getcwd() + (

@@ -8,8 +8,8 @@ from nachomemes import Configuration
 from nachomemes.store import Store, update_serialization, TemplateEncoder
 
 
-def make_server(store: Store) -> Flask:
-    app = Flask(__name__)
+def make_server(store: Store, webroot: str) -> Flask:
+    app = Flask(__name__, static_folder=webroot, static_url_path="/templates")
 
     @app.route("/")
     def root_path():
@@ -17,7 +17,7 @@ def make_server(store: Store) -> Flask:
 
     @app.route("/api/<guild_id>/memes")
     def list_memes(guild_id):
-        return jsonify(update_serialization(store.list_memes(guild_id)))
+        return jsonify(list(update_serialization(store.list_memes(guild_id))))
 
     @app.route("/api/<guild_id>/memes-name")
     def list_of_meme_names(guild_id):
@@ -59,28 +59,29 @@ def make_server(store: Store) -> Flask:
         print("Updated: " + template_id + " in guild: " + guild_id)
         return store.save_meme(guild_id, request.json)
     
-    @app.route('/edit/<guild_id>/update-template/<template_id>')
-    def update_temp(guild_id, template_id):
-        return render_template('update_meme.html', guild_id = guild_id, template_id = template_id)
 
-    @app.route('/edit/<guild_id>')
-    def main_render(guild_id):
-        return render_template('main.html', guild_id = guild_id)
+    # @app.route('/edit/<guild_id>/update-template/<template_id>')
+    # def update_temp(guild_id, template_id):
+    #     return render_template('update_meme.html', guild_id = guild_id, template_id = template_id)
 
-    @app.route('/edit/<guild_id>/memes')
-    def memes(guild_id):
-        return render_template('list_memes.html', guild_id = guild_id)
+    # @app.route('/edit/<guild_id>')
+    # def main_render(guild_id):
+    #     return render_template('main.html', guild_id = guild_id)
 
-    @app.route('/build/<guild_id>/new')
-    def new_meme(guild_id):
-        return render_template('new_meme.html', guild_id = guild_id)
+    # @app.route('/edit/<guild_id>/memes')
+    # def memes(guild_id):
+    #     return render_template('list_memes.html', guild_id = guild_id)
+
+    # @app.route('/build/<guild_id>/new')
+    # def new_meme(guild_id):
+    #     return render_template('new_meme.html', guild_id = guild_id)
 
     return app
 
 
 if __name__ == "__main__":
     config = Configuration()
-    app = make_server(config.store)
+    app = make_server(config.store, config.webroot)
     app.debug = config.debug
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
     app.run()
