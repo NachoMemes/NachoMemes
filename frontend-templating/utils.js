@@ -64,17 +64,25 @@ function loadListOfMemes() {
 
     let guild = window.location.hash.replace('#','')
     fetch(`/api/${guild}/memes`, otherParam)
-        .then(data => { return data.json() })
-        .then(res => {
-            console.log("response from api:")
-            console.log(res)
-
-            insRows(res, guild)
-
+        .then(res => res.json())
+        .then(memes => {
+            render_meme_list(memes, guild)
         })
         .catch(error => console.log(error));
 }
 
+
+function render_meme_list(memes, guild) {
+    document.getElementById("memes").innerHTML = memes.map(m => 
+        `<div class="meme" data-link="edit#${guild}/${m.name}">
+            <div class="info">
+                <span class="name">${m.name}</span>
+                <span class="description">${m.description}</span>
+            </div>
+            <img class="preview" src="${m.image_url}" alt="${m.name}" width="100" height="100">
+        </div>`
+    ).join("")
+}
 
 // insert rows of memes from guild dynamically into table
 function insRows(res, guild_id) {
