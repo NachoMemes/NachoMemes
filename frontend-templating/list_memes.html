@@ -9,11 +9,22 @@
   display: inline-block;
   border-style: solid;
   padding: 2px;
-  background-color: antiquewhite;
+  background-color: lightgrey;
+}
+.meme:hover {
+  cursor: pointer;
+  display: block;
+  border-style: solid;
+  padding: 1px;
+  background-color: grey;
 }
 
 .meme > img {
   float: right;
+  max-width: 100px;
+  max-height: 100px;
+  width: auto;
+  height: auto;
 }
 
 .meme > .info {
@@ -29,13 +40,11 @@
   font-weight: bold;
   font-size: 18px;
 }
-
-
 </style>
 
 <script type="text/javascript" src="utils.js"></script>
 <var id="guildIdTempVar" hidden="true">{{ guild_id }}</var>
 <body onload="loadListOfMemes()">
+  <div id="memes1" class="memelist"></div>
   <div id="memes" class="memelist"></div>
 </body>
-

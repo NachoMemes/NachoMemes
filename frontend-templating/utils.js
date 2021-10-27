@@ -11,14 +11,28 @@ function goToNewMemePage() {
     window.location.href = url;
 }
 
+function checkNewOrUpdate() {
+
+    var template = readHash().template
+    var guild = readHash().guild
+    console.log(getHash(template))
+    console.log(guild)
+
+    if(template == "wer")
+        buildNewMeme()
+    else
+        loadMemeToUpdate()
+
+}
 
 function readHash() {
-    parts = window.location.hash.replace('#','').split("/")
+    parts = window.location.hash.replace('#', '').split("/")
     return {
         guild: parts[0],
         template: parts[1]
     }
 }
+
 
 // main function for edit meme template page
 // get passed here by list all memes page
@@ -52,10 +66,6 @@ function loadMemeToUpdate() {
         .catch(error => console.log(error));
 }
 
-function switchToNewMeme() {
-    document.getElementById('makeNewMeme').hidden = false;
-}
-
 
 // main function for list all memes page..
 // hits api with guild id to get list of memes (and their objs)
@@ -73,6 +83,7 @@ function loadListOfMemes() {
     fetch(`/api/${guild}/memes`, otherParam)
         .then(res => res.json())
         .then(memes => {
+            console.log(memes)
             render_meme_list(memes, guild)
         })
         .catch(error => console.log(error));
@@ -80,16 +91,26 @@ function loadListOfMemes() {
 
 
 function render_meme_list(memes, guild) {
-    document.getElementById("memes").innerHTML = memes.map(m => 
+
+    var new_meme_template = { 
+        preview_url: "https://www.freeiconspng.com/uploads/mouse-cursor-click-png-outline-2.png", 
+        description: "Click to make new meme", 
+        name: "+" 
+    }
+
+    memes.unshift(new_meme_template)
+
+    document.getElementById("memes").innerHTML = memes.map(m =>
         `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
             <div class="info">
                 <span class="name">${m.name}</span>
                 <span class="description">${m.description}</span>
             </div>
-            <img class="preview" src="${m.image_url}" alt="${m.name}" width="100" height="100">
+            <img class="preview" src="${m.preview_url}" alt="${m.name}" width="100" height="100">
         </div>`
     ).join("")
 }
+
 
 // insert rows of memes from guild dynamically into table
 function insRows(res, guild_id) {
@@ -98,43 +119,41 @@ function insRows(res, guild_id) {
     var totalColumns = 3;
     var columnNames = [];
     columnNames = ["Name", "Description", "Image"]
-    
+
     //Create a HTML Table element.
     var table = document.createElement("TABLE");
     table.border = "1";
-    
+
     //Add the header row.
     var row = table.insertRow(-1);
     for (var i = 0; i < totalColumns; i++) {
-      var headerCell = document.createElement("TH");
-      headerCell.innerHTML = columnNames[i];
-      row.appendChild(headerCell);
+        var headerCell = document.createElement("TH");
+        headerCell.innerHTML = columnNames[i];
+        row.appendChild(headerCell);
     }
-    
+
     // Add the data rows.
     for (var i = 0; i < data.length; i++) {
-      row = table.insertRow(-1);
+        row = table.insertRow(-1);
 
-      var cell = row.insertCell(-1);
-      var name = data[i]['name'];
-      var link = "http://localhost:5000/edit/" + guild_id + "/update-template/" + name
-      var returned = '<a href="' + link + '">' + name + '</a>';
-      cell.innerHTML = returned;
-      var cell = row.insertCell(-1);
-      cell.innerHTML = data[i]['description'];
-      var cell = row.insertCell(-1);
-      var image = data[i]['image_url'];
-      var image_html =  '<img src="' + image + '" alt="' + name + '" width="100" height="100">'
-      cell.innerHTML = image_html
+        var cell = row.insertCell(-1);
+        var name = data[i]['name'];
+        var link = "http://localhost:5000/edit/" + guild_id + "/update-template/" + name
+        var returned = '<a href="' + link + '">' + name + '</a>';
+        cell.innerHTML = returned;
+        var cell = row.insertCell(-1);
+        cell.innerHTML = data[i]['description'];
+        var cell = row.insertCell(-1);
+        var image = data[i]['image_url'];
+        var image_html = '<img src="' + image + '" alt="' + name + '" width="100" height="100">'
+        cell.innerHTML = image_html
 
     }
-    
+
     var dvTable = document.getElementById("dvTable");
     dvTable.innerHTML = "";
     dvTable.appendChild(table);
 }
-
-
 
 
 /// fix this its dumb
@@ -174,13 +193,6 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 }
 
 
-
-
-
-
-
-
-
 function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
     var textboxes = [];
     textboxes = boxes2;
@@ -198,7 +210,7 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 
     textboxes.forEach(addTextboxData)
 
-    function emptyString (value) {
+    function emptyString(value) {
 
         if (value == "") {
             return null
@@ -232,7 +244,7 @@ function postJson(json_data) {
 
     const baseUrl = 'http://localhost:5000/api/';
     var dataBody = JSON.stringify(json_data, null, 2);
-    let guild = document.getElementById('guildIdTempVar').innerHTML
+    let guild = readHash().guild
 
     const otherParam = {
         headers: {
@@ -275,6 +287,7 @@ function getHTMLRow(labelValue, labelForValue, select) {
     return row
 }
 
+
 function getHTMLSelectOption(value) {
     var option = document.createElement("option");
     option.setAttribute("value", value);
@@ -282,6 +295,7 @@ function getHTMLSelectOption(value) {
 
     return option
 }
+
 
 function getHTMLSelectOptionHR(value, humanReadableValue) {
     var option = document.createElement("option");
@@ -945,96 +959,6 @@ function buildExisitngMeme(templateJson) {
     init2();
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
