@@ -15,10 +15,10 @@ function checkNewOrUpdate() {
 
     var template = readHash().template
     var guild = readHash().guild
-    console.log(getHash(template))
+    console.log(template)
     console.log(guild)
 
-    if(template == "wer")
+    if(template == "+")
         buildNewMeme()
     else
         loadMemeToUpdate()
@@ -38,7 +38,7 @@ function readHash() {
 // get passed here by list all memes page
 // or you can go to it dynamically
 function loadMemeToUpdate() {
-    document.getElementById('updateExistingMemeForm').hidden = false;
+    document.getElementById('updateExistingMeme').hidden = false;
 
     const otherParam = {
         headers: {
@@ -176,10 +176,10 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "left": parseFloat((textboxes[index]['x'] / canvas_width).toFixed(3)),
+            "top": parseFloat((textboxes[index]['y'] / canvas_hight).toFixed(3)),
+            "right": parseFloat(((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3)),
+            "bottom": parseFloat(((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3)),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -216,13 +216,13 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
             return null
         }
     }
-
+    
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "left": parseFloat((textboxes[index]['x'] / canvas_width).toFixed(3)),
+            "top": parseFloat((textboxes[index]['y'] / canvas_hight).toFixed(3)),
+            "right": parseFloat(((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3)),
+            "bottom": parseFloat(((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3)),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -1013,6 +1013,8 @@ function buildExisitngMeme(templateJson) {
 
 
 function buildNewMeme() {
+
+    document.getElementById('makeNewMeme').hidden = false;
 
     (function (window) {
 

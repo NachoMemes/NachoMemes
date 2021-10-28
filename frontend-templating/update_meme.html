@@ -122,9 +122,63 @@
 
 <body onload="checkNewOrUpdate()"></body>
 
-<div class="center existingmeme">
-    <div class="container" id="updateExistingMeme">
-        <form id="updateExistingMemeForm" hidden="true">
+<div class="center memeTemplate">
+
+    <div class="container" id="makeNewMeme" hidden="true">
+        <form>
+            <div class="row">
+                <div class="col-25">
+                    <label for="imagename">Image URL: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="imagename" name="imagename" placeholder="Your image URL..">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="descriptionValue">Description: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="descriptionValue" name="descriptionValue" placeholder="Your description..">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="docsValue">KnowYourMeme URL: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="docsValue" name="docsValue" placeholder="Enter Docs URL here">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="templateNameValue">Template Name: </label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="templateNameValue" name="templateNameValue"
+                        placeholder="Your template name..">
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-25">
+            </div>
+            <div class="col-75">
+                <input type="button" id="getImageButton"" onclick=" buildNewMeme()" value="Get Image">
+            </div>
+        </div>
+        <div class="row">
+            <canvas id="canvasNewMeme" hidden="true"></canvas>
+        </div>
+        <div class="container additionalfields"></div>
+    </div>
+
+
+
+    
+
+    <div class="container" id="updateExistingMeme" hidden="true">
+        <form id="updateExistingMemeForm">
             <div class="row">
                 <div class="col-25">
                     <label for="imageNameUpdate">Image URL: </label>
