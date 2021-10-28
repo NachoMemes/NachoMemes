@@ -1,15 +1,22 @@
 import io
-import json
+from decimal import Decimal
 
 from flask import Flask, jsonify, request, send_file, send_from_directory, render_template
+from flask.json import JSONEncoder
 from flask_cors import CORS
 
 from nachomemes import Configuration
-from nachomemes.store import Store, update_serialization, TemplateEncoder
+from nachomemes.store import Store, update_serialization
 
+class TemplateEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(TemplateEncoder, self).default(obj)
 
 def make_server(store: Store, webroot: str) -> Flask:
     app = Flask(__name__, static_folder=webroot, static_url_path="/templates")
+    app.json_encoder = TemplateEncoder
 
     @app.route("/")
     def root_path():
@@ -17,7 +24,11 @@ def make_server(store: Store, webroot: str) -> Flask:
 
     @app.route("/api/<guild_id>/memes")
     def list_memes(guild_id):
-        return jsonify(list(update_serialization(store.list_memes(guild_id))))
+        for m in store.list_memes(guild_id):
+            print(m)
+            jsonify(m)
+        
+        return jsonify(store.list_memes(guild_id))
 
     @app.route("/api/<guild_id>/memes-name")
     def list_of_meme_names(guild_id):
@@ -25,12 +36,12 @@ def make_server(store: Store, webroot: str) -> Flask:
         list_names = []
         for entry in data:
             list_names.append(entry['name'])
-        return json.dumps(list_names, cls=TemplateEncoder)
+        return jsonify()
 
     @app.route("/api/<guild_id>/memes/<template_id>")
     def get_template_data(guild_id: str, template_id: str):
         data = store.get_template_data(guild_id, template_id)
-        return json.dumps(data, cls=TemplateEncoder)
+        return jsonify(data)
 
     @app.route("/api/<guild_id>/memes/<template_id>/render")
     def render(guild_id: str, template_id: str):
