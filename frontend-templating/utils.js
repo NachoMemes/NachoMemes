@@ -101,7 +101,7 @@ function render_meme_list(memes, guild) {
     memes.unshift(new_meme_template)
 
     document.getElementById("memes").innerHTML = memes.map(m =>
-        `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
+        `<div class="meme" onClick="document.location='editor.html#${guild}/${m.name}'">
             <div class="info">
                 <span class="name">${m.name}</span>
                 <span class="description">${m.description}</span>
@@ -216,7 +216,7 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
             return null
         }
     }
-    
+
     function addTextboxData(item, index) {
         temp_json_push = {
             "left": parseFloat((textboxes[index]['x'] / canvas_width).toFixed(3)),
