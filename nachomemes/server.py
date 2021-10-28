@@ -24,11 +24,7 @@ def make_server(store: Store, webroot: str) -> Flask:
 
     @app.route("/api/<guild_id>/memes")
     def list_memes(guild_id):
-        for m in store.list_memes(guild_id):
-            print(m)
-            jsonify(m)
-        
-        return jsonify(store.list_memes(guild_id))
+        return jsonify(store.list_memes(guild_id, ("name", "description", "preview_url")))
 
     @app.route("/api/<guild_id>/memes-name")
     def list_of_meme_names(guild_id):
