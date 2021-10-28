@@ -65,23 +65,6 @@ def make_server(store: Store, webroot: str) -> Flask:
     def save_template(guild_id: str, template_id: str):
         print("Updated: " + template_id + " in guild: " + guild_id)
         return store.save_meme(guild_id, request.json)
-    
-
-    # @app.route('/edit/<guild_id>/update-template/<template_id>')
-    # def update_temp(guild_id, template_id):
-    #     return render_template('update_meme.html', guild_id = guild_id, template_id = template_id)
-
-    # @app.route('/edit/<guild_id>')
-    # def main_render(guild_id):
-    #     return render_template('main.html', guild_id = guild_id)
-
-    # @app.route('/edit/<guild_id>/memes')
-    # def memes(guild_id):
-    #     return render_template('list_memes.html', guild_id = guild_id)
-
-    # @app.route('/build/<guild_id>/new')
-    # def new_meme(guild_id):
-    #     return render_template('new_meme.html', guild_id = guild_id)
 
     return app
 
