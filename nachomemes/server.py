@@ -1,12 +1,11 @@
+"""server serves the serving"""
 import io
 from decimal import Decimal
 
-from flask import Flask, jsonify, request, send_file, send_from_directory, render_template
+from flask import Flask, jsonify, request, send_file
 from flask.json import JSONEncoder
-from flask_cors import CORS
 
-from nachomemes import Configuration
-from nachomemes.store import Store, update_serialization
+from nachomemes import Configuration, Store
 
 class TemplateEncoder(JSONEncoder):
     def default(self, obj):
@@ -88,7 +87,6 @@ def make_server(store: Store, webroot: str) -> Flask:
 
 if __name__ == "__main__":
     config = Configuration()
-    app = make_server(config.store, config.webroot)
-    app.debug = config.debug
-    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-    app.run()
+    server = make_server(config.store, config.webroot)
+    server.debug = config.debug
+    server.run()
