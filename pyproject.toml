@@ -20,8 +20,10 @@ mypy = "^0.910"
 
 [tool.poetry.dev-dependencies]
 ipython = "^7.28.0"
+
+autopep8 = "^1.6.0"
 pylint = "^2.11.1"
-autopep8 = "^1.5.5"
+
 yamllint = "^1.26.3"
 mypy = "^0.910"
 rope = "^0.21.0"
