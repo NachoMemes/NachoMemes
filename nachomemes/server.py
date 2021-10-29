@@ -2,7 +2,7 @@
 import io
 from decimal import Decimal
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask.json import JSONEncoder
 
 from nachomemes import Configuration, Store
@@ -47,6 +47,11 @@ def make_server(store: Store, webroot: str) -> Flask:
         meme.render(text, buffer)
         buffer.seek(0)
         return send_file(buffer, mimetype="image/png")  # type: ignore
+
+    @app.route("/api/file/<url>")
+    def serve_image(file_url: str):
+        print(url)
+        return "ok"
 
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def baseimage(guild_id: str, template_id: str):
