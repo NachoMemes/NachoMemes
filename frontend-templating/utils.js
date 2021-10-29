@@ -327,10 +327,6 @@ function addDataFields(count, containerName) {
 
 }
 
-//wipes the canvas context
-function clearCanvas(c) {
-    c.clearRect(0, 0, WIDTH, HEIGHT);
-}
 
 function buildExisitngMeme(templateJson) {
 
@@ -610,6 +606,11 @@ function buildExisitngMeme(templateJson) {
                     postJson(getJsonUpdated(boxes2, WIDTH, HEIGHT));
                 }
             }
+        }
+
+        //wipes the canvas context
+        function clearCanvas(c) {
+            c.clearRect(0, 0, WIDTH, HEIGHT);
         }
 
         // Happens when the mouse is moving inside the canvas
@@ -1082,6 +1083,12 @@ function buildNewMeme() {
             }
         }
 
+
+        //wipes the canvas context
+        function clearCanvas(c) {
+            c.clearRect(0, 0, WIDTH, HEIGHT);
+        }
+        
         // Happens when the mouse is moving inside the canvas
         function myMove(e) {
             if (isDrag) {
