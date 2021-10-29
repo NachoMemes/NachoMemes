@@ -99,7 +99,7 @@ function buildMemeList(memes, guild) {
 }
 
 
-function getJson(boxes2, canvas_width, canvas_hight) {
+function getJson(boxes2, canvasWidth, canvasHight) {
     // fix this its dumb
     var textboxes = [];
     textboxes = boxes2;
@@ -119,10 +119,10 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "left": (textboxes[index]['x'] / canvasWidth).toFixed(3),
+            "top": (textboxes[index]['y'] / canvasHight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvasWidth).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvasHight).toFixed(3),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -136,7 +136,7 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 }
 
 
-function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
+function getJsonUpdated(boxes2, canvasWidth, canvasHight) {
     var textboxes = [];
     textboxes = boxes2;
     var jsonTemplate = {};
@@ -162,10 +162,10 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "left": (textboxes[index]['x'] / canvasWidth).toFixed(3),
+            "top": (textboxes[index]['y'] / canvasHight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvasWidth).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvasHight).toFixed(3),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -179,10 +179,10 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 }
 
 
-function postJson(json_data) {
+function postJson(jsonData) {
 
     const baseUrl = `http://localhost:5000/api/`;
-    var dataBody = JSON.stringify(json_data, null, 2);
+    var dataBody = JSON.stringify(jsonData, null, 2);
     let guild = readHash().guild
 
     const otherParam = {
@@ -193,13 +193,13 @@ function postJson(json_data) {
         method: "POST"
     };
 
-    fetch((`${baseUrl}${guild}/save-template/${json_data['name']}`), otherParam)
+    fetch((`${baseUrl}${guild}/save-template/${jsonData['name']}`), otherParam)
         .then(data => { return data.json() })
         .then(res => { console.log(res) })
         .catch(error => console.log(error));
 
     alert("The meme template was sent to the database!");
-    console.log(JSON.stringify(json_data, null, 2));
+    console.log(JSON.stringify(jsonData, null, 2));
 
 }
 
@@ -554,10 +554,10 @@ function buildExisitngMeme(templateJson) {
             templateJson.textboxes.forEach(addExistingRect)
 
 
-            //left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            //"top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            //"right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            //"bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            //left": (textboxes[index]['x'] / canvasWidth).toFixed(3),
+            //"top": (textboxes[index]['y'] / canvasHight).toFixed(3),
+            //"right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvasWidth).toFixed(3),
+            //"bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvasHight).toFixed(3),
 
             function addExistingRect(item, index) {
 
