@@ -1,17 +1,10 @@
-function checkNewOrUpdate() {
-    //REDO
-    var template = readHash().template
-    var guild = readHash().guild
-    console.log(template)
-    console.log(guild)
 
-    if(template == "+")
-        buildNewMeme()
-    else
-        loadMemeToUpdate()
-
-}
-
+const GET_PARAM = {
+    headers: {
+        "content-type": "application/json; charset=UTF-8"
+    },
+    method: "GET"
+};
 
 function readHash() {
     parts = window.location.hash.replace('#', '').split("/")
@@ -22,22 +15,26 @@ function readHash() {
 }
 
 
+function checkNewOrUpdate() {
+    //REDO
+    let { guild, template } = readHash();
+    if(template == "+")
+        buildNewMeme()
+    else
+        loadMemeToUpdate()
+
+}
+
+
 function loadMemeToUpdate() {
     // main function for edit meme template page
     // get passed here by list all memes page
     // or you can go to it dynamically
     document.getElementById('updateExistingMeme').hidden = false;
 
-    const otherParam = {
-        headers: {
-            "content-type": "application/json; charset=UTF-8"
-        },
-        method: "GET"
-    };
-
     let { guild, template } = readHash();
 
-    fetch(`/api/${guild}/memes/${template}`, otherParam)
+    fetch(`/api/${guild}/memes/${template}`, GET_PARAM)
         .then(data => { return data.json() })
         .then(res => {
             console.log("response from api:")
@@ -54,50 +51,39 @@ function loadMemeToUpdate() {
         .catch(error => console.log(error));
 }
 
-
 function loadListOfMemes() {
     // main function for list all memes page..
     // hits api with guild id to get list of memes (and their objs)
     // builds those into a table
-    const otherParam = {
-        headers: {
-            "content-type": "application/json; charset=UTF-8"
-        },
-        method: "GET"
-    };
 
     let { guild } = readHash();
-    fetch(`/api/${guild}/memes`, otherParam)
+
+    let newMeme = `<div class="meme" onClick="document.location='editor.html#${guild}/+'">
+        <div class="info">
+            <span class="name">New</span>
+            <span class="description">Click to make new meme</span>
+        </div>
+        <img class="preview" src="https://www.freeiconspng.com/uploads/mouse-cursor-click-png-outline-2.png" alt="newmeme" width="100" height="100">
+    </div>`
+
+
+    fetch(`/api/${guild}/memes`, GET_PARAM)
         .then(res => res.json())
-        .then(memes => {
-            console.log(memes)
-            buildMemeList(memes, guild)
-        })
+        .then(memes => newMeme + memes.map(render_meme_box(guild)).join(""))
+        .then(html => document.getElementById("memes").innerHTML = html)
         .catch(error => console.log(error));
 }
 
-
-function buildMemeList(memes, guild) {
-
-    var new_meme_template = { 
-        preview_url: "https://www.freeiconspng.com/uploads/mouse-cursor-click-png-outline-2.png", 
-        description: "Click to make new meme", 
-        name: "+"
-    }
-
-    memes.unshift(new_meme_template)
-
-    document.getElementById("memes").innerHTML = memes.map(m =>
-        `<div class="meme" onClick="document.location='editor.html#${guild}/${m.name}'">
-            <div class="info">
-                <span class="name">${m.name}</span>
-                <span class="description">${m.description}</span>
-            </div>
-            <img class="preview" src="${m.preview_url}" alt="${m.name}" width="100" height="100">
-        </div>`
-    ).join("")
+function render_meme_box(guild) {
+    return m =>
+    `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
+        <div class="info">
+            <span class="name">${m.name}</span>
+            <span class="description">${m.description}</span>
+        </div>
+        <img class="preview" src="${m.preview_url}" alt="${m.name}" width="100" height="100">
+    </div>`;
 }
-
 
 function getJson(boxes2, canvasWidth, canvasHight) {
     // fix this its dumb

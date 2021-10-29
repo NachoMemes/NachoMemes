@@ -1,12 +1,11 @@
+"""server serves the serving"""
 import io
 from decimal import Decimal
 
-from flask import Flask, jsonify, request, send_file, send_from_directory, render_template
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask.json import JSONEncoder
-from flask_cors import CORS
 
-from nachomemes import Configuration
-from nachomemes.store import Store, update_serialization
+from nachomemes import Configuration, Store
 
 class TemplateEncoder(JSONEncoder):
     def default(self, obj):
@@ -49,6 +48,11 @@ def make_server(store: Store, webroot: str) -> Flask:
         buffer.seek(0)
         return send_file(buffer, mimetype="image/png")  # type: ignore
 
+    @app.route("/api/file/<url>")
+    def serve_image(file_url: str):
+        print(url)
+        return "ok"
+
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def baseimage(guild_id: str, template_id: str):
         meme = store.get_template(guild_id, template_id)
@@ -71,7 +75,6 @@ def make_server(store: Store, webroot: str) -> Flask:
 
 if __name__ == "__main__":
     config = Configuration()
-    app = make_server(config.store, config.webroot)
-    app.debug = config.debug
-    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-    app.run()
+    server = make_server(config.store, config.webroot)
+    server.debug = config.debug
+    server.run()
