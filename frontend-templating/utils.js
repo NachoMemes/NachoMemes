@@ -251,7 +251,7 @@ function addDataFields(count, containerName) {
 
     // Create an input element for color
 
-    var colorCount = `color ${drawCount}`;
+    var colorCount = `color${drawCount}`;
     var color = document.createElement("select");
     color.setAttribute("id", colorCount);
     color.setAttribute("docId", drawCount);
@@ -262,7 +262,7 @@ function addDataFields(count, containerName) {
     form.appendChild(getHTMLRow("Text Color: ", colorCount, color));
 
     // Create an outline element for justify
-    var outlineCount = `outline ${drawCount}`;
+    var outlineCount = `outline${drawCount}`;
     var outline = document.createElement("select");
     outline.setAttribute("id", outlineCount);
     outline.setAttribute("docId", drawCount);
@@ -273,7 +273,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an input element for font
-    var fontCount = `font ${drawCount}`;
+    var fontCount = `font${drawCount}`;
     var font = document.createElement("select");
     font.setAttribute("id", fontCount);
     font.setAttribute("docId", drawCount);
@@ -285,7 +285,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an input element for justify
-    var justifyCount = `justify ${drawCount}`;
+    var justifyCount = `justify${drawCount}`;
     var justify = document.createElement("select");
     justify.setAttribute("id", justifyCount);
     justify.setAttribute("docId", drawCount);
@@ -297,7 +297,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an max_font_size element for justify
-    var max_font_sizeCount = `max_font_size ${drawCount}`;
+    var max_font_sizeCount = `max_font_size${drawCount}`;
     var max_font_size = document.createElement("input");
     max_font_size.setAttribute("id", max_font_sizeCount);
     max_font_size.setAttribute("docId", drawCount);
