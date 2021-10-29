@@ -19,7 +19,7 @@ function readHash() {
 function checkNewOrUpdate() {
     //REDO
     let { guild, template } = readHash();
-    if(template == "+")
+    if (template == "+")
         buildNewMeme()
     else
         loadMemeToUpdate()
@@ -79,7 +79,7 @@ function loadListOfMemes() {
 
 function render_meme_box(guild) {
     return m =>
-    `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
+        `<div class="meme" onClick="document.location='editor.html#${guild}/${m.name}'">
         <div class="info">
             <span class="name">${m.name}</span>
             <span class="description">${m.description}</span>
@@ -327,6 +327,10 @@ function addDataFields(count, containerName) {
 
 }
 
+//wipes the canvas context
+function clearCanvas(c) {
+    c.clearRect(0, 0, WIDTH, HEIGHT);
+}
 
 function buildExisitngMeme(templateJson) {
 
@@ -579,18 +583,12 @@ function buildExisitngMeme(templateJson) {
 
         }
 
-
-        //wipes the canvas context
-        function clear(c) {
-            c.clearRect(0, 0, WIDTH, HEIGHT);
-        }
-
         // Main draw loop.
         // While draw is called as often as the INTERVAL variable demands,
         // It only ever does something if the canvas gets invalidated by our code
         function mainDraw() {
             if (canvasValid == false) {
-                clear(ctx);
+                clearCanvas(ctx);
 
                 // Add stuff you want drawn in the background all the time here
                 ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio)
@@ -738,7 +736,7 @@ function buildExisitngMeme(templateJson) {
                 return;
             }
 
-            clear(gctx);
+            clearCanvas(gctx);
             var l = boxes2.length;
             for (var i = l - 1; i >= 0; i--) {
                 // draw shape onto ghost context
@@ -758,7 +756,7 @@ function buildExisitngMeme(templateJson) {
                     isDrag = true;
 
                     invalidate();
-                    clear(gctx);
+                    clearCanvas(gctx);
                     return;
                 }
 
@@ -766,7 +764,7 @@ function buildExisitngMeme(templateJson) {
             // havent returned means we have selected nothing
             mySel = null;
             // clear the ghost canvas for next time
-            clear(gctx);
+            clearCanvas(gctx);
             // invalidate because we might need the selection border to disappear
             invalidate();
         }
@@ -1055,17 +1053,12 @@ function buildNewMeme() {
         }
 
 
-        //wipes the canvas context
-        function clear(c) {
-            c.clearRect(0, 0, WIDTH, HEIGHT);
-        }
-
         // Main draw loop.
         // While draw is called as often as the INTERVAL variable demands,
         // It only ever does something if the canvas gets invalidated by our code
         function mainDraw() {
             if (canvasValid == false) {
-                clear(ctx);
+                clearCanvas(ctx);
 
                 // Add stuff you want drawn in the background all the time here
                 ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio)
@@ -1213,7 +1206,7 @@ function buildNewMeme() {
                 return;
             }
 
-            clear(gctx);
+            clearCanvas(gctx);
             var l = boxes2.length;
             for (var i = l - 1; i >= 0; i--) {
                 // draw shape onto ghost context
@@ -1233,7 +1226,7 @@ function buildNewMeme() {
                     isDrag = true;
 
                     invalidate();
-                    clear(gctx);
+                    clearCanvas(gctx);
                     return;
                 }
 
@@ -1241,7 +1234,7 @@ function buildNewMeme() {
             // havent returned means we have selected nothing
             mySel = null;
             // clear the ghost canvas for next time
-            clear(gctx);
+            clearCanvas(gctx);
             // invalidate because we might need the selection border to disappear
             invalidate();
         }
