@@ -5,6 +5,7 @@ const GET_PARAM = {
     },
     method: "GET"
 };
+const EDIT_PAGE = "editor.html";
 
 function readHash() {
     parts = window.location.hash.replace('#', '').split("/")
@@ -14,6 +15,12 @@ function readHash() {
     }
 }
 
+function fixUrl(url) {
+    console.log("asdf")
+    return url.startsWith("file") 
+        ? `/api/file/${encodeURIComponent(url)}`
+        : url;
+}
 
 function checkNewOrUpdate() {
     //REDO
@@ -37,9 +44,6 @@ function loadMemeToUpdate() {
     fetch(`/api/${guild}/memes/${template}`, GET_PARAM)
         .then(data => { return data.json() })
         .then(res => {
-            console.log("response from api:")
-            console.log(res)
-
             document.getElementById('imageNameUpdate').value = res['image_url']
             document.getElementById('descriptionValueUpdate').value = res['description']
             document.getElementById('docsValueUpdate').value = res['docs']
@@ -56,16 +60,15 @@ function loadListOfMemes() {
     // hits api with guild id to get list of memes (and their objs)
     // builds those into a table
 
-    let { guild } = readHash();
+    const { guild } = readHash();
 
-    let newMeme = `<div class="meme" onClick="document.location='editor.html#${guild}/+'">
+    const newMeme = `<div class="meme" onClick="document.location='${EDIT_PAGE}#${guild}/+'">
         <div class="info">
             <span class="name">New</span>
             <span class="description">Click to make new meme</span>
         </div>
         <img class="preview" src="https://www.freeiconspng.com/uploads/mouse-cursor-click-png-outline-2.png" alt="newmeme" width="100" height="100">
     </div>`
-
 
     fetch(`/api/${guild}/memes`, GET_PARAM)
         .then(res => res.json())
@@ -76,7 +79,7 @@ function loadListOfMemes() {
 
 function render_meme_box(guild) {
     return m =>
-    `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
+    `<div class="meme" onClick="document.location='${EDIT_PAGE}#${guild}/${m.name}'">
         <div class="info">
             <span class="name">${m.name}</span>
             <span class="description">${m.description}</span>
@@ -483,7 +486,7 @@ function buildExisitngMeme(templateJson) {
         // then add everything we want to intially exist on the canvas
         function init2() {
 
-            base_image.src = document.getElementById('imageNameUpdate').value; //Load Image ;
+            base_image.src = fixUrl(document.getElementById('imageNameUpdate').value); //Load Image ;
             canvas = document.getElementById('canvasExistingMeme');
 
             ratio = maxx / maxy > base_image.height / base_image.width
@@ -989,11 +992,13 @@ function buildNewMeme() {
             invalidate();
         }
 
+
+
         // initialize our canvas, add a ghost canvas, set draw loop
         // then add everything we want to intially exist on the canvas
         function init2() {
 
-            base_image.src = document.getElementById('imagename').value; //Load Image ;
+            base_image.src = fixUrl(document.getElementById('imagename').value); //Load Image ;
             canvas = document.getElementById('canvasNewMeme');
 
             ratio = maxx / maxy > base_image.height / base_image.width

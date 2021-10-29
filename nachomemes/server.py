@@ -1,11 +1,15 @@
 """server serves the serving"""
 import io
 from decimal import Decimal
+from urllib.parse import unquote
+import re, os
 
 from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask.json import JSONEncoder
 
 from nachomemes import Configuration, Store
+
+FILE_URL = re.compile(r'file\:source_images\/([\w]+\.[\w]+)')
 
 class TemplateEncoder(JSONEncoder):
     def default(self, obj):
@@ -48,10 +52,12 @@ def make_server(store: Store, webroot: str) -> Flask:
         buffer.seek(0)
         return send_file(buffer, mimetype="image/png")  # type: ignore
 
-    @app.route("/api/file/<url>")
+    @app.route("/api/file/<path:file_url>")
     def serve_image(file_url: str):
-        print(url)
-        return "ok"
+        m = FILE_URL.match(unquote(file_url))
+        if m:
+            print(m.group(1)) 
+            return send_from_directory('source_images', filename=m.group(1))
 
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def baseimage(guild_id: str, template_id: str):
