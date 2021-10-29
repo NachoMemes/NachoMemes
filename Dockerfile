@@ -13,8 +13,8 @@ RUN python -m pip install --no-cache-dir "poetry==${POETRY_VERSION}" --user
 FROM poetry as build
 WORKDIR /app
 COPY poetry.lock pyproject.toml /app/
-RUN python -m poetry export --dev -f requirements.txt --output requirements-dev.txt
-RUN python -m poetry export -f requirements.txt --output requirements.txt
+RUN python -m poetry export --dev -f requirements.txt --output requirements-dev.txt && \
+  python -m poetry export -f requirements.txt --output requirements.txt
 
 FROM python:3.9-slim as dev
 COPY --from=build /app/requirements-dev.txt /app/requirements.txt
