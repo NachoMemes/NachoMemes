@@ -1,37 +1,10 @@
+
 const GET_PARAM = {
     headers: {
         "content-type": "application/json; charset=UTF-8"
     },
     method: "GET"
 };
-
-
-function goToListMemesPage() {
-    let guild = document.getElementById('guildIdTempVar').innerHTML
-    var url = "http://localhost:5000/edit/" + guild + "/memes"
-    window.location.href = url;
-}
-
-
-function goToNewMemePage() {
-    let guild = document.getElementById('guildIdTempVar').innerHTML
-    var url = "http://localhost:5000/build/" + guild + "/new"
-    window.location.href = url;
-}
-
-function checkNewOrUpdate() {
-
-    var template = readHash().template
-    var guild = readHash().guild
-    console.log(template)
-    console.log(guild)
-
-    if(template == "+")
-        buildNewMeme()
-    else
-        loadMemeToUpdate()
-
-}
 
 function readHash() {
     parts = window.location.hash.replace('#', '').split("/")
@@ -42,22 +15,26 @@ function readHash() {
 }
 
 
-// main function for edit meme template page
-// get passed here by list all memes page
-// or you can go to it dynamically
-function loadMemeToUpdate() {
-    document.getElementById('updateExistingMeme').hidden = false;
+function checkNewOrUpdate() {
+    //REDO
+    let { guild, template } = readHash();
+    if(template == "+")
+        buildNewMeme()
+    else
+        loadMemeToUpdate()
 
-    const otherParam = {
-        headers: {
-            "content-type": "application/json; charset=UTF-8"
-        },
-        method: "GET"
-    };
+}
+
+
+function loadMemeToUpdate() {
+    // main function for edit meme template page
+    // get passed here by list all memes page
+    // or you can go to it dynamically
+    document.getElementById('updateExistingMeme').hidden = false;
 
     let { guild, template } = readHash();
 
-    fetch(`/api/${guild}/memes/${template}`, otherParam)
+    fetch(`/api/${guild}/memes/${template}`, GET_PARAM)
         .then(data => { return data.json() })
         .then(res => {
             console.log("response from api:")
@@ -74,31 +51,27 @@ function loadMemeToUpdate() {
         .catch(error => console.log(error));
 }
 
-
-// main function for list all memes page..
-// hits api with guild id to get list of memes (and their objs)
-// builds those into a table
 function loadListOfMemes() {
+    // main function for list all memes page..
+    // hits api with guild id to get list of memes (and their objs)
+    // builds those into a table
+
     let { guild } = readHash();
+
+    let newMeme = `<div class="meme" onClick="document.location='editor.html#${guild}/+'">
+        <div class="info">
+            <span class="name">New</span>
+            <span class="description">Click to make new meme</span>
+        </div>
+        <img class="preview" src="https://www.freeiconspng.com/uploads/mouse-cursor-click-png-outline-2.png" alt="newmeme" width="100" height="100">
+    </div>`
+
+
     fetch(`/api/${guild}/memes`, GET_PARAM)
         .then(res => res.json())
-        .then(memes => memes.map(render_meme_box(guild)).join(""))
+        .then(memes => newMeme + memes.map(render_meme_box(guild)).join(""))
         .then(html => document.getElementById("memes").innerHTML = html)
         .catch(error => console.log(error));
-}
-
-
-function render_meme_list(memes, guild) {
-
-    var new_meme_template = { 
-        preview_url: "https://www.freeiconspng.com/uploads/mouse-cursor-click-png-outline-2.png", 
-        description: "Click to make new meme", 
-        name: "+" 
-    }
-
-    memes.unshift(new_meme_template)
-
-    document.getElementById("memes").innerHTML = memes.map(render_meme_box(guild)).join("")
 }
 
 function render_meme_box(guild) {
@@ -112,9 +85,8 @@ function render_meme_box(guild) {
     </div>`;
 }
 
-
-/// fix this its dumb
 function getJson(boxes2, canvas_width, canvas_hight) {
+    // fix this its dumb
     var textboxes = [];
     textboxes = boxes2;
     var jsonTemplate = {};
@@ -133,10 +105,10 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": parseFloat((textboxes[index]['x'] / canvas_width).toFixed(3)),
-            "top": parseFloat((textboxes[index]['y'] / canvas_hight).toFixed(3)),
-            "right": parseFloat(((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3)),
-            "bottom": parseFloat(((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3)),
+            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
+            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -173,13 +145,13 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
             return null
         }
     }
-    
+
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": parseFloat((textboxes[index]['x'] / canvas_width).toFixed(3)),
-            "top": parseFloat((textboxes[index]['y'] / canvas_hight).toFixed(3)),
-            "right": parseFloat(((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3)),
-            "bottom": parseFloat(((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3)),
+            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
+            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -193,13 +165,9 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 }
 
 
-
-
-
-
 function postJson(json_data) {
 
-    const baseUrl = 'http://localhost:5000/api/';
+    const baseUrl = `http://localhost:5000/api/`;
     var dataBody = JSON.stringify(json_data, null, 2);
     let guild = readHash().guild
 
@@ -211,7 +179,7 @@ function postJson(json_data) {
         method: "POST"
     };
 
-    fetch((baseUrl + guild + "/save-template/" + json_data['name']), otherParam)
+    fetch((`${baseUrl}${guild}/save-template/${json_data['name']}`), otherParam)
         .then(data => { return data.json() })
         .then(res => { console.log(res) })
         .catch(error => console.log(error));
@@ -273,17 +241,17 @@ function addDataFields(count, containerName) {
     var form = document.createElement("form");
     form.setAttribute("method", "post");
 
-    var textBoxTitleCount = "title" + drawCount;
+    var textBoxTitleCount = `title ${drawCount}`;
     var textBoxTitle = document.createElement("h3");
     textBoxTitle.setAttribute("id", textBoxTitleCount);
     textBoxTitle.setAttribute("docId", drawCount);
-    textBoxTitle.innerHTML = "Text Box " + drawCount + ":";
+    textBoxTitle.innerHTML = `Text Box ${drawCount}:`;
 
     form.appendChild(getHTMLRow("", textBoxTitleCount, textBoxTitle));
 
     // Create an input element for color
 
-    var colorCount = "color" + drawCount;
+    var colorCount = `color ${drawCount}`;
     var color = document.createElement("select");
     color.setAttribute("id", colorCount);
     color.setAttribute("docId", drawCount);
@@ -294,7 +262,7 @@ function addDataFields(count, containerName) {
     form.appendChild(getHTMLRow("Text Color: ", colorCount, color));
 
     // Create an outline element for justify
-    var outlineCount = "outline" + drawCount;
+    var outlineCount = `outline ${drawCount}`;
     var outline = document.createElement("select");
     outline.setAttribute("id", outlineCount);
     outline.setAttribute("docId", drawCount);
@@ -305,7 +273,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an input element for font
-    var fontCount = "font" + drawCount;
+    var fontCount = `font ${drawCount}`;
     var font = document.createElement("select");
     font.setAttribute("id", fontCount);
     font.setAttribute("docId", drawCount);
@@ -317,7 +285,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an input element for justify
-    var justifyCount = "justify" + drawCount;
+    var justifyCount = `justify ${drawCount}`;
     var justify = document.createElement("select");
     justify.setAttribute("id", justifyCount);
     justify.setAttribute("docId", drawCount);
@@ -329,7 +297,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an max_font_size element for justify
-    var max_font_sizeCount = "max_font_size" + drawCount;
+    var max_font_sizeCount = `max_font_size ${drawCount}`;
     var max_font_size = document.createElement("input");
     max_font_size.setAttribute("id", max_font_sizeCount);
     max_font_size.setAttribute("docId", drawCount);
@@ -346,7 +314,6 @@ function addDataFields(count, containerName) {
 
         // Append the submit button to the form 
         container.appendChild(s);
-
     }
 
     container.appendChild(form);
@@ -354,67 +321,10 @@ function addDataFields(count, containerName) {
     document.getElementsByClassName(containerName)[0]
         .appendChild(container);
 
-
-
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function buildExisitngMeme(templateJson) {
-
 
     (function (window) {
 
@@ -916,57 +826,6 @@ function buildExisitngMeme(templateJson) {
     init2();
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 function buildNewMeme() {
