@@ -112,49 +112,6 @@ function render_meme_list(memes, guild) {
 }
 
 
-// insert rows of memes from guild dynamically into table
-function insRows(res, guild_id) {
-    var data = res
-    //var totalColumns = Object.keys(data[0]).length;
-    var totalColumns = 3;
-    var columnNames = [];
-    columnNames = ["Name", "Description", "Image"]
-
-    //Create a HTML Table element.
-    var table = document.createElement("TABLE");
-    table.border = "1";
-
-    //Add the header row.
-    var row = table.insertRow(-1);
-    for (var i = 0; i < totalColumns; i++) {
-        var headerCell = document.createElement("TH");
-        headerCell.innerHTML = columnNames[i];
-        row.appendChild(headerCell);
-    }
-
-    // Add the data rows.
-    for (var i = 0; i < data.length; i++) {
-        row = table.insertRow(-1);
-
-        var cell = row.insertCell(-1);
-        var name = data[i]['name'];
-        var link = "http://localhost:5000/edit/" + guild_id + "/update-template/" + name
-        var returned = '<a href="' + link + '">' + name + '</a>';
-        cell.innerHTML = returned;
-        var cell = row.insertCell(-1);
-        cell.innerHTML = data[i]['description'];
-        var cell = row.insertCell(-1);
-        var image = data[i]['image_url'];
-        var image_html = '<img src="' + image + '" alt="' + name + '" width="100" height="100">'
-        cell.innerHTML = image_html
-
-    }
-
-    var dvTable = document.getElementById("dvTable");
-    dvTable.innerHTML = "";
-    dvTable.appendChild(table);
-}
-
 
 /// fix this its dumb
 function getJson(boxes2, canvas_width, canvas_hight) {
