@@ -164,7 +164,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Format Image Name
         id: format-image-name
-        uses: actions/github-script@v4.0.2
+        uses: actions/github-script@v5
         with:
           result-encoding: string
           script: return "${{ github.repository }}".toLowerCase()
