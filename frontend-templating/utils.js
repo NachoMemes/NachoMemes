@@ -6,6 +6,7 @@ const GET_PARAM = {
     method: "GET"
 };
 
+
 function readHash() {
     parts = window.location.hash.replace('#', '').split("/")
     return {
@@ -51,6 +52,7 @@ function loadMemeToUpdate() {
         .catch(error => console.log(error));
 }
 
+
 function loadListOfMemes() {
     // main function for list all memes page..
     // hits api with guild id to get list of memes (and their objs)
@@ -74,6 +76,7 @@ function loadListOfMemes() {
         .catch(error => console.log(error));
 }
 
+
 function render_meme_box(guild) {
     return m =>
     `<div class="meme" onClick="document.location='update_meme.html#${guild}/${m.name}'">
@@ -84,6 +87,7 @@ function render_meme_box(guild) {
         <img class="preview" src="${m.preview_url}" alt="${m.name}" width="100" height="100">
     </div>`;
 }
+
 
 function getJson(boxes2, canvasWidth, canvasHight) {
     // fix this its dumb
