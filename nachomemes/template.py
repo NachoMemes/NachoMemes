@@ -149,6 +149,12 @@ class Template:
     # URL for the image in the preview
     preview_url: Optional[Request] = None
 
+    # If the default meme has been modified from origional state
+    modified: bool = False
+
+    # If the meme has been deleted from the list
+    deleted: bool = False
+
     
     def read_source_image(self, buffer) -> Image:
         """
