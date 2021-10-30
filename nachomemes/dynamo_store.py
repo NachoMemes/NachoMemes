@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from decimal import Decimal
 from enum import Enum, auto
+from operator import is_
 from typing import Any, Dict, Iterable, Optional, Sequence, Union
 
 import boto3
@@ -186,7 +187,7 @@ class DynamoTemplateStore(Store):
         except ClientError as err:
             raise TemplateError from err
 
-    def list_memes(self, guild_id: str, is_deleted: Optional[bool] = False, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None, is_deleted: Optional[bool] = False) -> Iterable[dict]:
         table = self._template_table(guild_id)
 
         query_parameters = {}
@@ -194,10 +195,9 @@ class DynamoTemplateStore(Store):
         if fields:
             query_parameters['ProjectionExpression'] = ",".join(f"#{k}" for k in fields)
             query_parameters['ExpressionAttributeNames'] = {f"#{k}": k for k in fields}
-
         if not is_deleted:
-            query_parameters['FilterExpression'] = Attr('name').ne('successkid')
-        
+            query_parameters['FilterExpression'] = Attr("deleted").ne('True')
+        # query_parameters['ExpressionAttributeValues']={":f": {"BOOL": "true"} }
         return table.scan(**query_parameters)["Items"]
 
     def get_template_data(

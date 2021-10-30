@@ -335,6 +335,7 @@ async def save(ctx: Context):
             description = STORE.save_meme(config.guild_id, json.loads(value))
         ))
     except JSONDecodeError as ex:
+        print(value)
         await report(ctx, ex, "Invalid JSON provided")
     except Exception as ex:
         await report(ctx, ex)

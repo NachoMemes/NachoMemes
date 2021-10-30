@@ -24,7 +24,7 @@ class LocalTemplateStore(Store):
     ) -> dict:
         return _load_templates(guild_id)[template_id]
 
-    def list_memes(self, guild_id: str, is_deleted: Optional[bool], fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None, is_deleted: Optional[bool] = False) -> Iterable[dict]:
         if fields:
             return ({k: d[k] for k in fields} for d in _load_templates(guild_id).values() if not d.is_deleted)
         else:
