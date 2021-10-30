@@ -7,6 +7,7 @@ const GET_PARAM = {
 };
 const EDIT_PAGE = "editor.html";
 
+
 function readHash() {
     parts = window.location.hash.replace('#', '').split("/")
     return {
@@ -25,7 +26,7 @@ function fixUrl(url) {
 function checkNewOrUpdate() {
     //REDO
     let { guild, template } = readHash();
-    if(template == "+")
+    if (template == "+")
         buildNewMeme()
     else
         loadMemeToUpdate()
@@ -55,6 +56,7 @@ function loadMemeToUpdate() {
         .catch(error => console.log(error));
 }
 
+
 function loadListOfMemes() {
     // main function for list all memes page..
     // hits api with guild id to get list of memes (and their objs)
@@ -77,6 +79,7 @@ function loadListOfMemes() {
         .catch(error => console.log(error));
 }
 
+
 function render_meme_box(guild) {
     return m =>
     `<div class="meme" onClick="document.location='${EDIT_PAGE}#${guild}/${m.name}'">
@@ -88,7 +91,8 @@ function render_meme_box(guild) {
     </div>`;
 }
 
-function getJson(boxes2, canvas_width, canvas_hight) {
+
+function getJson(boxes2, canvasWidth, canvasHight) {
     // fix this its dumb
     var textboxes = [];
     textboxes = boxes2;
@@ -108,10 +112,10 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "left": (textboxes[index]['x'] / canvasWidth).toFixed(3),
+            "top": (textboxes[index]['y'] / canvasHight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvasWidth).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvasHight).toFixed(3),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -125,7 +129,7 @@ function getJson(boxes2, canvas_width, canvas_hight) {
 }
 
 
-function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
+function getJsonUpdated(boxes2, canvasWidth, canvasHight) {
     var textboxes = [];
     textboxes = boxes2;
     var jsonTemplate = {};
@@ -151,10 +155,10 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 
     function addTextboxData(item, index) {
         temp_json_push = {
-            "left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            "top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            "left": (textboxes[index]['x'] / canvasWidth).toFixed(3),
+            "top": (textboxes[index]['y'] / canvasHight).toFixed(3),
+            "right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvasWidth).toFixed(3),
+            "bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvasHight).toFixed(3),
             "color": document.getElementById(("color" + (index + 1))).value,
             "font": document.getElementById(("font" + (index + 1))).value,
             "justify": document.getElementById(("justify" + (index + 1))).value,
@@ -168,10 +172,10 @@ function getJsonUpdated(boxes2, canvas_width, canvas_hight) {
 }
 
 
-function postJson(json_data) {
+function postJson(jsonData) {
 
     const baseUrl = `http://localhost:5000/api/`;
-    var dataBody = JSON.stringify(json_data, null, 2);
+    var dataBody = JSON.stringify(jsonData, null, 2);
     let guild = readHash().guild
 
     const otherParam = {
@@ -182,13 +186,13 @@ function postJson(json_data) {
         method: "POST"
     };
 
-    fetch((`${baseUrl}${guild}/save-template/${json_data['name']}`), otherParam)
+    fetch((`${baseUrl}${guild}/save-template/${jsonData['name']}`), otherParam)
         .then(data => { return data.json() })
         .then(res => { console.log(res) })
         .catch(error => console.log(error));
 
     alert("The meme template was sent to the database!");
-    console.log(JSON.stringify(json_data, null, 2));
+    console.log(JSON.stringify(jsonData, null, 2));
 
 }
 
@@ -254,7 +258,7 @@ function addDataFields(count, containerName) {
 
     // Create an input element for color
 
-    var colorCount = `color ${drawCount}`;
+    var colorCount = `color${drawCount}`;
     var color = document.createElement("select");
     color.setAttribute("id", colorCount);
     color.setAttribute("docId", drawCount);
@@ -265,7 +269,7 @@ function addDataFields(count, containerName) {
     form.appendChild(getHTMLRow("Text Color: ", colorCount, color));
 
     // Create an outline element for justify
-    var outlineCount = `outline ${drawCount}`;
+    var outlineCount = `outline${drawCount}`;
     var outline = document.createElement("select");
     outline.setAttribute("id", outlineCount);
     outline.setAttribute("docId", drawCount);
@@ -276,7 +280,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an input element for font
-    var fontCount = `font ${drawCount}`;
+    var fontCount = `font${drawCount}`;
     var font = document.createElement("select");
     font.setAttribute("id", fontCount);
     font.setAttribute("docId", drawCount);
@@ -288,7 +292,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an input element for justify
-    var justifyCount = `justify ${drawCount}`;
+    var justifyCount = `justify${drawCount}`;
     var justify = document.createElement("select");
     justify.setAttribute("id", justifyCount);
     justify.setAttribute("docId", drawCount);
@@ -300,7 +304,7 @@ function addDataFields(count, containerName) {
 
 
     // Create an max_font_size element for justify
-    var max_font_sizeCount = `max_font_size ${drawCount}`;
+    var max_font_sizeCount = `max_font_size${drawCount}`;
     var max_font_size = document.createElement("input");
     max_font_size.setAttribute("id", max_font_sizeCount);
     max_font_size.setAttribute("docId", drawCount);
@@ -543,10 +547,10 @@ function buildExisitngMeme(templateJson) {
             templateJson.textboxes.forEach(addExistingRect)
 
 
-            //left": (textboxes[index]['x'] / canvas_width).toFixed(3),
-            //"top": (textboxes[index]['y'] / canvas_hight).toFixed(3),
-            //"right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvas_width).toFixed(3),
-            //"bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvas_hight).toFixed(3),
+            //left": (textboxes[index]['x'] / canvasWidth).toFixed(3),
+            //"top": (textboxes[index]['y'] / canvasHight).toFixed(3),
+            //"right": ((textboxes[index]['x'] + textboxes[index]['w']) / canvasWidth).toFixed(3),
+            //"bottom": ((textboxes[index]['y'] + textboxes[index]['h']) / canvasHight).toFixed(3),
 
             function addExistingRect(item, index) {
 
@@ -578,18 +582,12 @@ function buildExisitngMeme(templateJson) {
 
         }
 
-
-        //wipes the canvas context
-        function clear(c) {
-            c.clearRect(0, 0, WIDTH, HEIGHT);
-        }
-
         // Main draw loop.
         // While draw is called as often as the INTERVAL variable demands,
         // It only ever does something if the canvas gets invalidated by our code
         function mainDraw() {
             if (canvasValid == false) {
-                clear(ctx);
+                clearCanvas(ctx);
 
                 // Add stuff you want drawn in the background all the time here
                 ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio)
@@ -611,6 +609,11 @@ function buildExisitngMeme(templateJson) {
                     postJson(getJsonUpdated(boxes2, WIDTH, HEIGHT));
                 }
             }
+        }
+
+        //wipes the canvas context
+        function clearCanvas(c) {
+            c.clearRect(0, 0, WIDTH, HEIGHT);
         }
 
         // Happens when the mouse is moving inside the canvas
@@ -737,7 +740,7 @@ function buildExisitngMeme(templateJson) {
                 return;
             }
 
-            clear(gctx);
+            clearCanvas(gctx);
             var l = boxes2.length;
             for (var i = l - 1; i >= 0; i--) {
                 // draw shape onto ghost context
@@ -757,7 +760,7 @@ function buildExisitngMeme(templateJson) {
                     isDrag = true;
 
                     invalidate();
-                    clear(gctx);
+                    clearCanvas(gctx);
                     return;
                 }
 
@@ -765,7 +768,7 @@ function buildExisitngMeme(templateJson) {
             // havent returned means we have selected nothing
             mySel = null;
             // clear the ghost canvas for next time
-            clear(gctx);
+            clearCanvas(gctx);
             // invalidate because we might need the selection border to disappear
             invalidate();
         }
@@ -1056,17 +1059,12 @@ function buildNewMeme() {
         }
 
 
-        //wipes the canvas context
-        function clear(c) {
-            c.clearRect(0, 0, WIDTH, HEIGHT);
-        }
-
         // Main draw loop.
         // While draw is called as often as the INTERVAL variable demands,
         // It only ever does something if the canvas gets invalidated by our code
         function mainDraw() {
             if (canvasValid == false) {
-                clear(ctx);
+                clearCanvas(ctx);
 
                 // Add stuff you want drawn in the background all the time here
                 ctx.drawImage(base_image, 0, 0, base_image.width * ratio, base_image.height * ratio)
@@ -1090,6 +1088,12 @@ function buildNewMeme() {
             }
         }
 
+
+        //wipes the canvas context
+        function clearCanvas(c) {
+            c.clearRect(0, 0, WIDTH, HEIGHT);
+        }
+        
         // Happens when the mouse is moving inside the canvas
         function myMove(e) {
             if (isDrag) {
@@ -1214,7 +1218,7 @@ function buildNewMeme() {
                 return;
             }
 
-            clear(gctx);
+            clearCanvas(gctx);
             var l = boxes2.length;
             for (var i = l - 1; i >= 0; i--) {
                 // draw shape onto ghost context
@@ -1234,7 +1238,7 @@ function buildNewMeme() {
                     isDrag = true;
 
                     invalidate();
-                    clear(gctx);
+                    clearCanvas(gctx);
                     return;
                 }
 
@@ -1242,7 +1246,7 @@ function buildNewMeme() {
             // havent returned means we have selected nothing
             mySel = null;
             // clear the ghost canvas for next time
-            clear(gctx);
+            clearCanvas(gctx);
             // invalidate because we might need the selection border to disappear
             invalidate();
         }
