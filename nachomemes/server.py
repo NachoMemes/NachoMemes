@@ -57,7 +57,7 @@ def make_server(store: Store, webroot: str) -> Flask:
     def serve_image(file_url: str):
         match = FILE_URL.match(unquote(file_url))
         if match:
-            return send_from_directory(IMAGE_DIR, filename=match.group(1))
+            return send_from_directory(directory=IMAGE_DIR, path=match.group(1))
 
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def baseimage(guild_id: str, template_id: str):

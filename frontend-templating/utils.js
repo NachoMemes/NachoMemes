@@ -17,7 +17,6 @@ function readHash() {
 }
 
 function fixUrl(url) {
-    console.log("asdf")
     return url.startsWith("file") 
         ? `/api/file/${encodeURIComponent(url)}`
         : url;
