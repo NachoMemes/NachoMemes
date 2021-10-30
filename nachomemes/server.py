@@ -10,6 +10,7 @@ from flask.json import JSONEncoder
 from nachomemes import Configuration, Store
 
 FILE_URL = re.compile(r'file\:source_images\/([\w]+\.[\w]+)')
+IMAGE_DIR = os.path.join(os.getcwd(), 'source_images')
 
 class TemplateEncoder(JSONEncoder):
     def default(self, obj):
@@ -54,9 +55,9 @@ def make_server(store: Store, webroot: str) -> Flask:
 
     @app.route("/api/file/<path:file_url>")
     def serve_image(file_url: str):
-        m = FILE_URL.match(unquote(file_url))
-        if m:
-            return send_from_directory(os.path.join(os.getcwd(), 'source_images'), filename=m.group(1))
+        match = FILE_URL.match(unquote(file_url))
+        if match:
+            return send_from_directory(IMAGE_DIR, filename=match.group(1))
 
     @app.route('/api/<guild_id>/memes/<template_id>/render')
     def baseimage(guild_id: str, template_id: str):
