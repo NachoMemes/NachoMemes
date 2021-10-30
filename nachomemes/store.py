@@ -89,7 +89,7 @@ class Store(ABC):
             template_id, increment_use), config=da_config)
 
     @abstractmethod
-    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, is_deleted: Optional[bool], fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
         """
         List all the serialized templates in the store as dictionaries.
         Optionally, pass fields to get only those fields in the dicts.
@@ -142,11 +142,11 @@ class Store(ABC):
                 self.save_meme(guild_id, update_serialization(template.__dict__))
         return template
 
-    def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None) -> List[Dict]:
+    def close_matches(self, guild_id: str, name: str, is_deleted: Optional[bool], fields: Optional[Iterable[str]] = None) -> List[Dict]:
         """Fuzzy match multiple templates."""
         return [
             match[0]
-            for match in process.extract(name, self.list_memes(guild_id, fields))
+            for match in process.extract(name, self.list_memes(guild_id, is_deleted, fields))
             if  match[1] > 40
         ]
 

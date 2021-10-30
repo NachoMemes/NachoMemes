@@ -1,0 +1,25 @@
+{
+    "name": "joe-be-like",
+    "image_url": "https://raw.githubusercontent.com/NachoMemes/NachoMemes/origin/feature/frontend-templating/source_images/joebigdumb.PNG",
+    "textboxes": [
+        {
+            "left": 0.042,
+            "right": 0.958,
+            "top": 0.686,
+            "bottom": 0.839,
+            "font": "XKCD",
+            "max_font_size": null,
+            "color": "WHITE",
+            "outline": "BLACK",
+            "justify": "CENTER",
+            "rotation": 0,
+            "ind_size": false
+        }
+    ],
+    "layout": "joe-be-like_layout",
+    "description": "joe be like bbig dumb",
+    "docs": "https://j1.io/#/",
+    "usage": 0,
+    "preview_url": "https://cdn.discordapp.com/attachments/825517179326824498/867166205810180096/joe-be-like.PNG",
+    "is_deleted": true
+}

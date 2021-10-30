@@ -4,6 +4,7 @@ from enum import Enum, auto
 from typing import Any, Dict, Iterable, Optional, Sequence, Union
 
 import boto3
+from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from dacite import from_dict
 from discord import Guild
@@ -185,15 +186,19 @@ class DynamoTemplateStore(Store):
         except ClientError as err:
             raise TemplateError from err
 
-    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
+    def list_memes(self, guild_id: str, is_deleted: Optional[bool] = False, fields: Optional[Iterable[str]] = None) -> Iterable[dict]:
         table = self._template_table(guild_id)
-        if not fields:
-            return table.scan()["Items"]
-        else:
-            return table.scan(
-                ProjectionExpression=",".join(f"#{k}" for k in fields),
-                ExpressionAttributeNames={f"#{k}": k for k in fields},
-            )["Items"]
+
+        query_parameters = {}
+
+        if fields:
+            query_parameters['ProjectionExpression'] = ",".join(f"#{k}" for k in fields)
+            query_parameters['ExpressionAttributeNames'] = {f"#{k}": k for k in fields}
+
+        if not is_deleted:
+            query_parameters['FilterExpression'] = Attr('name').ne('successkid')
+        
+        return table.scan(**query_parameters)["Items"]
 
     def get_template_data(
         self, guild_id: str, template_id: str, increment_use: bool = False

@@ -50,6 +50,7 @@ function loadMemeToUpdate() {
             document.getElementById('templateNameValueUpdate').value = res['name']
 
             buildExisitngMeme(res);
+            console.log(res)
 
         })
         .catch(error => console.log(error));
@@ -185,7 +186,7 @@ function postJson(jsonData) {
         method: "POST"
     };
 
-    fetch((`${baseUrl}${guild}/save-template/${jsonData['name']}`), otherParam)
+    fetch((`/api/${guild}/save-template/${jsonData['name']}`), otherParam)
         .then(data => { return data.json() })
         .then(res => { console.log(res) })
         .catch(error => console.log(error));
