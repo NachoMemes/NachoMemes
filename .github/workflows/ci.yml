@@ -5,6 +5,7 @@ env:
   python-version: "3.9"
   poetry-version: "1.1.6"
   container-registry: ghcr.io
+  node-version: "14"
 
 jobs:
   yamllint:
@@ -92,6 +93,39 @@ jobs:
       - name: Test
         run: |
           poetry run python -m unittest
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.node-version }}
+      - name: Install Node Packages
+        run: yarn install
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.python-version }}
+      - name: Install Dependencies
+        run: |
+          pip install poetry==${{ env.poetry-version }}
+          poetry install
+      - name: Run Bot
+        run: python3 -m poetry run python3 -m nachomemes.bot --debug
+        env:
+          DISCORD_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
+          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+          SECRET: ${{ secrets.SECRET }}
+          REGION: ${{ secrets.REGION }}
+      - name: Run Integration Tests
+        run: yarn corde
+        env:
+          TEST_BOT_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
+          CORDE_BOT_TOKEN: ${{ secrets.CORDE_BOT_TOKEN }}
 
   hadolint:
     name: Hadolint

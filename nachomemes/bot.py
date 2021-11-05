@@ -39,7 +39,12 @@ DEBUG = False
 # recent meme requests (and the resulting meme message)
 RECENT: SimpleCache[int,Message] = SimpleCache(200)
 
+# Monkey patch the bot commands class so that we can read messages from other bots for testing
+async def process_commands(self, message: Message) -> None:
+    ctx = await self.get_context(message)
+    await self.invoke(ctx)
 
+Bot.process_commands = process_commands
 
 def print_all_templates(config: GuildConfig) -> dict:
     memes = STORE.list_memes(config.guild_id, ("name", "description"))
