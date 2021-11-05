@@ -115,7 +115,9 @@ jobs:
           pip install poetry==${{ env.poetry-version }}
           poetry install
       - name: Run Bot
-        run: python3 -m poetry run python3 -m nachomemes.bot --debug
+        run: |
+          python3 -m poetry run python3 -m nachomemes.bot --debug &
+          sleep 3
         env:
           DISCORD_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
