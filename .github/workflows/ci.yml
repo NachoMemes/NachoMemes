@@ -141,7 +141,7 @@ jobs:
   image:
     name: Image
     runs-on: ubuntu-latest
-    needs: [pylint, mypy, test, hadolint]
+    needs: [pylint, mypy, test, hadolint, integration-test]
     env:
       cache-path: /tmp/.buildx-cache
     outputs:
