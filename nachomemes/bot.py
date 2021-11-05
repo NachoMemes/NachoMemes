@@ -44,7 +44,7 @@ async def process_commands(self, message: Message) -> None:
     ctx = await self.get_context(message)
     await self.invoke(ctx)
 
-Bot.process_commands = process_commands
+setattr(Bot, "process_commands", process_commands)
 
 def print_all_templates(config: GuildConfig) -> dict:
     memes = STORE.list_memes(config.guild_id, ("name", "description"))
