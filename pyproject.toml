@@ -26,7 +26,7 @@ pylint = "^2.11.1"
 
 yamllint = "^1.26.3"
 mypy = "^0.910"
-rope = "^0.21.0"
+rope = "^0.22.0"
 "discord.py-stubs" = "^1.7.0"
 discord-ext-typed-commands = "^1.0.3"
 vulture = "^2.3"
