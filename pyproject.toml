@@ -19,7 +19,7 @@ Flask = "^2.0.2"
 mypy = "^0.910"
 
 [tool.poetry.dev-dependencies]
-ipython = "^7.28.0"
+ipython = "^7.31.0"
 
 autopep8 = "^1.6.0"
 pylint = "^2.12.2"
