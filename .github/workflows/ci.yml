@@ -101,6 +101,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v1.6.0
+        with:
+          ignore: DL3015
 
   image:
     name: Image
