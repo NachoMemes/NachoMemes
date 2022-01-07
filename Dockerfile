@@ -21,6 +21,7 @@ RUN python -m poetry export --dev -f requirements.txt --output requirements-dev.
 
 FROM python:3.10.1-slim as dev
 COPY --from=build /app/requirements-dev.txt /app/requirements.txt
+RUN apt-get update && apt-get install gcc -y
 WORKDIR /app
 RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY . /app/
@@ -28,8 +29,8 @@ ENTRYPOINT ["python", "-m", "nachomemes.bot", "-d"]
 
 FROM python:3.10.1-slim as prod
 WORKDIR /app
-COPY --from=build /app/requirements.txt /app/requirements.txt
 RUN apt-get update && apt-get install gcc -y
+COPY --from=build /app/requirements.txt /app/requirements.txt
 RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 ENTRYPOINT ["python", "-m", "nachomemes.bot"]
