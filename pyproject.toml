@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "nachomemes"
 version = "0.1.0"
-description = ""
+description = "Make your own Memes"
 authors = ["Cooper Pellaton <cooper@cooperpellaton.com>"]
 
 [tool.poetry.dependencies]
@@ -17,6 +17,7 @@ fuzzywuzzy = "^0.18.0"
 python-Levenshtein-wheels = "^0.13.2"
 Flask = "^2.0.2"
 mypy = "^0.930"
+Wand = "^0.6.7"
 
 [tool.poetry.dev-dependencies]
 ipython = "^7.31.0"
