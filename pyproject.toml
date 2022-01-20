@@ -18,16 +18,15 @@ python-Levenshtein-wheels = "^0.13.2"
 Flask = "^2.0.2"
 mypy = "^0.930"
 
+
 [tool.poetry.dev-dependencies]
 ipython = "^7.31.0"
-
 autopep8 = "^1.6.0"
 pylint = "^2.12.2"
-
 yamllint = "^1.26.3"
 mypy = "^0.930"
 rope = "^0.22.0"
-"discord.py-stubs" = "^1.7.0"
+"discord.py-stubs" = "^1.7.3"
 discord-ext-typed-commands = "^1.0.3"
 vulture = "^2.3"
 
