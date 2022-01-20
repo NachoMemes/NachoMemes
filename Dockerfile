@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install gcc=4:10.2.1-1 -y && rm  -rf /var/lib/apt/
 COPY --from=build /app/requirements-dev.txt /app/requirements.txt
 RUN python -m pip install --no-cache-dir --no-deps -r requirements.txt
 COPY . /app/
-CMD ["python", "-m", "nachomemes.bot", "-d"]
+ENTRYPOINT ["python", "-m", "nachomemes.bot", "-d"]
 
 FROM python:3.9.9-slim as prod
 WORKDIR /app
