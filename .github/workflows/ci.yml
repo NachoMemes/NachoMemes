@@ -1,5 +1,5 @@
 name: CI
-on: [push]
+on: [push, workflow_dispatch]
 
 env:
   python-version: "3.9"
