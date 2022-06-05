@@ -8,7 +8,7 @@ jobs:
   deploy_production:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Publish image to GitHub Container Registry
         uses: elgohr/Publish-Docker-Github-Action@3.04
         with:
