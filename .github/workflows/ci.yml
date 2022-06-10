@@ -3,8 +3,9 @@ on: [push, workflow_dispatch]
 
 env:
   python-version: "3.9"
-  poetry-version: "1.1.6"
+  poetry-version: "1.1.13"
   container-registry: ghcr.io
+  docker-build-platforms: linux/amd64,linux/arm64
 
 jobs:
   yamllint:
@@ -133,6 +134,8 @@ jobs:
           key: ${{ env.base-key }}-${{ github.sha }}
           restore-keys: |
             ${{ env.base-key }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to GitHub Container Registry
@@ -148,10 +151,12 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name != 'pull_request' }}
+          platforms: ${{ env.docker-build-platforms }}
           tags: ${{ steps.image-metadata.outputs.tags }}
           labels: ${{ steps.image-metadata.outputs.labels }}
           cache-from: type=local,src=${{ env.cache-path }}
           cache-to: type=local,dest=${{ env.cache-path }},mode=max
+          target: prod
 
   deploy:
     name: Deploy
