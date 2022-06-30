@@ -191,7 +191,7 @@ function postJson(jsonData) {
         .then(res => { console.log(res) })
         .catch(error => console.log(error));
 
-    alert("The meme template was sent to the database!");
+    alert("The meme template was saved successfully!");
     console.log(JSON.stringify(jsonData, null, 2));
 
 }
