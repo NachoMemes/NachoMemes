@@ -10,14 +10,14 @@ jobs:
   deploy_staging:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
       - name: Publish image to GitHub Container Registry
-        uses: elgohr/Publish-Docker-Github-Action@v4
+        uses: elgohr/Publish-Docker-Github-Action@3.04
         with:
           name: nachomemes/nachomemes/nachomemes
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
+          registry: docker.pkg.github.com
           snapshot: true
       - name: Setup SSH directory
         run: mkdir ~/.ssh/

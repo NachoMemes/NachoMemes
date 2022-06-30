@@ -17,7 +17,7 @@ Need help getting started? Try `!help`. Want to produce the same meme as [`sampl
 
 ## Run This Yourself
 
-This bot is running on `Python 3.10`. Clone this repository and [`poetry install`](https://python-poetry.org/) with Python >= 3.10. 
+This bot is running on `Python 3.9`. Clone this repository and [`poetry install`](https://python-poetry.org/) with Python >= 3.9. 
 
 ### Local Development
 
