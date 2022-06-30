@@ -5,31 +5,28 @@ description = ""
 authors = ["Cooper Pellaton <cooper@cooperpellaton.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-boto3 = "^1.19.6"
+python = "^3.10"
+boto3 = "^1.24.2"
 "discord.py" = "^1.6.0"
-Pillow = "^8.3.2"
-psutil = "^5.8.0"
+Pillow = "^9.1.1"
 argparse = "^1.4.0"
 asyncio = "^3.4.3"
 dacite = "^1.6.0"
-fuzzywuzzy = "^0.18.0"
-python-Levenshtein-wheels = "^0.13.2"
-Flask = "^2.0.2"
-mypy = "^0.910"
+thefuzz = "^0.19.0"
+Levenshtein = "^0.18.1"
+Flask = "^2.1.2"
+mypy = "^0.960"
+
 
 [tool.poetry.dev-dependencies]
-ipython = "^7.28.0"
-
+ipython = "^8.4.0"
 autopep8 = "^1.6.0"
-pylint = "^2.11.1"
-
+pylint = "^2.14.0"
 yamllint = "^1.26.3"
-mypy = "^0.910"
-rope = "^0.21.0"
-"discord.py-stubs" = "^1.7.0"
+rope = "^1.1.1"
+"discord.py-stubs" = "^1.7.3"
 discord-ext-typed-commands = "^1.0.3"
-vulture = "^2.3"
+vulture = "^2.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

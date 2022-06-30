@@ -1,46 +1,50 @@
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union,  Type, cast
-from types import GeneratorType
-from urllib.request import Request
-import atexit, os, re
+import atexit
 import json
+import os
+import re
+from abc import ABC, abstractmethod
 from decimal import Decimal
+from enum import Enum
+from io import BytesIO
 from operator import attrgetter
 from types import GeneratorType, MappingProxyType
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, Union, cast
 from urllib.request import Request
-from fuzzywuzzy import process
-from io import BytesIO
 
 import PIL
-
 from dacite import Config, from_dict
 from discord import Guild
+from thefuzz import process
 
-from nachomemes.uploader import Uploader
 from nachomemes.guild_config import GuildConfig
 from nachomemes.template import Color, Font, Justify, Template, TemplateError, TextBox
+from nachomemes.uploader import Uploader
 
 # additional deserializers for dacite
-da_config = Config({
-    Font: Font.__getitem__,
-    Color: Color.__getitem__,
-    Justify: Justify.__getitem__,
-    Request: Request,
-    float: float,
-    int: int,
-    bool: lambda s: s == "True"
-})
+da_config = Config(
+    {
+        Font: Font.__getitem__,
+        Color: Color.__getitem__,
+        Justify: Justify.__getitem__,
+        Request: Request,
+        float: float,
+        int: int,
+    }
+)
 
 # additional serializers for dacite
-serializers = cast(dict, MappingProxyType({
-    Request: attrgetter("full_url"),
-    float: lambda f: Decimal(str(f)),
-    Font: attrgetter("name"),
-    Color: attrgetter("name"),
-    Justify: attrgetter("name"),
-    bool: str
-}))
+serializers = cast(
+    dict,
+    MappingProxyType(
+        {
+            Request: attrgetter("full_url"),
+            float: lambda f: Decimal(str(f)),
+            Font: attrgetter("name"),
+            Color: attrgetter("name"),
+            Justify: attrgetter("name"),
+        }
+    ),
+)
 
 
 
@@ -56,11 +60,13 @@ def update_serialization(value: Any, _serializers: Dict[Type, Callable] = serial
         return [update_serialization(v, _serializers) for v in value]
     return value
 
+
 class TemplateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
         return super(TemplateEncoder, self).default(obj)
+
 
 class Store(ABC):
     """
@@ -87,12 +93,20 @@ class Store(ABC):
         """
         Retrieve a template as a Template object from the store.
         """
-        return from_dict(Template, self.get_template_data(
-            guild_id if guild_id is not None else "default", 
-            template_id, increment_use), config=da_config)
+        return from_dict(
+            Template,
+            self.get_template_data(
+                guild_id if guild_id is not None else "default",
+                template_id,
+                increment_use,
+            ),
+            config=da_config,
+        )
 
     @abstractmethod
-    def list_memes(self, guild_id: str, fields: Optional[Iterable[str]] = None, is_deleted: Optional[bool] = False) -> Iterable[dict]:
+    def list_memes(
+        self, guild_id: str, fields: Optional[Iterable[str]] = None
+    ) -> Iterable[dict]:
         """
         List all the serialized templates in the store as dictionaries.
         Optionally, pass fields to get only those fields in the dicts.
@@ -114,8 +128,8 @@ class Store(ABC):
     def save_guild_config(self, guild: GuildConfig) -> None:
         """serialize and persist the guild configuration information in the store"""
 
-        
-    def best_match(self, guild_id: str, name: str = None, increment_use: bool = False
+    def best_match(
+        self, guild_id: str, name: str = None, increment_use: bool = False
     ) -> Template:
         """Matches input fuzzily against proper names."""
         if name is None:
@@ -136,25 +150,34 @@ class Store(ABC):
             if self.uploader:
                 with BytesIO() as input:
                     img = template.read_source_image(input)
-                    img.thumbnail((256,256), PIL.Image.BICUBIC)
+                    img.thumbnail((256, 256), PIL.Image.BICUBIC)
                     with BytesIO() as output:
                         img.save(output, format="PNG")
                         output.flush()
                         output.seek(0)
-                        template.preview_url = Request(await self.uploader.upload(output, template.name + '.' + template.image_url.full_url.split('.')[-1]))
+                        template.preview_url = Request(
+                            await self.uploader.upload(
+                                output,
+                                template.name
+                                + "."
+                                + template.image_url.full_url.split(".")[-1],
+                            )
+                        )
                 self.save_meme(guild_id, update_serialization(template.__dict__))
         return template
 
-    def close_matches(self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None,  is_deleted: Optional[bool] = False) -> List[Dict]:
+    def close_matches(
+        self, guild_id: str, name: str, fields: Optional[Iterable[str]] = None
+    ) -> List[Dict]:
         """Fuzzy match multiple templates."""
         return [
             match[0]
-            for match in process.extract(name, self.list_memes(guild_id, fields, is_deleted))
-            if  match[1] > 40
+            for match in process.extract(name, self.list_memes(guild_id, fields))
+            if match[1] > 40
         ]
 
 
-def get_guild_id(guild: Union[Guild,GuildConfig,str,None]) -> str:
+def get_guild_id(guild: Union[Guild, GuildConfig, str, None]) -> str:
     """
     Coerces either a Guild, GuildConfig, or string guild ID into a guild ID string.
     Returns "default" if no valid argument was provided.
